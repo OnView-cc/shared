@@ -1,0 +1,155 @@
+# @onview/shared — documentación
+
+**El código común de las apps de OnView.** UI (`ui/`, `components/`), cliente
+CRUD y helpers (`lib/`, `hooks/`), el mundo visual y sus piezas (`styles/`,
+`sky/`) y dos módulos de worker (`worker/response`, `worker/cookies`). Envía TypeScript crudo: lo compila el bundler de la app que
+lo consume.
+
+`ui/`, `lib/`, `hooks/`, `components/` y `sky/` asumen el DOM; `worker/` asume
+`@cloudflare/workers-types`. Nunca se importa cruzando esa frontera (hay dos
+`tsconfig` por eso).
+
+El pin es a un **tag** de git, no a master (`github:OnView-cc/shared#v1.0.0`;
+consumidores: `onview` y `admin`). El repo es **público**: el CI de los
+consumidores lo baja con `npm ci`, sin token. Para trabajar shared en local
+contra una app, se enlaza con una junction y se quita con `rmdir` antes de
+commitear.
+El mundo visual es **«Airglow»**, heredado del fork y provisional hasta que el
+subproyecto 2 lo sustituya por «Blue Hour». Ver `decisiones.md` y lo
+que falta en `pendiente.md`. Las dependencias de runtime son
+`peerDependencies`; cada consumidor las deduplica (`dedupe` en su
+`vite.config.ts`) para que no haya dos React.
+
+## Airglow: el mundo de OnView
+
+El cielo de la casa visto desde arriba: la página clara (`#f5f5fa`), la noche
+sólo en los paneles de cielo, un solo acento violeta (`#5b3fd9`), la banda de
+la ionosfera (`#a99bff`) sólo dentro del cielo, Geist para todo y Geist Mono
+sólo en lo que mide el agente (`.sk-mono`). `styles/sky.css` se re-basó sobre
+el de Northstar («Polar Night»), que ya era «página clara + noche en paneles»
+con el mismo vocabulario de clases. Las piezas:
+
+| Qué | Dónde | Quién lo consume |
+|---|---|---|
+| El mundo: tokens, tipografía, píldoras, tarjetas, vidrio, paneles de cielo y su respaldo `.sk-band`, páginas interiores, el **bloque de consola** (el vocabulario del mapa reinterpretado en Airglow), la barra lateral y las piezas de Airglow | `styles/sky.css` (sobre `styles/site.css`) | onview y admin, desde su `index.css` |
+| La marca «Órbita con hueco» como datos (`MARK`, `MARK_COLORS`, `markSvg`) y en React (`Mark`, `Wordmark`); la píldora y la flecha | `sky/mark.ts`, `sky/kit.tsx` | onview, admin; `markSvg` lo copia `onview/scripts/render-brand.mjs` |
+| El cielo «Lectura»: la lógica sin DOM (horas, brillo por carga, pulso, subida, `DEMO_DAY`), el shader y las horas en Geist Mono | `sky/airglow.ts`, `sky/sky-canvas.tsx`, `sky/sky-hours.tsx` | onview (sitio y puerta) |
+| Las piezas de Airglow: `ItemLabel` (herramienta · tipo · hora), `DayLine` (la frase del día), `ExampleSeam` (la costura de ejemplo) | `sky/airglow-kit.tsx` | onview |
+| El kit de página: cabecera en panel de cielo, sección, aro, recorrido en pasos, preguntas, control segmentado, cierre; el documento de día | `sky/page.tsx`, `sky/day.ts`, `sky/hooks.ts` | onview (envuelto en `features/frontend/sky/page.tsx`) |
+| El marco de consola: barra lateral con destinos, barra superior con el rastro y la cuenta, salida por `#signout` | `sky/console-frame.tsx` | admin |
+| Las piezas de consola: `Section`, `CallingAt`, `Masthead`, `Stamp`, campos, `StatusBox`, `Note`, `SaveRow`, `SheetDialog`… | `sky/console.tsx`, `lib/use-copy.ts` | onview (área con sesión), admin |
+| El cliente de plataforma: `platformOrigin()` (`VITE_PLATFORM_ORIGIN`; localhost → `:8800`), `api()` con credenciales, `fetchMe()`, `signInUrl()`, `signOutAndGo()` | `lib/platform-client.ts` | admin |
+
+Reglas que las piezas ya cumplen y que un consumidor no debe deshacer (están
+en la cabecera de `sky.css` y en el `DESIGN.md` de `onview`): sólo claro, con
+la noche dentro de los paneles de cielo; el violeta como único acento; la banda
+sólo dentro del cielo; Geist, y Geist Mono sólo en lo que mide el agente;
+sombra o línea, nunca las dos; vidrio sólo donde algo flota; toda carga
+inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
+(`IconComponent`) porque cada consumidor trae su propia copia de lucide-react.
+
+## Módulos
+
+<!-- BEGIN generated:modules -->
+<!-- No edites aquí: lo reescribe `npm run docs`. -->
+
+Módulos de las carpetas publicadas (58), con la primera línea de su comentario de cabecera.
+
+| Archivo | Qué hace |
+| --- | --- |
+| [`components/confirm-delete-modal.tsx`](../components/confirm-delete-modal.tsx) | «¿Seguro?» antes de un borrado, igual en toda la plataforma. |
+| [`components/form-modal.tsx`](../components/form-modal.tsx) | El envoltorio de cualquier formulario en diálogo: título, descripción y hueco. |
+| [`components/theme-provider.tsx`](../components/theme-provider.tsx) | El mundo del mapa se lee a la luz del día: no hay tema oscuro en el sitio, en la puerta, en las consolas ni en las apps (decidido el 2026-09-29). |
+| [`lib/crud-api.ts`](../lib/crud-api.ts) | El cliente CRUD que se repetía en cada feature, escrito una vez. |
+| [`lib/crud-hooks.ts`](../lib/crud-hooks.ts) | Los hooks de React Query que van encima de `crud-api.ts`. |
+| [`lib/initials.ts`](../lib/initials.ts) | Dos letras en lugar de alguien que todavía no tiene avatar. |
+| [`lib/platform-client.ts`](../lib/platform-client.ts) | Hablar con el control plane desde una consola que vive en otro origen (admin., partners., developers. |
+| [`lib/use-copy.ts`](../lib/use-copy.ts) | Copiar, hecho una sola vez para todo el proyecto: la misma implementación que partners y developers, la que usa `CopyTicket` en `console.tsx`. |
+| [`lib/utils.ts`](../lib/utils.ts) | `cn` — juntar clases de Tailwind sin que se peleen entre ellas. |
+| [`lib/vite-env.d.ts`](../lib/vite-env.d.ts) | Las variables de build que lee el paquete (`import.meta.env`). |
+| [`sky/airglow-kit.test.tsx`](../sky/airglow-kit.test.tsx) | Las piezas de Airglow: la etiqueta herramienta · tipo · hora en Geist Mono, la frase del día y la costura de ejemplo. |
+| [`sky/airglow-kit.tsx`](../sky/airglow-kit.tsx) | Las piezas que Airglow añade al kit de la casa, sacadas de lo que el mundo tomó en su ronda de dirección: |
+| [`sky/airglow.test.ts`](../sky/airglow.test.ts) | La lógica del cielo «Lectura»: horas a lo ancho de la banda, brillo por carga, el pulso de lectura y la subida de lo que importa. |
+| [`sky/airglow.ts`](../sky/airglow.ts) | La lógica del cielo «Lectura», sin DOM: dónde cae cada hora en la banda, cuánto brilla la banda según lo que la persona tiene a esa hora, por dónde va el pulso de… |
+| [`sky/console-frame.tsx`](../sky/console-frame.tsx) | El marco de consola del admin, en el mundo «Airglow»: la forma de una app de trabajo, la misma que el área con sesión de onview. |
+| [`sky/console.tsx`](../sky/console.tsx) | Las piezas de la consola, en el mundo «Airglow» (2026-11-03). |
+| [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento de día: mientras se ve una página de Airglow, `<html>` y la barra del navegador llevan el suelo claro, y al salir vuelven a lo que había. |
+| [`sky/day.ts`](../sky/day.ts) | El documento entero lleva el suelo claro de Airglow mientras se ve una página del mundo: el fondo de `<html>` (lo que asoma en el rebote del scroll) y el color de la… |
+| [`sky/hooks.ts`](../sky/hooks.ts) | Hooks de scroll y de montaje contra los que se animan las páginas de Clear Sky, y los tres que usan las piezas de consola de `console.tsx` (`useFlash`, `useDismiss`,… |
+| [`sky/ion-kit.test.tsx`](../sky/ion-kit.test.tsx) | Ion en la interfaz: el símbolo (día, noche, mono) y el glifo junto a sus respuestas, que late mientras escribe. |
+| [`sky/ion-mark.test.ts`](../sky/ion-mark.test.ts) | El símbolo de Ion, «Limbo»: la Tierra de noche vista desde arriba con su borde encendido. |
+| [`sky/ion-mark.ts`](../sky/ion-mark.ts) | El símbolo de Ion, «Limbo» (2026-11-05), como datos: la Tierra de noche vista desde arriba y su borde encendido. |
+| [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas del mundo de OnView («Airglow»): la marca, la píldora y la flecha. |
+| [`sky/mark.test.ts`](../sky/mark.test.ts) | La marca Órbita con hueco: el aro se abre donde está el punto, y nada de la órbita inclinada heredada. |
+| [`sky/mark.ts`](../sky/mark.ts) | La marca de OnView, «Órbita con hueco», como datos: un núcleo de tinta, un aro violeta que se abre donde está el punto, y el punto que abre su propio camino. |
+| [`sky/page.tsx`](../sky/page.tsx) | Las piezas de página del mundo de OnView («Airglow»), las del sitio de onview: la cabecera de página con su panel de cielo, el encabezado de sección, el aro de icono,… |
+| [`sky/platform-client.test.ts`](../sky/platform-client.test.ts) | El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. |
+| [`sky/platform-origin-local.test.ts`](../sky/platform-origin-local.test.ts) | En local, una consola habla con el `wrangler pages dev` de onview (puerto 8900). |
+| [`sky/platform-origin.test.ts`](../sky/platform-origin.test.ts) | Sin `VITE_PLATFORM_ORIGIN`, una consola en un subdominio habla con el apex de producción. |
+| [`sky/sky-canvas.test.tsx`](../sky/sky-canvas.test.tsx) | El cielo «Lectura»: sin WebGL2 avisa y deja el respaldo de CSS, el lienzo es decorativo y las horas van en Geist Mono. |
+| [`sky/sky-canvas.tsx`](../sky/sky-canvas.tsx) | El cielo de OnView, «Lectura»: un solo shader WebGL2, sin dependencias. |
+| [`sky/sky-hours.tsx`](../sky/sky-hours.tsx) | Las horas de la banda, en DOM y en Geist Mono (lo que mide el agente): el shader no escribe texto. |
+| [`ui/alert-dialog.tsx`](../ui/alert-dialog.tsx) | El diálogo de consecuencias: el mismo papel que `Dialog`, pero no se cierra al pulsar fuera y el foco empieza en «Cancel», el lado que no hace nada. |
+| [`ui/avatar.tsx`](../ui/avatar.tsx) | La cara de alguien es su monograma: su foto, o sus iniciales en el corte condensado, dentro de un cuadrado con el trazo del mundo. |
+| [`ui/badge.tsx`](../ui/badge.tsx) | El sello: un estado impreso en una caja con el trazo del mundo. |
+| [`ui/button.tsx`](../ui/button.tsx) | El billete: la única forma de botón del mundo del mapa (ver `styles/site.css`, «billetes y botones»). |
+| [`ui/card.tsx`](../ui/card.tsx) | En el mundo del mapa no hay tarjetas: hay paradas. |
+| [`ui/checkbox.tsx`](../ui/checkbox.tsx) | La casilla del mundo: un cuadrado con el trazo de 3px que se llena de tinta. |
+| [`ui/command.tsx`](../ui/command.tsx) | La paleta de órdenes sobre cmdk: el campo de búsqueda cerrado por el filete grueso, los grupos con rótulo de andén y las filas del panel de papel. |
+| [`ui/dialog.tsx`](../ui/dialog.tsx) | El diálogo de papel sobre Radix: el trazo de 3px sobre papel, la única penumbra del mundo detrás (tinta al 70 %), una cabecera cerrada por el filete grueso, el aspa… |
+| [`ui/dropdown-menu.tsx`](../ui/dropdown-menu.tsx) | El menú de acciones sobre Radix: un panel de papel con el trazo del mundo (`menu-paper`, en `styles/product.css`), filas en negrita que se tintan al pasar, rótulos de… |
+| [`ui/hover-card.tsx`](../ui/hover-card.tsx) | La ficha que se abre al pasar el ratón: el mismo panel de papel que un popover. |
+| [`ui/input.tsx`](../ui/input.tsx) | El campo del mundo: el trazo de 3px sobre papel, la única tinta clara al enfocar. |
+| [`ui/label.tsx`](../ui/label.tsx) | El rótulo de un campo: el rótulo de andén, en bloque, con medio renglón debajo. |
+| [`ui/popover.tsx`](../ui/popover.tsx) | Un panel de papel con contenido, anclado a lo que lo abre; sin radio ni sombra. |
+| [`ui/progress.tsx`](../ui/progress.tsx) | Una vía con el trazo del mundo que se rellena de tinta hasta donde llega el valor. |
+| [`ui/select.tsx`](../ui/select.tsx) | El desplegable sobre Radix: el disparador es un campo del mundo con su chevrón, y las opciones un panel de papel con filas en negrita. |
+| [`ui/separator.tsx`](../ui/separator.tsx) | El filete fino del mundo, en horizontal o en vertical. |
+| [`ui/sheet.tsx`](../ui/sheet.tsx) | La hoja lateral: un pliego de papel que entra desde un borde de la pantalla, con el trazo del mundo en el canto que da a la página y la penumbra detrás. |
+| [`ui/skeleton.tsx`](../ui/skeleton.tsx) | El hueco de carga: la forma de lo que viene, en la única tinta clara, quieto. |
+| [`ui/sonner.tsx`](../ui/sonner.tsx) | Las notificaciones: un billete de papel con el trazo del mundo, sin sombra ni radio (el estilo va en `styles/site.css`, `[data-sonner-toast]`). |
+| [`ui/switch.tsx`](../ui/switch.tsx) | El interruptor: una vía cuadrada con el trazo del mundo y un mando de tinta que la cruza; encendido, la vía se entinta y el mando pasa a papel. |
+| [`ui/table.tsx`](../ui/table.tsx) | Una lista es una tabla de tarifas (`.fare`, en `styles/site.css`): el corte condensado con cifras tabulares, las cabeceras como rótulos de andén cerradas por el filete… |
+| [`ui/tabs.tsx`](../ui/tabs.tsx) | Las pestañas son el riel de páginas del mundo: los destinos en negrita sobre un filete fino, el actual en tinta con la barra de 3px en el color de la línea que se viaja. |
+| [`ui/textarea.tsx`](../ui/textarea.tsx) | El campo de varias líneas, con el trazo del mundo; lo mide su `rows`. |
+| [`ui/tooltip.tsx`](../ui/tooltip.tsx) | La nota al pie de un control: tinta sobre papel, en el corte condensado, sin flecha ni radio. |
+| [`worker/cookies.ts`](../worker/cookies.ts) | Lectura de cookies, y nada más. |
+| [`worker/response.ts`](../worker/response.ts) | Las tres respuestas JSON que devuelve cualquier handler de Pages Functions. |
+
+<!-- END generated:modules -->
+
+## Configuración
+
+<!-- BEGIN generated:config -->
+<!-- No edites aquí: lo reescribe `npm run docs`. -->
+
+_Sin `wrangler.toml`: este proyecto no se despliega por su cuenta._
+
+### Bindings
+
+_Nada que listar._
+
+### Variables (`[vars]`, públicas)
+
+_Nada que listar._
+
+### Secretos
+
+_Ninguno declarado en `wrangler.toml` ni en `.dev.vars.example`._
+
+### Cron
+
+_Sin cron propio._
+
+### Scripts de npm
+
+| Script | Comando |
+| --- | --- |
+| `npm run check:neutral` | `node scripts/check-neutral.mjs` |
+| `npm run test` | `vitest run` |
+| `npm run typecheck` | `tsc -p tsconfig.ui.json --noEmit && tsc -p tsconfig.worker.json --noEmit` |
+| `npm run docs` | `node scripts/gen-docs.mjs` |
+| `npm run docs:check` | `node scripts/gen-docs.mjs --check` |
+| `npm run docs:gaps` | `node scripts/gen-docs.mjs --gaps` |
+
+<!-- END generated:config -->
