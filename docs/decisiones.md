@@ -56,3 +56,12 @@ Spec: `OnView.cc/docs/superpowers/specs/2026-11-08-onview-plataforma-design.md`.
   (`sky/strike-number.tsx`). Los componentes de consola y página conservan su
   API; sólo cambian su piel (esquina de 2px, colores de los tokens). `package.json`
   pasa a 1.1.0 (se había quedado en 1.0.0 con el tag v1.0.1).
+- **v1.2.0 (2026-11-09): la revisión de acabado de impeccable** (dos rondas,
+  veredicto final ship). Dentro de la app la tinta es neutra casi negra (`.site.sk`
+  redefine ground, mist, surface, haze, film y perf; `INSIDE_GROUND` en `day.ts`
+  para el documento de las consolas); el azul queda fuera y en los vacíos. El lápiz
+  graso es un contorno relleno que se afina (`grease-paths.ts`, generado una vez) y
+  se dibuja con una máscara. La tira admite la cruz de la toma descartada, se coloca
+  en la elegida al montarse, lleva el texto en pantalla arriba y centrado, y la celda
+  elegida va por encima de sus vecinas. El cielo baja a cobalto con una línea cálida
+  de horizonte.
