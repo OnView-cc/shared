@@ -4,7 +4,7 @@
  * Vienen de las consolas de la familia; las pintan onview (el área con sesión)
  * y admin, con el bloque de consola de `styles/sky.css`. La API es la de cuando
  * eran un pliego del mapa de red, así que ninguna vista tuvo que cambiar para
- * mudarse: la sección es una tarjeta blanca que flota sobre el suelo claro, el
+ * mudarse: la sección es una hoja de tinta con su filete sobre la tinta neutra del editor, el
  * sello un rectángulo con su palabra en la voz del borde de película, el billete un botón de fotograma, el
  * diálogo un panel sobre un velo tenue.
  *

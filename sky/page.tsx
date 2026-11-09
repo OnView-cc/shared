@@ -30,11 +30,9 @@ export type IconComponent = ComponentType<{ className?: string; strokeWidth?: nu
 // ─── la cabecera de página ───────────────────────────────────────────────────
 
 /**
- * La cabecera de una página: un panel de cielo dentro de la columna, bajo la
- * cabecera clara del sitio. Arriba, el titular y la entradilla; abajo, la
- * Tierra de noche con la banda y sus horas. Con `load` la banda brilla según
- * ese día y entonces `seam` (la costura «Example», ya traducida) es
- * obligatoria; sin `load`, el suelo tranquilo. `aside` ocupa la derecha desde
+ * La cabecera de una página: un panel con el cielo de la hora azul dentro de la
+ * columna, bajo la cabecera del sitio. Arriba, el titular y la entradilla; el
+ * cielo (`BlueHourSky`) con su ciudad debajo. `aside` ocupa la derecha desde
  * `lg`; `children` va debajo de la entradilla: botones, una nota.
  */
 export function PageHero({
@@ -117,7 +115,7 @@ export function Section({
 
 // ─── marcadores ──────────────────────────────────────────────────────────────
 
-/** Un icono dentro de un círculo: de vidrio sólo donde flota sobre el cielo; sobre el suelo, un aro de línea. */
+/** Un icono en una baldosa de 2px: de vidrio sólo donde flota sobre el cielo; sobre el suelo, con su filete. */
 export function Bead({ icon: Icon, size = "md", variant = "line" }: { icon: IconComponent; size?: "md" | "lg"; variant?: "glass" | "line" }) {
 	return (
 		<span
@@ -171,7 +169,7 @@ export function Faq({ items }: { items: { q: string; a: React.ReactNode }[] }) {
 
 // ─── controles ───────────────────────────────────────────────────────────────
 
-/** Un control segmentado: un riel de niebla, la opción elegida en blanco. */
+/** Un control segmentado: un riel de niebla, la opción elegida en bruma con su filete ámbar. */
 export function Segmented<T extends string>({
 	value,
 	options,

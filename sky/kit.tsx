@@ -62,7 +62,7 @@ export function SkArrow({ className = "size-4" }: { className?: string }) {
 	return <ArrowRight className={`sk-arrow shrink-0 ${className}`} strokeWidth={1.75} aria-hidden="true" />;
 }
 
-/** Una píldora como enlace. `primary` (de tinta; sobre el cielo, invertida) es la única acción primaria de cada vista. */
+/** Un botón de fotograma (2px) como enlace. `primary` (ámbar, con texto de tinta) es la acción principal de cada vista. */
 export function SkButton({
 	href,
 	children,

@@ -10,12 +10,12 @@
  *   página se desplaza. `banner` va encima de todo si una consola lo necesita
  *   (admin lo usó para la franja del staff hasta el 2026-10-13; el rol va ahora
  *   en el menú de cuenta, `account.role`).
- * - En el centro, la página, en una columna de 74rem sobre el suelo claro.
+ * - En el centro, la página, en una columna de 74rem sobre la tinta neutra del editor.
  *
  * Vive en `@onview/shared` y cada consola le pasa sus destinos. La raíz lleva
  * `site sk` para que el vocabulario del mapa que aún escriben las vistas se
  * pinte en Blue Hour (bloque de consola de `styles/sky.css`). Mientras se ve, el
- * documento entero lleva el suelo claro (`useDayDocument`).
+ * documento entero lleva esa tinta (`useDayDocument(INSIDE_GROUND)`).
  *
  * Salir: un enlace de cuenta con `href: "#signout"` cierra la sesión en el apex
  * (`signOutAndGo`) en vez de navegar; así ninguna consola necesita su propia

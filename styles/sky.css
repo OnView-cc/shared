@@ -390,7 +390,7 @@
    primer cuadro y lo que queda si el lienzo no se pinta. */
 .sk .sk-hero-sky {
 	background:
-		linear-gradient(180deg, transparent 84%, rgba(244, 178, 106, 0.42) 92%, rgba(244, 178, 106, 0.26) 100%),
+		linear-gradient(180deg, transparent 86%, rgba(244, 178, 106, 0.5) 91%, rgba(244, 178, 106, 0) 97%),
 		linear-gradient(180deg, #070d22 0%, #102461 38%, #1d3a8a 66%, #3a5bc4 92%, #5674cc 100%);
 	color: var(--sk-ink);
 }
@@ -847,6 +847,10 @@
 	padding: 6px 4px;
 	background: rgba(10, 17, 36, 0.9);
 	backdrop-filter: blur(12px) saturate(140%);
+}
+/* dentro de la app, la misma tira en la tinta neutra */
+.site.sk .sk-onpage {
+	background: rgba(14, 15, 17, 0.9);
 }
 .sk .sk-onpage ol {
 	display: flex;
@@ -1358,7 +1362,7 @@
 	}
 }
 .site.sk dialog.sheet-dialog::backdrop {
-	background: rgba(4, 8, 22, 0.66);
+	background: rgba(6, 7, 9, 0.7);
 }
 /* Un hueco de carga es un fotograma sin revelar: sin brillo que barre. */
 .site.sk .skeleton {
@@ -1417,11 +1421,11 @@
 	}
 }
 
-/* la tira «en esta página» (CallingAt) */
+/* la tira «en esta página» (CallingAt), en la tinta neutra de dentro */
 .site.sk .calling-at {
 	top: 64px;
 	border: 0;
-	background: rgba(10, 17, 36, 0.92);
+	background: rgba(14, 15, 17, 0.92);
 	backdrop-filter: blur(12px);
 	box-shadow: 0 1px 0 var(--sk-hair);
 }
