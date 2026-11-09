@@ -15,12 +15,8 @@
  * sólo donde algo flota. Un cielo que muestra una carga inventada lleva su
  * costura «Example» (`seam`); sin `load`, la banda es el suelo tranquilo.
  */
-import { useState, type ComponentType } from "react";
+import type { ComponentType } from "react";
 import { ChevronDown } from "lucide-react";
-import type { DayLoad } from "./airglow";
-import { ExampleSeam } from "./airglow-kit";
-import { SkyCanvas } from "./sky-canvas";
-import { SkyHours } from "./sky-hours";
 import { SkArrow, SkButton } from "./kit";
 
 /**
@@ -45,32 +41,17 @@ export function PageHero({
 	lead,
 	children,
 	aside,
-	load = [],
-	seam,
-	onPass,
 }: {
 	title: React.ReactNode;
 	lead?: React.ReactNode;
 	children?: React.ReactNode;
 	aside?: React.ReactNode;
-	load?: DayLoad[];
-	seam?: string;
-	/** El pulso cruzó la hora del elemento `i` de `load`. */
-	onPass?: (i: number) => void;
 }) {
-	const [noGl, setNoGl] = useState(false);
 	const split = Boolean(aside);
 
 	return (
 		<section className="sk-wrap pt-2">
 			<div className="sk-panel sk-hero-sky sk-band relative">
-				{!noGl && <SkyCanvas load={load} onPass={onPass} onUnsupported={() => setNoGl(true)} />}
-				<SkyHours />
-				{seam && (
-					<div className="absolute bottom-4 right-4 z-10 md:bottom-5 md:right-6">
-						<ExampleSeam label={seam} />
-					</div>
-				)}
 				<div className={`relative grid items-start gap-y-6 px-6 pb-72 pt-12 sm:px-10 md:pb-48 md:pt-16 lg:px-14 lg:pb-40 ${split ? "lg:grid-cols-12 lg:gap-x-10" : ""}`}>
 					<div className={split ? "lg:col-span-7" : "max-w-3xl"}>
 						<h1 className="sk-display sk-rise text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem]">{title}</h1>
@@ -229,13 +210,9 @@ export function Closing({
 	primary: { href: string; label: string };
 	secondary?: { href: string; label: string };
 }) {
-	const [noGl, setNoGl] = useState(false);
-
 	return (
 		<section className="sk-wrap pb-6 pt-20 md:pt-28">
 			<div className="sk-panel sk-hero-sky sk-band relative">
-				{!noGl && <SkyCanvas load={[]} onUnsupported={() => setNoGl(true)} />}
-				<SkyHours />
 				<div className="relative max-w-2xl px-6 pb-40 pt-14 sm:px-12 md:pb-48 md:pt-20 lg:px-16">
 					<h2 className="sk-h2 text-[2.25rem] md:text-[3.25rem]">{headline}</h2>
 					{desc && <p className="sk-body mt-5 max-w-lg text-[1.0625rem]">{desc}</p>}

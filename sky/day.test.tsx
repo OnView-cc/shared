@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-/** El documento de día: mientras se ve una página de Airglow, `<html>` y la barra del navegador llevan el suelo claro, y al salir vuelven a lo que había. */
+/** El documento del mundo: mientras se ve una página de Blue Hour, `<html>` y la barra del navegador llevan la tinta del borde de película, y al salir vuelven a lo que había. */
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it } from "vitest";
@@ -13,7 +13,7 @@ function Probe() {
 }
 
 describe("useDayDocument", () => {
-	it("paints the light ground and restores the previous values on unmount", () => {
+	it("paints the film-rebate ink and restores the previous values on unmount", () => {
 		const meta = document.createElement("meta");
 		meta.name = "theme-color";
 		meta.content = "#123456";
@@ -23,9 +23,9 @@ describe("useDayDocument", () => {
 		const host = document.createElement("div");
 		const root = createRoot(host);
 		act(() => root.render(<Probe />));
-		expect(GROUND).toBe("#f5f5fa");
-		expect(meta.content).toBe("#f5f5fa");
-		expect(document.documentElement.style.backgroundColor).toBe("rgb(245, 245, 250)");
+		expect(GROUND).toBe("#0a1124");
+		expect(meta.content).toBe("#0a1124");
+		expect(document.documentElement.style.backgroundColor).toBe("rgb(10, 17, 36)");
 
 		act(() => root.unmount());
 		expect(meta.content).toBe("#123456");

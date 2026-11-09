@@ -1,12 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 /**
- * El mundo del mapa se lee a la luz del día: no hay tema oscuro en el sitio, en
- * la puerta, en las consolas ni en las apps (decidido el 2026-09-29).
+ * Blue Hour es oscuro entero (spec §10): el cielo fuera, la tinta del editor
+ * dentro. No hay tema claro ni lo elige el sistema.
  *
- * Este proveedor sobrevive sólo para que una app que aún lo monte siga
- * compilando. No lee `localStorage`, no escucha al sistema y borra la clase
- * `dark` que un navegador pudiera conservar de antes; `useTheme` devuelve
- * siempre «light» y un `setTheme` que no hace nada.
+ * Este proveedor sobrevive para que las apps que lo montan sigan compilando. No
+ * lee `localStorage` ni escucha al sistema: pone la clase `dark` en la raíz
+ * (los componentes de shadcn la leen) y quita `light`; `useTheme` devuelve
+ * siempre «dark» y un `setTheme` que no hace nada.
  */
 import * as React from "react"
 
@@ -24,19 +24,19 @@ type ThemeProviderState = {
   setTheme: (theme: Theme) => void
 }
 
-const LIGHT: ThemeProviderState = { theme: "light", setTheme: () => {} }
+const DARK: ThemeProviderState = { theme: "dark", setTheme: () => {} }
 
-const ThemeProviderContext = React.createContext<ThemeProviderState>(LIGHT)
+const ThemeProviderContext = React.createContext<ThemeProviderState>(DARK)
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   React.useEffect(() => {
     const root = document.documentElement
-    root.classList.remove("dark")
-    root.classList.add("light")
+    root.classList.remove("light")
+    root.classList.add("dark")
   }, [])
 
   return (
-    <ThemeProviderContext.Provider value={LIGHT}>
+    <ThemeProviderContext.Provider value={DARK}>
       {children}
     </ThemeProviderContext.Provider>
   )

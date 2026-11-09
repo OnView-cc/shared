@@ -36,3 +36,16 @@ Spec: `OnView.cc/docs/superpowers/specs/2026-11-08-onview-plataforma-design.md`.
   Revertir: el mismo renombrado al revés (`arcade.lat` → `onview.cc`), y
   después mover dominios de Pages, webhook de Stripe, widget de Turnstile y
   redirects de OAuth (lista en `onview/docs/plataforma.md`).
+- **Blue Hour sustituye a Airglow (2026-11-09, subproyecto 2).** Forma elegida
+  por el usuario: la hoja de contactos con lápiz graso ámbar sobre el cielo de
+  la hora azul (seed `5fce36d6`; contrato en
+  `onview/.impeccable/surfaces/src-features-frontend-home-tsx.md`). Todo oscuro;
+  un solo color de acción (ámbar `#f2a33a`); esquina de 2px; una familia
+  (Archivo, ejes de peso y ancho). `styles/sky.css` se reescribe entero y sólo
+  viste las 133 clases que el código vivo usa (las 129 muertas, de OnPilot, no
+  vuelven); el puente `.site.sk` vive al final de `sky.css` y `styles/site.css`
+  queda en la estructura del vocabulario heredado, con sus alias apuntando a
+  los tokens. Fuera: `sky/airglow.ts`, `airglow-kit.tsx`, `sky-hours.tsx`,
+  `ion-mark.ts` (el símbolo de la IA de OnPilot) y el lienzo WebGL
+  `sky-canvas.tsx`; hasta que llega `BlueHourSky`, el cielo es el degradado de
+  `.sk-hero-sky`. `theme-provider` fija `dark`.

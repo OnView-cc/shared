@@ -53,13 +53,13 @@ inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (58), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (48), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
 | [`components/confirm-delete-modal.tsx`](../components/confirm-delete-modal.tsx) | «¿Seguro?» antes de un borrado, igual en toda la plataforma. |
 | [`components/form-modal.tsx`](../components/form-modal.tsx) | El envoltorio de cualquier formulario en diálogo: título, descripción y hueco. |
-| [`components/theme-provider.tsx`](../components/theme-provider.tsx) | El mundo del mapa se lee a la luz del día: no hay tema oscuro en el sitio, en la puerta, en las consolas ni en las apps (decidido el 2026-09-29). |
+| [`components/theme-provider.tsx`](../components/theme-provider.tsx) | Blue Hour es oscuro entero (spec §10): el cielo fuera, la tinta del editor dentro. |
 | [`lib/crud-api.ts`](../lib/crud-api.ts) | El cliente CRUD que se repetía en cada feature, escrito una vez. |
 | [`lib/crud-hooks.ts`](../lib/crud-hooks.ts) | Los hooks de React Query que van encima de `crud-api.ts`. |
 | [`lib/initials.ts`](../lib/initials.ts) | Dos letras en lugar de alguien que todavía no tiene avatar. |
@@ -67,28 +67,18 @@ Módulos de las carpetas publicadas (58), con la primera línea de su comentario
 | [`lib/use-copy.ts`](../lib/use-copy.ts) | Copiar, hecho una sola vez para todo el proyecto: la misma implementación que partners y developers, la que usa `CopyTicket` en `console.tsx`. |
 | [`lib/utils.ts`](../lib/utils.ts) | `cn` — juntar clases de Tailwind sin que se peleen entre ellas. |
 | [`lib/vite-env.d.ts`](../lib/vite-env.d.ts) | Las variables de build que lee el paquete (`import.meta.env`). |
-| [`sky/airglow-kit.test.tsx`](../sky/airglow-kit.test.tsx) | Las piezas de Airglow: la etiqueta herramienta · tipo · hora en Geist Mono, la frase del día y la costura de ejemplo. |
-| [`sky/airglow-kit.tsx`](../sky/airglow-kit.tsx) | Las piezas que Airglow añade al kit de la casa, sacadas de lo que el mundo tomó en su ronda de dirección: |
-| [`sky/airglow.test.ts`](../sky/airglow.test.ts) | La lógica del cielo «Lectura»: horas a lo ancho de la banda, brillo por carga, el pulso de lectura y la subida de lo que importa. |
-| [`sky/airglow.ts`](../sky/airglow.ts) | La lógica del cielo «Lectura», sin DOM: dónde cae cada hora en la banda, cuánto brilla la banda según lo que la persona tiene a esa hora, por dónde va el pulso de… |
 | [`sky/console-frame.tsx`](../sky/console-frame.tsx) | El marco de consola del admin, en el mundo «Airglow»: la forma de una app de trabajo, la misma que el área con sesión de onview. |
 | [`sky/console.tsx`](../sky/console.tsx) | Las piezas de la consola, en el mundo «Airglow» (2026-11-03). |
-| [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento de día: mientras se ve una página de Airglow, `<html>` y la barra del navegador llevan el suelo claro, y al salir vuelven a lo que había. |
-| [`sky/day.ts`](../sky/day.ts) | El documento entero lleva el suelo claro de Airglow mientras se ve una página del mundo: el fondo de `<html>` (lo que asoma en el rebote del scroll) y el color de la… |
+| [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento del mundo: mientras se ve una página de Blue Hour, `<html>` y la barra del navegador llevan la tinta del borde de película, y al salir vuelven a lo que… |
+| [`sky/day.ts`](../sky/day.ts) | El documento entero lleva la tinta del borde de película de Blue Hour mientras se ve una página del mundo: el fondo de `<html>` (lo que asoma en el rebote del scroll) y… |
 | [`sky/hooks.ts`](../sky/hooks.ts) | Hooks de scroll y de montaje contra los que se animan las páginas de Clear Sky, y los tres que usan las piezas de consola de `console.tsx` (`useFlash`, `useDismiss`,… |
-| [`sky/ion-kit.test.tsx`](../sky/ion-kit.test.tsx) | Ion en la interfaz: el símbolo (día, noche, mono) y el glifo junto a sus respuestas, que late mientras escribe. |
-| [`sky/ion-mark.test.ts`](../sky/ion-mark.test.ts) | El símbolo de Ion, «Limbo»: la Tierra de noche vista desde arriba con su borde encendido. |
-| [`sky/ion-mark.ts`](../sky/ion-mark.ts) | El símbolo de Ion, «Limbo» (2026-11-05), como datos: la Tierra de noche vista desde arriba y su borde encendido. |
-| [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas del mundo de OnView («Airglow»): la marca, la píldora y la flecha. |
+| [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas del mundo de OnView («Blue Hour»): la marca, el botón como enlace y la flecha. |
 | [`sky/mark.test.ts`](../sky/mark.test.ts) | La marca Órbita con hueco: el aro se abre donde está el punto, y nada de la órbita inclinada heredada. |
 | [`sky/mark.ts`](../sky/mark.ts) | La marca de OnView, «Órbita con hueco», como datos: un núcleo de tinta, un aro violeta que se abre donde está el punto, y el punto que abre su propio camino. |
 | [`sky/page.tsx`](../sky/page.tsx) | Las piezas de página del mundo de OnView («Airglow»), las del sitio de onview: la cabecera de página con su panel de cielo, el encabezado de sección, el aro de icono,… |
 | [`sky/platform-client.test.ts`](../sky/platform-client.test.ts) | El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. |
 | [`sky/platform-origin-local.test.ts`](../sky/platform-origin-local.test.ts) | En local, una consola habla con el `wrangler pages dev` de onview (puerto 8900). |
 | [`sky/platform-origin.test.ts`](../sky/platform-origin.test.ts) | Sin `VITE_PLATFORM_ORIGIN`, una consola en un subdominio habla con el apex de producción. |
-| [`sky/sky-canvas.test.tsx`](../sky/sky-canvas.test.tsx) | El cielo «Lectura»: sin WebGL2 avisa y deja el respaldo de CSS, el lienzo es decorativo y las horas van en Geist Mono. |
-| [`sky/sky-canvas.tsx`](../sky/sky-canvas.tsx) | El cielo de OnView, «Lectura»: un solo shader WebGL2, sin dependencias. |
-| [`sky/sky-hours.tsx`](../sky/sky-hours.tsx) | Las horas de la banda, en DOM y en Geist Mono (lo que mide el agente): el shader no escribe texto. |
 | [`ui/alert-dialog.tsx`](../ui/alert-dialog.tsx) | El diálogo de consecuencias: el mismo papel que `Dialog`, pero no se cierra al pulsar fuera y el foco empieza en «Cancel», el lado que no hace nada. |
 | [`ui/avatar.tsx`](../ui/avatar.tsx) | La cara de alguien es su monograma: su foto, o sus iniciales en el corte condensado, dentro de un cuadrado con el trazo del mundo. |
 | [`ui/badge.tsx`](../ui/badge.tsx) | El sello: un estado impreso en una caja con el trazo del mundo. |

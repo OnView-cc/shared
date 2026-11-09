@@ -1,12 +1,13 @@
 /**
- * El documento entero lleva el suelo claro de Airglow mientras se ve una página
- * del mundo: el fondo de `<html>` (lo que asoma en el rebote del scroll) y el
- * color de la barra del navegador. Lo devuelve como estaba al salir. Lo llaman
- * el marco del sitio y de la puerta de onview y el marco de consola.
+ * El documento entero lleva la tinta del borde de película de Blue Hour
+ * mientras se ve una página del mundo: el fondo de `<html>` (lo que asoma en el
+ * rebote del scroll) y el color de la barra del navegador. Lo devuelve como
+ * estaba al salir. Lo llaman el marco del sitio y de la puerta de onview y el
+ * marco de consola.
  */
 import { useEffect } from "react";
 
-export const GROUND = "#f5f5fa";
+export const GROUND = "#0a1124";
 
 export function useDayDocument(): void {
 	useEffect(() => {
