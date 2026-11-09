@@ -53,7 +53,7 @@ inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (58), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (59), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -77,6 +77,7 @@ Módulos de las carpetas publicadas (58), con la primera línea de su comentario
 | [`sky/contact-strip.tsx`](../sky/contact-strip.tsx) | La hoja de contactos de Blue Hour: un video es una tira de fotogramas en un borde de película (perforaciones arriba y abajo, números de fotograma en el margen, en la… |
 | [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento del mundo: mientras se ve una página de Blue Hour, `<html>` y la barra del navegador llevan la tinta del borde de película, y al salir vuelven a lo que… |
 | [`sky/day.ts`](../sky/day.ts) | El documento entero lleva la tinta del borde de película de Blue Hour mientras se ve una página del mundo: el fondo de `<html>` (lo que asoma en el rebote del scroll) y… |
+| [`sky/grease-paths.ts`](../sky/grease-paths.ts) | Los trazos del lápiz graso como contornos rellenos (lienzo de 32): cada uno empieza pesado y se afina hacia la cola, como la cera sobre la película. |
 | [`sky/grease.test.tsx`](../sky/grease.test.tsx) | El lápiz graso: se traza al dibujarse, salvo con movimiento reducido, donde aparece ya dibujado. |
 | [`sky/grease.tsx`](../sky/grease.tsx) | El lápiz graso ámbar del montador sobre la hoja de contactos: un círculo (la toma elegida), una cruz (descartada, pero sigue en la hoja) o una flecha (el orden). |
 | [`sky/hooks.ts`](../sky/hooks.ts) | Hooks de scroll y de montaje contra los que se animan las páginas de Clear Sky, y los tres que usan las piezas de consola de `console.tsx` (`useFlash`, `useDismiss`,… |

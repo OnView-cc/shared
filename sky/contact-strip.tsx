@@ -7,10 +7,13 @@
  * círculo; sin él, la tira es una lista quieta.
  *
  * Desbordada, la tira se desplaza dentro de su carril y se asienta en el paso
- * del fotograma (`scroll-snap`); la página nunca desborda. `exampleLabel`
- * escribe «Ejemplo» en el borde cuando los fotogramas son demostración.
+ * del fotograma (`scroll-snap`); la página nunca desborda. Al montarse, el carril
+ * se coloca con el fotograma elegido a la vista. `exampleLabel` escribe
+ * «Ejemplo» en el borde cuando los fotogramas son demostración. Una toma
+ * descartada lleva la cruz del lápiz (`mark: "cross"`) y sigue en la hoja:
+ * nada se pierde.
  */
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { Grease } from "./grease";
 
 export interface StripFrame {
@@ -21,6 +24,8 @@ export interface StripFrame {
 	media?: ReactNode;
 	/** La duración de la toma, para el ancho proporcional donde se use. */
 	seconds?: number;
+	/** Una toma descartada: la cruz del lápiz graso, y sigue en la hoja. */
+	mark?: "cross";
 }
 
 const number = (i: number) => String(i + 1).padStart(2, "0");
@@ -41,17 +46,28 @@ export function ContactStrip({
 	exampleLabel?: string;
 	className?: string;
 }) {
+	const rail = useRef<HTMLOListElement>(null);
+	// Al montarse, el fotograma elegido queda a la vista dentro del carril (en
+	// móvil el carril desborda); sólo el carril se mueve, nunca la página.
+	useLayoutEffect(() => {
+		const el = rail.current;
+		if (!el || chosen === undefined || el.scrollWidth <= el.clientWidth) return;
+		const cell = el.children[chosen] as HTMLElement | undefined;
+		if (cell) el.scrollLeft = Math.max(0, cell.offsetLeft - (el.clientWidth - cell.offsetWidth) / 2);
+	}, []);
+
 	return (
 		<section className={`sk-strip ${className}`} aria-label={label}>
 			{exampleLabel && <span className="sk-strip-example sk-edge">{exampleLabel}</span>}
 			<div className="sk-perf" aria-hidden="true" />
-			<ol className="sk-strip-rail">
+			<ol ref={rail} className="sk-strip-rail">
 				{frames.map((frame, i) => {
 					const isChosen = chosen === i;
 					const body = (
 						<>
 							<span className="sk-frame-media">{frame.media}</span>
 							{frame.caption && <span className="sk-frame-caption">{frame.caption}</span>}
+							{frame.mark === "cross" && <Grease kind="cross" className="sk-frame-cross" />}
 							{isChosen && <Grease kind="circle" draw={Boolean(onChoose)} className="sk-frame-grease" />}
 						</>
 					);

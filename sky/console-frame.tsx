@@ -35,7 +35,7 @@ import { signOutAndGo } from "../lib/platform-client";
 import { Monogram, Stamp } from "./console";
 import { useDismiss } from "./hooks";
 import { Mark } from "./kit";
-import { useDayDocument } from "./day";
+import { INSIDE_GROUND, useDayDocument } from "./day";
 
 export interface FrameCrumb {
 	label: string;
@@ -110,7 +110,7 @@ export function ConsoleFrame({
 	// El cajón recuerda en qué página se abrió: al navegar queda cerrado solo.
 	const [drawerAt, setDrawerAt] = useState<string | null>(null);
 	const drawerOpen = drawerAt === pathname;
-	useDayDocument();
+	useDayDocument(INSIDE_GROUND);
 
 	useEffect(() => {
 		const el = sentinel.current;

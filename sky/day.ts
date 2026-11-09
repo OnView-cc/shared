@@ -8,18 +8,20 @@
 import { useEffect } from "react";
 
 export const GROUND = "#0a1124";
+/** El suelo de dentro de la app: la tinta neutra del editor (`.site.sk` en `sky.css`). */
+export const INSIDE_GROUND = "#0e0f11";
 
-export function useDayDocument(): void {
+export function useDayDocument(ground: string = GROUND): void {
 	useEffect(() => {
 		const root = document.documentElement;
 		const previous = root.style.backgroundColor;
 		const meta = document.querySelector('meta[name="theme-color"]');
 		const previousTheme = meta?.getAttribute("content") ?? null;
-		root.style.backgroundColor = GROUND;
-		meta?.setAttribute("content", GROUND);
+		root.style.backgroundColor = ground;
+		meta?.setAttribute("content", ground);
 		return () => {
 			root.style.backgroundColor = previous;
 			if (meta && previousTheme) meta.setAttribute("content", previousTheme);
 		};
-	}, []);
+	}, [ground]);
 }

@@ -46,7 +46,7 @@ const LIVE = [
 ];
 
 /** Donde un color escrito a mano es el sitio correcto: los tokens, el suelo del documento, los degradados del cielo, los fotogramas clave. */
-const LITERAL_OK = /^\.sk$|^\.sk-page$|sk-hero-sky|sk-header|^@keyframes|^(from|to|\d+%)$/;
+const LITERAL_OK = /^\.sk$|^\.site\.sk$|^\.sk-page$|sk-hero-sky|sk-header|^@keyframes|^(from|to|\d+%)$/;
 
 describe("Blue Hour skin", () => {
 	it.each(LIVE)("styles the live class .%s", (cls) => {
@@ -73,5 +73,17 @@ describe("Blue Hour skin", () => {
 			const src = read(file);
 			expect(src, file).not.toMatch(/rounded-full|rounded-\[(?:[3-9]|\d{2,})px\]|rgba\(18,\s?17,\s?42|text-white|Airglow|Geist|violet/);
 		}
+	});
+});
+
+describe("the inside ground", () => {
+	// El contrato: dentro de la app, tinta neutra oscura para que los colores de las tomas se vean fieles.
+	const inside = sky.match(/\n\.site\.sk \{([\s\S]*?)\n\}/)?.[1] ?? "";
+	it.each(["ground", "mist", "surface", "haze"])("--sk-%s is a near-black neutral, not blue ink", (name) => {
+		const hex = inside.match(new RegExp(`--sk-${name}:\\s*(#[0-9a-f]{6});`, "i"))?.[1];
+		expect(hex, `--sk-${name} inside .site.sk`).toBeDefined();
+		const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex!.slice(i, i + 2), 16));
+		expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThanOrEqual(6);
+		expect(Math.max(r, g, b)).toBeLessThanOrEqual(0x2a);
 	});
 });

@@ -54,6 +54,15 @@ describe("ContactStrip", () => {
 		expect(host.querySelectorAll("li")).toHaveLength(6);
 	});
 
+	it("a discarded take keeps its place on the sheet under a grease cross", () => {
+		const frames = FRAMES.map((f, i) => (i === 1 ? { ...f, mark: "cross" as const } : f));
+		mount(<ContactStrip frames={frames} label="Example promo" chosen={2} onChoose={() => {}} />);
+		const buttons = host.querySelectorAll("button");
+		expect(buttons[1].querySelector('[data-grease="cross"]')).not.toBeNull();
+		expect(buttons[1].getAttribute("aria-pressed")).toBe("false");
+		expect(buttons[2].querySelector('[data-grease="circle"]')).not.toBeNull();
+	});
+
 	it("labels itself and shows the example label on its edge", () => {
 		mount(<ContactStrip frames={FRAMES} label="Example promo" exampleLabel="Example" />);
 		expect(host.querySelector("section")?.getAttribute("aria-label")).toBe("Example promo");

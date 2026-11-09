@@ -72,7 +72,8 @@ function paint(ctx: CanvasRenderingContext2D, w: number, h: number, p: number, s
 	// el cielo: más oscuro arriba a medida que avanza la hora
 	const top = lerp3([18, 36, 96], [6, 11, 30], p);
 	const mid = lerp3([38, 68, 158], [22, 44, 120], p);
-	const low = lerp3([120, 128, 196], [74, 92, 170], p);
+	// abajo, cobalto que se aclara hacia el horizonte (nunca malva)
+	const low = lerp3([86, 110, 200], [44, 72, 168], p);
 	const sky = ctx.createLinearGradient(0, 0, 0, h);
 	sky.addColorStop(0, rgb(top));
 	sky.addColorStop(0.55, rgb(mid));
@@ -80,12 +81,17 @@ function paint(ctx: CanvasRenderingContext2D, w: number, h: number, p: number, s
 	ctx.fillStyle = sky;
 	ctx.fillRect(0, 0, w, h);
 
-	// la línea cálida del horizonte, que se apaga
-	const glow = ctx.createRadialGradient(w * 0.5, h * 1.05, 0, w * 0.5, h * 1.05, Math.max(w, h) * 0.75);
-	glow.addColorStop(0, `rgba(244,178,106,${mix(0.55, 0.12, p)})`);
-	glow.addColorStop(1, "rgba(244,178,106,0)");
-	ctx.fillStyle = glow;
-	ctx.fillRect(0, 0, w, h);
+	// la línea cálida del horizonte: una franja estrecha justo encima de la
+	// ciudad, que baja de intensidad a medida que cae la noche pero no se apaga
+	const city = Math.min(h * 0.13, 120);
+	const lineTop = h - city - Math.max(18, h * 0.07);
+	const line = ctx.createLinearGradient(0, lineTop, 0, h - city * 0.35);
+	const warm = mix(0.62, 0.38, p);
+	line.addColorStop(0, "rgba(244,178,106,0)");
+	line.addColorStop(0.55, `rgba(244,178,106,${warm})`);
+	line.addColorStop(1, `rgba(244,178,106,${warm * 0.6})`);
+	ctx.fillStyle = line;
+	ctx.fillRect(0, lineTop, w, h - lineTop);
 
 	// estrellas que aparecen
 	for (const star of s.stars) {
@@ -99,7 +105,7 @@ function paint(ctx: CanvasRenderingContext2D, w: number, h: number, p: number, s
 
 	// la ciudad: silueta baja y ventanas que se encienden
 	// la ciudad ocupa como mucho un 13 % del alto y nunca más de 120px: es un perfil, no un decorado
-	const band = Math.min(h * 0.13, 120);
+	const band = city;
 	const base = h;
 	for (const b of s.city) {
 		const bx = b.x * w;

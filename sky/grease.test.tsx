@@ -44,6 +44,25 @@ describe("Grease", () => {
 		expect(host.querySelector('[data-grease="cross"]')).not.toBeNull();
 	});
 
+	it("is a filled, tapered pencil mark, not a uniform line", () => {
+		reducedMotion(false);
+		act(() => root.render(<Grease kind="cross" />));
+		const marks = host.querySelectorAll("[data-grease-mark]");
+		expect(marks).toHaveLength(2);
+		marks.forEach((m) => {
+			expect(m.getAttribute("fill")).toBe("currentColor");
+			expect(m.getAttribute("stroke")).toBeNull();
+		});
+	});
+
+	it("draws through a mask only when it animates", () => {
+		reducedMotion(false);
+		act(() => root.render(<Grease kind="circle" draw />));
+		expect(host.querySelector("mask")).not.toBeNull();
+		act(() => root.render(<Grease kind="circle" />));
+		expect(host.querySelector("mask")).toBeNull();
+	});
+
 	it("is decoration: hidden from assistive technology", () => {
 		reducedMotion(false);
 		act(() => root.render(<Grease kind="arrow" />));
