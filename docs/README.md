@@ -2,7 +2,9 @@
 
 **El código común de las apps de OnView.** UI (`ui/`, `components/`), cliente
 CRUD y helpers (`lib/`, `hooks/`), el mundo visual y sus piezas (`styles/`,
-`sky/`) y dos módulos de worker (`worker/response`, `worker/cookies`). Envía TypeScript crudo: lo compila el bundler de la app que
+`sky/`) y tres módulos de worker (`worker/response`, `worker/cookies` y
+`worker/credit-settle`, el cobro y la devolución de una reserva de créditos que
+usan onview y onview-studio desde v1.3.0). Envía TypeScript crudo: lo compila el bundler de la app que
 lo consume.
 
 `ui/`, `lib/`, `hooks/`, `components/` y `sky/` asumen el DOM; `worker/` asume
@@ -53,7 +55,7 @@ inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (59), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (60), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -115,6 +117,7 @@ Módulos de las carpetas publicadas (59), con la primera línea de su comentario
 | [`ui/textarea.tsx`](../ui/textarea.tsx) | El campo de varias líneas, con el trazo del mundo; lo mide su `rows`. |
 | [`ui/tooltip.tsx`](../ui/tooltip.tsx) | La nota al pie de un control: tinta sobre papel, en el corte condensado, sin flecha ni radio. |
 | [`worker/cookies.ts`](../worker/cookies.ts) | Lectura de cookies, y nada más. |
+| [`worker/credit-settle.ts`](../worker/credit-settle.ts) | Cobrar o devolver una reserva de créditos: la mitad del libro de créditos que hace falta en los dos lados. |
 | [`worker/response.ts`](../worker/response.ts) | Las tres respuestas JSON que devuelve cualquier handler de Pages Functions. |
 
 <!-- END generated:modules -->

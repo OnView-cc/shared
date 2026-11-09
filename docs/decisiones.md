@@ -65,3 +65,8 @@ Spec: `OnView.cc/docs/superpowers/specs/2026-11-08-onview-plataforma-design.md`.
   en la elegida al montarse, lleva el texto en pantalla arriba y centrado, y la celda
   elegida va por encima de sus vecinas. El cielo baja a cobalto con una línea cálida
   de horizonte.
+- **v1.3.0 (2026-11-09): `worker/credit-settle`** (subproyecto 3, el estudio).
+  `chargeReservation` y `releaseReservation` salen de `onview/functions/_lib/credits.ts`
+  sin cambiar de comportamiento: onview reserva y el estudio cobra o devuelve con el
+  id del trabajo, y los dos leen la misma base. onview las re-exporta. El test
+  (`tests/credit-settle.test.ts`) usa `node:sqlite` con las tres tablas copiadas.
