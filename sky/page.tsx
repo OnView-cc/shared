@@ -18,6 +18,7 @@
 import type { ComponentType } from "react";
 import { ChevronDown } from "lucide-react";
 import { SkArrow, SkButton } from "./kit";
+import { BlueHourSky } from "./blue-hour-sky";
 
 /**
  * Un icono de lucide, tipado por su forma y no por la clase del paquete: cada
@@ -52,6 +53,7 @@ export function PageHero({
 	return (
 		<section className="sk-wrap pt-2">
 			<div className="sk-panel sk-hero-sky sk-band relative">
+				<BlueHourSky />
 				<div className={`relative grid items-start gap-y-6 px-6 pb-72 pt-12 sm:px-10 md:pb-48 md:pt-16 lg:px-14 lg:pb-40 ${split ? "lg:grid-cols-12 lg:gap-x-10" : ""}`}>
 					<div className={split ? "lg:col-span-7" : "max-w-3xl"}>
 						<h1 className="sk-display sk-rise text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem]">{title}</h1>
@@ -213,6 +215,7 @@ export function Closing({
 	return (
 		<section className="sk-wrap pb-6 pt-20 md:pt-28">
 			<div className="sk-panel sk-hero-sky sk-band relative">
+				<BlueHourSky />
 				<div className="relative max-w-2xl px-6 pb-40 pt-14 sm:px-12 md:pb-48 md:pt-20 lg:px-16">
 					<h2 className="sk-h2 text-[2.25rem] md:text-[3.25rem]">{headline}</h2>
 					{desc && <p className="sk-body mt-5 max-w-lg text-[1.0625rem]">{desc}</p>}

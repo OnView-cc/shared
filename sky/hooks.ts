@@ -137,27 +137,6 @@ export function useInView() {
 	return { ref, inView };
 }
 
-/** Anima un número de 0 → target en cuanto `active` pasa a true. */
-export function useCounter(target: number, duration = 1200, active = false) {
-	const [value, setValue] = useState(0);
-	useEffect(() => {
-		if (!active) return;
-		let current = 0;
-		const step = target / (duration / 16);
-		const id = setInterval(() => {
-			current += step;
-			if (current >= target) {
-				setValue(target);
-				clearInterval(id);
-			} else {
-				setValue(Math.floor(current));
-			}
-		}, 16);
-		return () => clearInterval(id);
-	}, [target, duration, active]);
-	return value;
-}
-
 /**
  * Devuelve true tras el primer frame de animación — se usa para las transiciones
  * de entrada al montar.

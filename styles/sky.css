@@ -50,6 +50,9 @@
 	--sk-sky-1: #1d3a8a;
 	--sk-sky-2: #5a6fc4;
 	--sk-horizon: #f4b26a;
+	/* el borde de película: el soporte y sus perforaciones */
+	--sk-film: #060b19;
+	--sk-perf: #1b2440;
 
 	/* nombres que los componentes heredados siguen leyendo */
 	--sk-night: var(--sk-sky-0);
@@ -431,6 +434,125 @@
 	}
 }
 
+/* ── la hoja de contactos ────────────────────────────────────────────────── */
+/* Un borde de película: perforaciones arriba y abajo, fotogramas en un carril
+   que se desplaza dentro de sí mismo y se asienta en el paso del fotograma. */
+.sk .sk-strip {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-width: 100%;
+	padding: 10px 0;
+	border-radius: var(--sk-radius);
+	background: var(--sk-film);
+	box-shadow:
+		inset 0 0 0 1px var(--sk-hair),
+		var(--sk-shadow-3);
+}
+.sk .sk-perf {
+	height: 7px;
+	margin-inline: 12px;
+	background-image: linear-gradient(90deg, var(--sk-perf) 0 9px, transparent 9px 20px);
+	background-size: 20px 7px;
+	background-repeat: repeat-x;
+}
+.sk .sk-strip-rail {
+	display: flex;
+	gap: 14px;
+	padding: 18px 16px 4px;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	scroll-snap-type: x mandatory;
+	scroll-padding-inline: 16px;
+	scrollbar-width: none;
+}
+.sk .sk-strip-rail::-webkit-scrollbar {
+	display: none;
+}
+.sk .sk-strip-cell {
+	flex: none;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	width: var(--sk-frame-w, 168px);
+	scroll-snap-align: start;
+}
+.sk .sk-frame {
+	position: relative;
+	display: block;
+	width: 100%;
+	aspect-ratio: var(--sk-frame-ratio, 4 / 3);
+	padding: 0;
+	border: 0;
+	border-radius: var(--sk-radius);
+	background: var(--sk-mist);
+	color: var(--sk-ink);
+	text-align: left;
+}
+.sk button.sk-frame {
+	cursor: pointer;
+	transition: transform 160ms var(--sk-ease-out);
+}
+.sk button.sk-frame:active {
+	transform: scale(0.97);
+}
+.sk .sk-frame-media {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	border-radius: var(--sk-radius);
+	box-shadow: inset 0 0 0 1px var(--sk-hair);
+}
+.sk .sk-frame-caption {
+	position: absolute;
+	left: 10px;
+	right: 10px;
+	bottom: 9px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--sk-ink);
+	text-shadow: 0 1px 8px rgba(2, 5, 16, 0.7);
+	text-wrap: balance;
+}
+.sk .sk-frame-no {
+	padding-left: 2px;
+	font-size: 0.75rem;
+	color: var(--sk-ink-3);
+}
+.sk .sk-strip-example {
+	position: absolute;
+	top: 4px;
+	right: 14px;
+	padding: 0 6px;
+	background: var(--sk-film);
+	font-size: 0.6875rem;
+	line-height: 14px;
+	color: var(--sk-ink-3);
+}
+@media (hover: hover) and (pointer: fine) {
+	.sk button.sk-frame[aria-pressed="false"]:hover .sk-frame-media {
+		box-shadow: inset 0 0 0 1px var(--sk-hair-2);
+	}
+}
+
+/* el lápiz graso: ámbar, de trazo grueso que no escala con su caja */
+.sk .sk-grease {
+	color: var(--sk-accent);
+	overflow: visible;
+}
+.sk .sk-grease path {
+	stroke-width: 3px;
+}
+.sk .sk-frame-grease {
+	position: absolute;
+	inset: -16% -12%;
+	width: 124%;
+	height: 132%;
+	pointer-events: none;
+}
+
 /* la línea de puntos que une pasos: un borde perforado */
 .sk .sk-route-line {
 	background-image: linear-gradient(90deg, var(--sk-hair-2) 50%, transparent 50%);
@@ -802,6 +924,9 @@
 	}
 	.sk .sk-strike {
 		animation: none;
+	}
+	.sk button.sk-frame:active {
+		transform: none;
 	}
 }
 

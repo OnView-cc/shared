@@ -53,7 +53,7 @@ inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (50), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (58), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -69,10 +69,16 @@ Módulos de las carpetas publicadas (50), con la primera línea de su comentario
 | [`lib/vite-env.d.ts`](../lib/vite-env.d.ts) | Las variables de build que lee el paquete (`import.meta.env`). |
 | [`sky/ai-mark.test.ts`](../sky/ai-mark.test.ts) | Lumen, la IA de OnView: su nombre y su símbolo, la primera ventana que se enciende a la hora azul. |
 | [`sky/ai-mark.ts`](../sky/ai-mark.ts) | Lumen, la IA de OnView (nombre elegido por el usuario el 2026-11-09): la que escribe el guion y genera las tomas. |
+| [`sky/blue-hour-sky.test.tsx`](../sky/blue-hour-sky.test.tsx) | El cielo de la hora azul: decoración pintada en un lienzo; con movimiento reducido, un solo cuadro. |
+| [`sky/blue-hour-sky.tsx`](../sky/blue-hour-sky.tsx) | El cielo de la hora azul, pintado en un `<canvas>` 2D: el degradado que pasa del índigo al cobalto, la línea cálida del horizonte que se apaga, estrellas tenues arriba… |
 | [`sky/console-frame.tsx`](../sky/console-frame.tsx) | El marco de consola del admin, en el mundo «Airglow»: la forma de una app de trabajo, la misma que el área con sesión de onview. |
 | [`sky/console.tsx`](../sky/console.tsx) | Las piezas de la consola, en el mundo «Airglow» (2026-11-03). |
+| [`sky/contact-strip.test.tsx`](../sky/contact-strip.test.tsx) | La tira de contactos: fotogramas numerados en un borde de película; el lápiz graso marca el elegido. |
+| [`sky/contact-strip.tsx`](../sky/contact-strip.tsx) | La hoja de contactos de Blue Hour: un video es una tira de fotogramas en un borde de película (perforaciones arriba y abajo, números de fotograma en el margen, en la… |
 | [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento del mundo: mientras se ve una página de Blue Hour, `<html>` y la barra del navegador llevan la tinta del borde de película, y al salir vuelven a lo que… |
 | [`sky/day.ts`](../sky/day.ts) | El documento entero lleva la tinta del borde de película de Blue Hour mientras se ve una página del mundo: el fondo de `<html>` (lo que asoma en el rebote del scroll) y… |
+| [`sky/grease.test.tsx`](../sky/grease.test.tsx) | El lápiz graso: se traza al dibujarse, salvo con movimiento reducido, donde aparece ya dibujado. |
+| [`sky/grease.tsx`](../sky/grease.tsx) | El lápiz graso ámbar del montador sobre la hoja de contactos: un círculo (la toma elegida), una cruz (descartada, pero sigue en la hoja) o una flecha (el orden). |
 | [`sky/hooks.ts`](../sky/hooks.ts) | Hooks de scroll y de montaje contra los que se animan las páginas de Clear Sky, y los tres que usan las piezas de consola de `console.tsx` (`useFlash`, `useDismiss`,… |
 | [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas del mundo de OnView («Blue Hour»): la marca, el botón como enlace y la flecha. |
 | [`sky/mark.test.ts`](../sky/mark.test.ts) | La marca de Blue Hour: un fotograma rodeado por el círculo abierto del lápiz graso ámbar. |
@@ -81,6 +87,8 @@ Módulos de las carpetas publicadas (50), con la primera línea de su comentario
 | [`sky/platform-client.test.ts`](../sky/platform-client.test.ts) | El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. |
 | [`sky/platform-origin-local.test.ts`](../sky/platform-origin-local.test.ts) | En local, una consola habla con el `wrangler pages dev` de onview (puerto 8900). |
 | [`sky/platform-origin.test.ts`](../sky/platform-origin.test.ts) | Sin `VITE_PLATFORM_ORIGIN`, una consola en un subdominio habla con el apex de producción. |
+| [`sky/strike-number.test.tsx`](../sky/strike-number.test.tsx) | Un número que cambia lo hace de golpe, con un resplandor; nunca rueda por los valores intermedios. |
+| [`sky/strike-number.tsx`](../sky/strike-number.tsx) | Un número que cambia (el saldo de créditos, un código de tiempo) lo hace de golpe: pinta el valor nuevo y le da un resplandor ámbar que decae en 260ms (`.sk-strike`, en… |
 | [`ui/alert-dialog.tsx`](../ui/alert-dialog.tsx) | El diálogo de consecuencias: el mismo papel que `Dialog`, pero no se cierra al pulsar fuera y el foco empieza en «Cancel», el lado que no hace nada. |
 | [`ui/avatar.tsx`](../ui/avatar.tsx) | La cara de alguien es su monograma: su foto, o sus iniciales en el corte condensado, dentro de un cuadrado con el trazo del mundo. |
 | [`ui/badge.tsx`](../ui/badge.tsx) | El sello: un estado impreso en una caja con el trazo del mundo. |
