@@ -556,21 +556,30 @@
 	background: linear-gradient(180deg, rgba(29, 58, 138, 0.28), rgba(90, 111, 196, 0.1) 70%, rgba(244, 178, 106, 0.08));
 }
 
+/* La celda elegida va por encima de sus vecinas: el círculo sale del
+   fotograma y no debe quedar tapado por el siguiente. */
+.sk .sk-strip-cell:has(.sk-frame[aria-pressed="true"]) {
+	position: relative;
+	z-index: 1;
+}
 /* El círculo rodea el fotograma entero, no su texto. */
 .sk .sk-frame-grease {
 	position: absolute;
+	z-index: 1;
 	top: -34%;
 	left: -16%;
 	width: 132%;
 	height: 158%;
 	pointer-events: none;
 }
-/* La cruz tacha la toma descartada dentro de su fotograma. */
+/* La cruz tacha la toma descartada dentro de su fotograma, por debajo del
+   texto en pantalla (que puede ocupar dos líneas). */
 .sk .sk-frame-cross {
 	position: absolute;
-	inset: 10% 14%;
-	width: 72%;
-	height: 80%;
+	top: 38%;
+	left: 26%;
+	width: 48%;
+	height: 50%;
 	pointer-events: none;
 }
 
@@ -963,6 +972,10 @@
 	--sk-surface: #17181c;
 	--sk-haze: #212226;
 	--sk-glass: rgba(19, 20, 23, 0.86);
+	/* el soporte de la película y sus perforaciones, también neutros: es lo que
+	   rodea las tomas */
+	--sk-film: #08090b;
+	--sk-perf: #222428;
 	--sk-ink-2: #b8bcc8;
 	--sk-ink-3: #8b909e;
 	background: var(--sk-ground);

@@ -79,7 +79,7 @@ describe("Blue Hour skin", () => {
 describe("the inside ground", () => {
 	// El contrato: dentro de la app, tinta neutra oscura para que los colores de las tomas se vean fieles.
 	const inside = sky.match(/\n\.site\.sk \{([\s\S]*?)\n\}/)?.[1] ?? "";
-	it.each(["ground", "mist", "surface", "haze"])("--sk-%s is a near-black neutral, not blue ink", (name) => {
+	it.each(["ground", "mist", "surface", "haze", "film", "perf"])("--sk-%s is a near-black neutral, not blue ink", (name) => {
 		const hex = inside.match(new RegExp(`--sk-${name}:\\s*(#[0-9a-f]{6});`, "i"))?.[1];
 		expect(hex, `--sk-${name} inside .site.sk`).toBeDefined();
 		const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex!.slice(i, i + 2), 16));
