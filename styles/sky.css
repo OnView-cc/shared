@@ -457,11 +457,16 @@
 	background-size: 20px 7px;
 	background-repeat: repeat-x;
 }
+/* Se desplaza sólo en horizontal; arriba y abajo deja sitio al círculo del
+   lápiz graso, que sale del fotograma y crece con él. */
 .sk .sk-strip-rail {
 	display: flex;
 	gap: 14px;
-	padding: 18px 16px 4px;
+	padding-inline: 16px;
+	padding-top: max(18px, calc(var(--sk-frame-w, 168px) * 0.11 + 4px));
+	padding-bottom: max(6px, calc(var(--sk-frame-w, 168px) * 0.18 - 16px));
 	overflow-x: auto;
+	overflow-y: hidden;
 	overscroll-behavior-x: contain;
 	scroll-snap-type: x mandatory;
 	scroll-padding-inline: 16px;
