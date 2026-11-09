@@ -1,11 +1,11 @@
 /**
- * Las piezas de la consola, en el mundo «Airglow» (2026-11-03).
+ * Las piezas de la consola, en el mundo «Blue Hour» (2026-11-09).
  *
  * Vienen de las consolas de la familia; las pintan onview (el área con sesión)
  * y admin, con el bloque de consola de `styles/sky.css`. La API es la de cuando
  * eran un pliego del mapa de red, así que ninguna vista tuvo que cambiar para
  * mudarse: la sección es una tarjeta blanca que flota sobre el suelo claro, el
- * sello una píldora con su palabra en Geist Mono, el billete una píldora, el
+ * sello un rectángulo con su palabra en la voz del borde de película, el billete un botón de fotograma, el
  * diálogo un panel sobre un velo tenue.
  *
  * Reglas que cumplen todas: el mensaje de un campo tiene su sitio antes de
@@ -236,7 +236,7 @@ export function WorkspacePlate<T extends { id: string; name: string }>({
 				<button
 					ref={trigger}
 					type="button"
-					className="-ml-2 inline-flex items-center gap-2 rounded-[12px] px-2 py-0.5 text-left transition-colors hover:bg-(--sk-mist)"
+					className="-ml-2 inline-flex items-center gap-2 rounded-[2px] px-2 py-0.5 text-left transition-colors hover:bg-(--sk-mist)"
 					aria-haspopup="menu"
 					aria-expanded={open}
 					aria-label={`Switch workspace, currently ${current.name}`}
@@ -289,12 +289,12 @@ export function Monogram({ name, logoUrl, size = "md" }: { name: string; logoUrl
 	const [failed, setFailed] = useState<string | null>(null);
 	const box =
 		size === "lg"
-			? "size-14 rounded-[16px] text-[1rem]"
+			? "size-14 rounded-[2px] text-[1rem]"
 			: size === "sm"
-				? "size-9 rounded-[10px] text-[0.75rem]"
+				? "size-9 rounded-[2px] text-[0.75rem]"
 				: size === "xs"
-					? "size-6 rounded-[7px] text-[0.625rem]"
-					: "size-11 rounded-[12px] text-[0.8125rem]";
+					? "size-6 rounded-[2px] text-[0.625rem]"
+					: "size-11 rounded-[2px] text-[0.8125rem]";
 	if (logoUrl && failed !== logoUrl) {
 		return <img src={logoUrl} alt="" onError={() => setFailed(logoUrl)} className={`${box} shrink-0 object-cover shadow-(--sk-shadow-1)`} />;
 	}
@@ -340,7 +340,7 @@ export function Breakable({ text }: { text: string }) {
 }
 
 /**
- * Un estado con su palabra, en Geist Mono (lo que mide el agente): tinta para lo
+ * Un estado con su palabra, en la voz estrecha del borde de película: tinta para lo
  * que está en marcha, niebla para lo demás, rojo apagado para lo que se paró y
  * verde para lo que funciona.
  */
@@ -539,8 +539,8 @@ export function Check({
 				/>
 				<span
 					aria-hidden="true"
-					className="flex size-5 items-center justify-center rounded-[6px] bg-(--sk-surface) shadow-[inset_0_0_0_1px_var(--sk-hair-2)] transition-[background-color,box-shadow] duration-150 peer-checked:bg-(--sk-accent) peer-checked:shadow-none peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-(--sk-accent)">
-					{checked && <CheckIcon className="size-3.5 text-white" strokeWidth={3} />}
+					className="flex size-5 items-center justify-center rounded-[2px] bg-(--sk-surface) shadow-[inset_0_0_0_1px_var(--sk-hair-2)] transition-[background-color,box-shadow] duration-150 peer-checked:bg-(--sk-accent) peer-checked:shadow-none peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-(--sk-accent)">
+					{checked && <CheckIcon className="size-3.5 text-(--sk-accent-ink)" strokeWidth={3} />}
 				</span>
 			</span>
 			<span className="min-w-0 text-[0.9375rem] leading-snug text-(--sk-ink-2)">{children}</span>
@@ -595,7 +595,7 @@ export function StatusBox({
 	footer?: ReactNode;
 }) {
 	return (
-		<div className={`rounded-[16px] p-4 md:p-5 ${tone === "alert" ? "bg-(--sk-danger-bg)" : "bg-(--sk-ground)"}`}>
+		<div className={`rounded-[2px] p-4 md:p-5 ${tone === "alert" ? "bg-(--sk-danger-bg)" : "bg-(--sk-ground)"}`}>
 			<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
 				{stamp}
 				<p className={`font-medium leading-snug ${tone === "alert" ? "text-(--sk-danger-fg)" : "text-(--sk-ink)"}`}>{title}</p>
@@ -878,7 +878,7 @@ export function Spine({ steps }: { steps: { title: string; text: ReactNode }[] }
 			<span aria-hidden="true" className="absolute bottom-3 left-[9.5px] top-3 w-px bg-(--sk-hair-2)" />
 			{steps.map((step) => (
 				<li key={step.title} className="relative flex gap-3.5">
-					<span aria-hidden="true" className="relative mt-0.5 size-5 shrink-0 rounded-full bg-(--sk-surface) ring-1 ring-(--sk-hair-2)" />
+					<span aria-hidden="true" className="relative mt-0.5 size-5 shrink-0 rounded-[50%] bg-(--sk-surface) ring-1 ring-(--sk-hair-2)" />
 					<div className="min-w-0">
 						<p className="font-medium leading-tight text-(--sk-ink)">{step.title}</p>
 						<p className="mt-1 text-[0.9375rem] leading-snug text-(--sk-ink-2)">{step.text}</p>

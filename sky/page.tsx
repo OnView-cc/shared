@@ -1,5 +1,5 @@
 /**
- * Las piezas de página del mundo de OnView («Airglow»), las del sitio de
+ * Las piezas de página del mundo de OnView («Blue Hour»), las del sitio de
  * onview: la cabecera de página con su panel de cielo, el encabezado de
  * sección, el aro de icono, el recorrido en pasos, las preguntas, el control
  * segmentado y el cierre. Las mismas formas que las páginas de las hermanas.
@@ -11,9 +11,9 @@
  *
  * Reglas que estas piezas ya cumplen y que una página no debe deshacer: sin
  * antetítulos sobre los titulares (el titular habla solo), sin ordinales como
- * adorno, el violeta como único acento, la banda sólo dentro del cielo, vidrio
- * sólo donde algo flota. Un cielo que muestra una carga inventada lleva su
- * costura «Example» (`seam`); sin `load`, la banda es el suelo tranquilo.
+ * adorno, el ámbar del lápiz graso como única acción, el cielo sólo en su panel, vidrio
+ * sólo donde algo flota. Todo lo que es ejemplo lo dice (`ContactStrip`
+ * con `exampleLabel`).
  */
 import type { ComponentType } from "react";
 import { ChevronDown } from "lucide-react";
@@ -121,7 +121,7 @@ export function Section({
 export function Bead({ icon: Icon, size = "md", variant = "line" }: { icon: IconComponent; size?: "md" | "lg"; variant?: "glass" | "line" }) {
 	return (
 		<span
-			className={`inline-flex shrink-0 items-center justify-center rounded-full text-(--sk-ink) ${
+			className={`inline-flex shrink-0 items-center justify-center rounded-[2px] text-(--sk-ink) ${
 				variant === "glass" ? "sk-glass" : "bg-(--sk-mist) ring-1 ring-(--sk-hair)"
 			} ${size === "lg" ? "size-12" : "size-10"}`}
 			aria-hidden="true">

@@ -71,8 +71,8 @@ Módulos de las carpetas publicadas (58), con la primera línea de su comentario
 | [`sky/ai-mark.ts`](../sky/ai-mark.ts) | Lumen, la IA de OnView (nombre elegido por el usuario el 2026-11-09): la que escribe el guion y genera las tomas. |
 | [`sky/blue-hour-sky.test.tsx`](../sky/blue-hour-sky.test.tsx) | El cielo de la hora azul: decoración pintada en un lienzo; con movimiento reducido, un solo cuadro. |
 | [`sky/blue-hour-sky.tsx`](../sky/blue-hour-sky.tsx) | El cielo de la hora azul, pintado en un `<canvas>` 2D: el degradado que pasa del índigo al cobalto, la línea cálida del horizonte que se apaga, estrellas tenues arriba… |
-| [`sky/console-frame.tsx`](../sky/console-frame.tsx) | El marco de consola del admin, en el mundo «Airglow»: la forma de una app de trabajo, la misma que el área con sesión de onview. |
-| [`sky/console.tsx`](../sky/console.tsx) | Las piezas de la consola, en el mundo «Airglow» (2026-11-03). |
+| [`sky/console-frame.tsx`](../sky/console-frame.tsx) | El marco de consola del admin, en el mundo «Blue Hour»: la forma de una app de trabajo, la misma que el área con sesión de onview. |
+| [`sky/console.tsx`](../sky/console.tsx) | Las piezas de la consola, en el mundo «Blue Hour» (2026-11-09). |
 | [`sky/contact-strip.test.tsx`](../sky/contact-strip.test.tsx) | La tira de contactos: fotogramas numerados en un borde de película; el lápiz graso marca el elegido. |
 | [`sky/contact-strip.tsx`](../sky/contact-strip.tsx) | La hoja de contactos de Blue Hour: un video es una tira de fotogramas en un borde de película (perforaciones arriba y abajo, números de fotograma en el margen, en la… |
 | [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento del mundo: mientras se ve una página de Blue Hour, `<html>` y la barra del navegador llevan la tinta del borde de película, y al salir vuelven a lo que… |
@@ -83,7 +83,7 @@ Módulos de las carpetas publicadas (58), con la primera línea de su comentario
 | [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas del mundo de OnView («Blue Hour»): la marca, el botón como enlace y la flecha. |
 | [`sky/mark.test.ts`](../sky/mark.test.ts) | La marca de Blue Hour: un fotograma rodeado por el círculo abierto del lápiz graso ámbar. |
 | [`sky/mark.ts`](../sky/mark.ts) | La marca de OnView en Blue Hour, como datos: **un fotograma rodeado por el círculo del lápiz graso**, la marca con la que un montador elige la toma buena en una hoja de… |
-| [`sky/page.tsx`](../sky/page.tsx) | Las piezas de página del mundo de OnView («Airglow»), las del sitio de onview: la cabecera de página con su panel de cielo, el encabezado de sección, el aro de icono,… |
+| [`sky/page.tsx`](../sky/page.tsx) | Las piezas de página del mundo de OnView («Blue Hour»), las del sitio de onview: la cabecera de página con su panel de cielo, el encabezado de sección, el aro de icono,… |
 | [`sky/platform-client.test.ts`](../sky/platform-client.test.ts) | El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. |
 | [`sky/platform-origin-local.test.ts`](../sky/platform-origin-local.test.ts) | En local, una consola habla con el `wrangler pages dev` de onview (puerto 8900). |
 | [`sky/platform-origin.test.ts`](../sky/platform-origin.test.ts) | Sin `VITE_PLATFORM_ORIGIN`, una consola en un subdominio habla con el apex de producción. |
@@ -107,7 +107,7 @@ Módulos de las carpetas publicadas (58), con la primera línea de su comentario
 | [`ui/separator.tsx`](../ui/separator.tsx) | El filete fino del mundo, en horizontal o en vertical. |
 | [`ui/sheet.tsx`](../ui/sheet.tsx) | La hoja lateral: un pliego de papel que entra desde un borde de la pantalla, con el trazo del mundo en el canto que da a la página y la penumbra detrás. |
 | [`ui/skeleton.tsx`](../ui/skeleton.tsx) | El hueco de carga: la forma de lo que viene, en la única tinta clara, quieto. |
-| [`ui/sonner.tsx`](../ui/sonner.tsx) | Las notificaciones: un billete de papel con el trazo del mundo, sin sombra ni radio (el estilo va en `styles/site.css`, `[data-sonner-toast]`). |
+| [`ui/sonner.tsx`](../ui/sonner.tsx) | Las notificaciones: una hoja de niebla con el filete del mundo y la esquina de 2px (la piel va en `styles/sky.css`, `.site.sk [data-sonner-toast]`). |
 | [`ui/switch.tsx`](../ui/switch.tsx) | El interruptor: una vía cuadrada con el trazo del mundo y un mando de tinta que la cruza; encendido, la vía se entinta y el mando pasa a papel. |
 | [`ui/table.tsx`](../ui/table.tsx) | Una lista es una tabla de tarifas (`.fare`, en `styles/site.css`): el corte condensado con cifras tabulares, las cabeceras como rótulos de andén cerradas por el filete… |
 | [`ui/tabs.tsx`](../ui/tabs.tsx) | Las pestañas son el riel de páginas del mundo: los destinos en negrita sobre un filete fino, el actual en tinta con la barra de 3px en el color de la línea que se viaja. |

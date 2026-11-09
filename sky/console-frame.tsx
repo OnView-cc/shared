@@ -1,5 +1,5 @@
 /**
- * El marco de consola del admin, en el mundo «Airglow»: la forma de una app de
+ * El marco de consola del admin, en el mundo «Blue Hour»: la forma de una app de
  * trabajo, la misma que el área con sesión de onview.
  *
  * - A la izquierda, la barra lateral: la marca con el nombre de la consola, sus
@@ -14,7 +14,7 @@
  *
  * Vive en `@onview/shared` y cada consola le pasa sus destinos. La raíz lleva
  * `site sk` para que el vocabulario del mapa que aún escriben las vistas se
- * pinte en Airglow (bloque de consola de `styles/sky.css`). Mientras se ve, el
+ * pinte en Blue Hour (bloque de consola de `styles/sky.css`). Mientras se ve, el
  * documento entero lleva el suelo claro (`useDayDocument`).
  *
  * Salir: un enlace de cuenta con `href: "#signout"` cierra la sesión en el apex
@@ -198,7 +198,7 @@ export function ConsoleFrame({
 					<button
 						type="button"
 						aria-label="Close the menu"
-						className="absolute inset-0 bg-[rgba(18,17,42,0.32)] backdrop-blur-[2px]"
+						className="absolute inset-0 bg-[rgba(4,8,22,0.66)] backdrop-blur-[2px]"
 						onClick={() => setDrawerAt(null)}
 					/>
 					<aside className="sk-sheet sk-sidebar absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col overflow-y-auto px-3 pb-4 pt-4 shadow-(--sk-shadow-3)">
@@ -242,7 +242,7 @@ function FrameSidebar({
 							key={path}
 							to={to}
 							aria-current={active ? "page" : undefined}
-							className={`sk-sidelink flex h-9 items-center gap-3 rounded-[10px] px-3 text-[0.875rem] no-underline transition-colors duration-150 ${
+							className={`sk-sidelink flex h-9 items-center gap-3 rounded-[2px] px-3 text-[0.875rem] no-underline transition-colors duration-150 ${
 								active ? "is-active font-medium text-(--sk-ink)" : "text-(--sk-ink-2) hover:text-(--sk-ink)"
 							}`}>
 							<Icon className={`size-4 shrink-0 ${active ? "text-(--sk-ink)" : "text-(--sk-ink-3)"}`} strokeWidth={1.75} aria-hidden="true" />
@@ -260,7 +260,7 @@ function FrameSidebar({
 							<li key={href}>
 								<a
 									href={href}
-									className="sk-sidelink flex h-9 items-center gap-3 rounded-[10px] px-3 text-[0.875rem] text-(--sk-ink-2) no-underline transition-colors duration-150 hover:text-(--sk-ink)">
+									className="sk-sidelink flex h-9 items-center gap-3 rounded-[2px] px-3 text-[0.875rem] text-(--sk-ink-2) no-underline transition-colors duration-150 hover:text-(--sk-ink)">
 									<Icon className="size-4 shrink-0 text-(--sk-ink-3)" strokeWidth={1.75} aria-hidden="true" />
 									<span className="min-w-0 flex-1 truncate">{label}</span>
 									<ArrowUpRight className="size-3.5 text-(--sk-ink-3)" strokeWidth={1.75} aria-hidden="true" />
@@ -312,7 +312,7 @@ function FrameAccountMenu({ account }: { account: FrameAccount }) {
 			<button
 				ref={trigger}
 				type="button"
-				className="flex items-center gap-2 rounded-full p-1 pr-2.5 transition-colors hover:bg-(--sk-mist)"
+				className="flex items-center gap-2 rounded-[2px] p-1 pr-2.5 transition-colors hover:bg-(--sk-mist)"
 				onClick={() => setOpen((v) => !v)}
 				aria-expanded={open}
 				aria-haspopup="menu"

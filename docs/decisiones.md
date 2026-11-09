@@ -49,3 +49,10 @@ Spec: `OnView.cc/docs/superpowers/specs/2026-11-08-onview-plataforma-design.md`.
   `ion-mark.ts` (el símbolo de la IA de OnPilot) y el lienzo WebGL
   `sky-canvas.tsx`; hasta que llega `BlueHourSky`, el cielo es el degradado de
   `.sk-hero-sky`. `theme-provider` fija `dark`.
+- **v1.1.0 (2026-11-09): el kit de Blue Hour.** Tokens y piel (`styles/`), la
+  marca (fotograma y lápiz graso, `sky/mark.ts`), Lumen (`sky/ai-mark.ts`), el
+  cielo (`sky/blue-hour-sky.tsx`), la tira de contactos (`sky/contact-strip.tsx`),
+  el lápiz graso (`sky/grease.tsx`) y los números que cambian de golpe
+  (`sky/strike-number.tsx`). Los componentes de consola y página conservan su
+  API; sólo cambian su piel (esquina de 2px, colores de los tokens). `package.json`
+  pasa a 1.1.0 (se había quedado en 1.0.0 con el tag v1.0.1).
