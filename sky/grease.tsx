@@ -30,10 +30,17 @@ export function Grease({ kind, draw = false, className = "" }: { kind: GreaseKin
 
 	useLayoutEffect(() => {
 		if (!draw || prefersReducedMotion()) return;
-		const paths = [...(ref.current?.querySelectorAll("path") ?? [])];
+		const svg = ref.current;
+		const paths = [...(svg?.querySelectorAll("path") ?? [])];
+		// El trazo no escala con su caja (`non-scaling-stroke`): los guiones se miden
+		// en píxeles de pantalla, así que la longitud del camino se pasa a pantalla
+		// (con la escala mayor y un 5 % de margen, para que el guion nunca se repita).
+		const box = svg?.getBoundingClientRect();
+		const [, , vbW, vbH] = viewBox.split(" ").map(Number);
+		const scale = box && box.width > 0 ? Math.max(box.width / vbW, box.height / vbH) * 1.05 : 1;
 		paths.forEach((path, i) => {
 			if (typeof path.animate !== "function") return;
-			const length = typeof path.getTotalLength === "function" ? path.getTotalLength() : 120;
+			const length = (typeof path.getTotalLength === "function" ? path.getTotalLength() : 120) * scale;
 			path.style.strokeDasharray = `${length}`;
 			path.animate([{ strokeDashoffset: length }, { strokeDashoffset: 0 }], { duration: DRAW_MS / paths.length, delay: (i * DRAW_MS) / paths.length, easing: EASE_OUT, fill: "backwards" });
 		});

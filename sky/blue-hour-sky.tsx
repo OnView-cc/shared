@@ -48,10 +48,10 @@ function scene(): Scene {
 	const city: Building[] = [];
 	let x = -0.01;
 	while (x < 1.01) {
-		const w = 0.025 + r() * 0.06;
-		const h = 0.25 + r() * 0.75;
+		const w = 0.012 + r() * 0.034;
+		const h = 0.2 + r() * 0.8;
 		const windows: Building["windows"] = [];
-		const cols = Math.max(1, Math.floor(w / 0.012));
+		const cols = Math.max(1, Math.floor(w / 0.007));
 		const rows = Math.max(1, Math.floor(h * 6));
 		for (let c = 0; c < cols; c++) {
 			for (let row = 0; row < rows; row++) {
@@ -98,7 +98,8 @@ function paint(ctx: CanvasRenderingContext2D, w: number, h: number, p: number, s
 	}
 
 	// la ciudad: silueta baja y ventanas que se encienden
-	const band = h * 0.2;
+	// la ciudad ocupa como mucho un 13 % del alto y nunca más de 120px: es un perfil, no un decorado
+	const band = Math.min(h * 0.13, 120);
 	const base = h;
 	for (const b of s.city) {
 		const bx = b.x * w;

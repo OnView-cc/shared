@@ -448,9 +448,7 @@
 	padding: 10px 0;
 	border-radius: var(--sk-radius);
 	background: var(--sk-film);
-	box-shadow:
-		inset 0 0 0 1px var(--sk-hair),
-		var(--sk-shadow-3);
+	box-shadow: var(--sk-shadow-3);
 }
 .sk .sk-perf {
 	height: 7px;
@@ -665,12 +663,11 @@
 .sk .sk-alert--error {
 	color: var(--sk-danger-fg);
 	background: var(--sk-danger-bg);
-	box-shadow: inset 2px 0 0 var(--sk-danger-fg);
 }
 .sk .sk-alert--info {
 	color: var(--sk-ink);
 	background: var(--sk-mist);
-	box-shadow: inset 2px 0 0 var(--sk-hair-2);
+	box-shadow: inset 0 0 0 1px var(--sk-hair);
 }
 
 /* Tablas: una hoja con filetes finos; la cabecera en voz de borde. */
@@ -906,7 +903,6 @@
 	background: var(--sk-haze);
 	color: var(--sk-ink);
 	font-weight: 560;
-	box-shadow: inset 2px 0 0 var(--sk-accent);
 }
 .sk .sk-sidelink.is-active svg {
 	color: var(--sk-accent);
