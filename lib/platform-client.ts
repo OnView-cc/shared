@@ -10,7 +10,7 @@
  *    `fetch` same-site con `credentials: "include"`: las cookies se eligen por
  *    el host de la petición, no por el origen que la inicia;
  *  - `SameSite=Strict` lo permite, porque same-site se mide sobre el dominio
- *    registrable (`admin.onview.cc → onview.cc` es same-site), mientras que
+ *    registrable (`admin.arcade.lat → arcade.lat` es same-site), mientras que
  *    un sitio de terceros no lo es, y eso es lo que impide que
  *    `credentials: "include"` sea un agujero de CSRF;
  *  - el middleware del apex acepta este origen exacto (`consoleOrigins`, en
@@ -28,7 +28,7 @@
  * cambia aquí y en el build.
  */
 
-const PRODUCTION_ORIGIN = "https://onview.cc";
+const PRODUCTION_ORIGIN = "https://arcade.lat";
 const LOCAL_ORIGIN = "http://localhost:8900";
 
 function isLocal(): boolean {

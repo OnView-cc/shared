@@ -28,3 +28,11 @@ Por eso todavía aparecen «Airglow» e «Ion» en `styles/` y `sky/`: no son
 restos olvidados, son el mundo prestado.
 
 Spec: `OnView.cc/docs/superpowers/specs/2026-11-08-onview-plataforma-design.md`.
+- **Dominio temporal `arcade.lat` (2026-11-09).** Mientras el usuario compra
+  `onview.cc`, el dominio está renombrado por bytes (`onview.cc` → `arcade.lat`)
+  en los cuatro repos, salvo los `docs/decisiones.md` y los `.dev.vars`. Es la
+  zona que usó Northstar del 2026-10-27 al 2026-11-04 y que quedó apagada (sin
+  Pages ni CNAME; quedan su DMARC `p=reject` y el registro de rebote).
+  Revertir: el mismo renombrado al revés (`arcade.lat` → `onview.cc`), y
+  después mover dominios de Pages, webhook de Stripe, widget de Turnstile y
+  redirects de OAuth (lista en `onview/docs/plataforma.md`).
