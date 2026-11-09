@@ -53,7 +53,7 @@ inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (48), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (50), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -67,14 +67,16 @@ Módulos de las carpetas publicadas (48), con la primera línea de su comentario
 | [`lib/use-copy.ts`](../lib/use-copy.ts) | Copiar, hecho una sola vez para todo el proyecto: la misma implementación que partners y developers, la que usa `CopyTicket` en `console.tsx`. |
 | [`lib/utils.ts`](../lib/utils.ts) | `cn` — juntar clases de Tailwind sin que se peleen entre ellas. |
 | [`lib/vite-env.d.ts`](../lib/vite-env.d.ts) | Las variables de build que lee el paquete (`import.meta.env`). |
+| [`sky/ai-mark.test.ts`](../sky/ai-mark.test.ts) | Lumen, la IA de OnView: su nombre y su símbolo, la primera ventana que se enciende a la hora azul. |
+| [`sky/ai-mark.ts`](../sky/ai-mark.ts) | Lumen, la IA de OnView (nombre elegido por el usuario el 2026-11-09): la que escribe el guion y genera las tomas. |
 | [`sky/console-frame.tsx`](../sky/console-frame.tsx) | El marco de consola del admin, en el mundo «Airglow»: la forma de una app de trabajo, la misma que el área con sesión de onview. |
 | [`sky/console.tsx`](../sky/console.tsx) | Las piezas de la consola, en el mundo «Airglow» (2026-11-03). |
 | [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento del mundo: mientras se ve una página de Blue Hour, `<html>` y la barra del navegador llevan la tinta del borde de película, y al salir vuelven a lo que… |
 | [`sky/day.ts`](../sky/day.ts) | El documento entero lleva la tinta del borde de película de Blue Hour mientras se ve una página del mundo: el fondo de `<html>` (lo que asoma en el rebote del scroll) y… |
 | [`sky/hooks.ts`](../sky/hooks.ts) | Hooks de scroll y de montaje contra los que se animan las páginas de Clear Sky, y los tres que usan las piezas de consola de `console.tsx` (`useFlash`, `useDismiss`,… |
 | [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas del mundo de OnView («Blue Hour»): la marca, el botón como enlace y la flecha. |
-| [`sky/mark.test.ts`](../sky/mark.test.ts) | La marca Órbita con hueco: el aro se abre donde está el punto, y nada de la órbita inclinada heredada. |
-| [`sky/mark.ts`](../sky/mark.ts) | La marca de OnView, «Órbita con hueco», como datos: un núcleo de tinta, un aro violeta que se abre donde está el punto, y el punto que abre su propio camino. |
+| [`sky/mark.test.ts`](../sky/mark.test.ts) | La marca de Blue Hour: un fotograma rodeado por el círculo abierto del lápiz graso ámbar. |
+| [`sky/mark.ts`](../sky/mark.ts) | La marca de OnView en Blue Hour, como datos: **un fotograma rodeado por el círculo del lápiz graso**, la marca con la que un montador elige la toma buena en una hoja de… |
 | [`sky/page.tsx`](../sky/page.tsx) | Las piezas de página del mundo de OnView («Airglow»), las del sitio de onview: la cabecera de página con su panel de cielo, el encabezado de sección, el aro de icono,… |
 | [`sky/platform-client.test.ts`](../sky/platform-client.test.ts) | El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. |
 | [`sky/platform-origin-local.test.ts`](../sky/platform-origin-local.test.ts) | En local, una consola habla con el `wrangler pages dev` de onview (puerto 8900). |
