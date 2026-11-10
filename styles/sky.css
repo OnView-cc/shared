@@ -197,8 +197,9 @@
 	font-variant-numeric: tabular-nums;
 	letter-spacing: 0.02em;
 }
+/* La celda tabular del separador se estrecha sin comerse el punto (con -0.12em «19.99» se leía «1999»). */
 .sk .sk-decimal {
-	margin-inline: -0.12em;
+	margin-inline: -0.05em;
 }
 
 /* ── botones: rectángulos de fotograma ───────────────────────────────────── */
@@ -643,7 +644,8 @@
 		color 180ms ease,
 		box-shadow 180ms ease;
 }
-.sk .sk-segment > button[aria-pressed="true"] {
+.sk .sk-segment > button[aria-pressed="true"],
+.sk .sk-segment > button[aria-checked="true"] {
 	color: var(--sk-ink);
 	background: var(--sk-haze);
 	box-shadow: inset 0 -2px 0 var(--sk-accent);
@@ -1507,6 +1509,161 @@
 	gap: 1.5rem;
 }
 
+/* El desplegable (`SkSelect`): disparador de campo o de píldora y un panel de
+   niebla que sale de su disparador. Sustituye a la lista nativa del sistema. */
+.sk .sk-select-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	color: var(--sk-ink);
+	text-align: left;
+	cursor: pointer;
+	transition:
+		box-shadow 160ms ease,
+		background-color 150ms var(--sk-ease-out),
+		color 150ms var(--sk-ease-out);
+}
+.sk .sk-select-trigger:disabled {
+	cursor: default;
+	opacity: 0.55;
+}
+.sk .sk-select-chevron {
+	width: 14px;
+	height: 14px;
+	flex: none;
+	color: var(--sk-ink-3);
+	transition: transform 200ms var(--sk-ease-out);
+}
+.sk .sk-select-trigger[data-state="open"] .sk-select-chevron {
+	transform: rotate(180deg);
+}
+.sk .sk-select-trigger--field {
+	width: 100%;
+	min-height: 44px;
+	justify-content: space-between;
+	padding: 9px 12px;
+	border-radius: var(--sk-radius-field);
+	background: var(--sk-ground);
+	box-shadow: inset 0 0 0 1px var(--sk-hair-2);
+	font-size: 0.9375rem;
+}
+.site.sk .sk-select-trigger--field {
+	min-height: 42px;
+}
+.sk .sk-select-trigger--field > span {
+	flex: 1;
+}
+.sk .sk-select-trigger--field:focus-visible,
+.sk .sk-select-trigger--field[data-state="open"] {
+	outline: none;
+	box-shadow:
+		inset 0 0 0 1px var(--sk-accent),
+		0 0 0 3px rgba(242, 163, 58, 0.22);
+}
+.sk .sk-select-trigger--chip {
+	height: 32px;
+	gap: 6px;
+	border-radius: var(--sk-radius-pill);
+	background: rgba(255, 255, 255, 0.05);
+	padding: 0 9px 0 11px;
+	color: var(--sk-ink-2);
+	font-size: 0.8125rem;
+	font-weight: 560;
+}
+.sk .sk-select-trigger--chip .sk-select-chevron {
+	width: 12px;
+	height: 12px;
+}
+@media (hover: hover) and (pointer: fine) {
+	.sk .sk-select-trigger--chip:hover:not(:disabled) {
+		background: var(--sk-haze);
+		color: var(--sk-ink);
+	}
+}
+.sk .sk-select-trigger--chip[data-state="open"] {
+	background: var(--sk-haze);
+	color: var(--sk-ink);
+}
+.sk .sk-select-panel {
+	z-index: 60;
+	min-width: max(var(--radix-select-trigger-width), 11rem);
+	max-height: min(22rem, var(--radix-select-content-available-height));
+	overflow: hidden;
+	border-radius: var(--sk-radius-card);
+	padding: 4px;
+	background: var(--sk-mist);
+	box-shadow:
+		inset 0 0 0 1px var(--sk-hair-2),
+		var(--sk-shadow-2);
+	transform-origin: var(--radix-select-content-transform-origin);
+	animation: sk-select-in 160ms var(--sk-ease-out);
+}
+.sk .sk-select-panel[data-state="closed"] {
+	animation: sk-select-out 110ms ease-in forwards;
+}
+@keyframes sk-select-in {
+	from {
+		opacity: 0;
+		transform: scale(0.97) translateY(-2px);
+	}
+}
+@keyframes sk-select-out {
+	to {
+		opacity: 0;
+		transform: scale(0.98);
+	}
+}
+.sk .sk-select-viewport {
+	max-height: inherit;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--sk-scroll) transparent;
+}
+.sk .sk-select-item {
+	position: relative;
+	display: flex;
+	min-height: 36px;
+	align-items: center;
+	gap: 9px;
+	border-radius: var(--sk-radius-thumb);
+	padding: 7px 34px 7px 11px;
+	color: var(--sk-ink);
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1.3;
+	cursor: pointer;
+	outline: none;
+	user-select: none;
+}
+.sk .sk-select-panel .sk-select-item:focus-visible {
+	outline: none;
+}
+.sk .sk-select-item[data-highlighted] {
+	background: var(--sk-haze);
+}
+.sk .sk-select-item[data-disabled] {
+	color: var(--sk-ink-3);
+	cursor: default;
+}
+.sk .sk-select-hint {
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding-left: 12px;
+	color: var(--sk-ink-3);
+	font-size: 0.75rem;
+	font-stretch: 85%;
+	font-weight: 520;
+}
+.sk .sk-select-check {
+	position: absolute;
+	right: 10px;
+	display: inline-flex;
+	color: var(--sk-accent);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.site.sk .arrive,
 	.site.sk .skeleton {
@@ -1514,5 +1671,19 @@
 	}
 	.site.sk .ticket:active:not(:disabled) {
 		transform: none;
+	}
+	.sk .sk-select-panel {
+		animation-name: sk-fade;
+	}
+	.sk .sk-select-panel[data-state="closed"] {
+		animation: none;
+	}
+	.sk .sk-select-chevron {
+		transition: none;
+	}
+}
+@keyframes sk-fade {
+	from {
+		opacity: 0;
 	}
 }

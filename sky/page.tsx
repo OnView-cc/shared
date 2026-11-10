@@ -30,10 +30,12 @@ export type IconComponent = ComponentType<{ className?: string; strokeWidth?: nu
 // ─── la cabecera de página ───────────────────────────────────────────────────
 
 /**
- * La cabecera de una página: un panel con el cielo de la hora azul dentro de la
- * columna, bajo la cabecera del sitio. Arriba, el titular y la entradilla; el
- * cielo (`BlueHourSky`) con su ciudad debajo. `aside` ocupa la derecha desde
- * `lg`; `children` va debajo de la entradilla: botones, una nota.
+ * La cabecera de una página: el cielo de la hora azul a sangre, subido bajo la
+ * cabecera transparente del sitio (`-mt-16`), como la portada pero más bajo.
+ * Arriba, el titular y la entradilla; la ciudad del cielo (`BlueHourSky`)
+ * cierra la banda por abajo. Sin panel ni esquinas: una página no es una
+ * tarjeta. `aside` ocupa la derecha desde `lg`; `children` va debajo de la
+ * entradilla: botones, un conmutador.
  */
 export function PageHero({
 	title,
@@ -49,29 +51,27 @@ export function PageHero({
 	const split = Boolean(aside);
 
 	return (
-		<section className="sk-wrap pt-2">
-			<div className="sk-panel sk-hero-sky sk-band relative">
-				<BlueHourSky />
-				<div className={`relative grid items-start gap-y-6 px-6 pb-72 pt-12 sm:px-10 md:pb-48 md:pt-16 lg:px-14 lg:pb-40 ${split ? "lg:grid-cols-12 lg:gap-x-10" : ""}`}>
-					<div className={split ? "lg:col-span-7" : "max-w-3xl"}>
-						<h1 className="sk-display sk-rise text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem]">{title}</h1>
-						{lead && (
-							<p className="sk-body sk-rise mt-6 max-w-2xl text-[1.0625rem] md:text-lg" style={{ "--i": 1 } as React.CSSProperties}>
-								{lead}
-							</p>
-						)}
-						{children && (
-							<div className="sk-rise mt-8" style={{ "--i": 2 } as React.CSSProperties}>
-								{children}
-							</div>
-						)}
-					</div>
-					{aside && (
-						<div className="sk-rise lg:col-span-5" style={{ "--i": 2 } as React.CSSProperties}>
-							{aside}
+		<section className="sk-hero-sky sk-band relative -mt-16">
+			<BlueHourSky />
+			<div className={`sk-wrap relative grid items-start gap-y-6 pb-32 pt-32 md:pb-40 md:pt-40 ${split ? "lg:grid-cols-12 lg:gap-x-10" : ""}`}>
+				<div className={split ? "lg:col-span-7" : "max-w-3xl"}>
+					<h1 className="sk-display sk-rise text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem]">{title}</h1>
+					{lead && (
+						<p className="sk-body sk-rise mt-6 max-w-2xl text-[1.0625rem] md:text-lg" style={{ "--i": 1 } as React.CSSProperties}>
+							{lead}
+						</p>
+					)}
+					{children && (
+						<div className="sk-rise mt-8" style={{ "--i": 2 } as React.CSSProperties}>
+							{children}
 						</div>
 					)}
 				</div>
+				{aside && (
+					<div className="sk-rise lg:col-span-5" style={{ "--i": 2 } as React.CSSProperties}>
+						{aside}
+					</div>
+				)}
 			</div>
 		</section>
 	);
@@ -195,8 +195,10 @@ export function Segmented<T extends string>({
 // ─── el cierre ───────────────────────────────────────────────────────────────
 
 /**
- * El cierre de cada página: un panel de cielo con la banda leyendo (sin carga:
- * nada inventado), el titular y las dos acciones. Quien lo monta decide la
+ * El cierre de cada página: tipográfico, sobre el suelo, tras un filete. El
+ * cielo ya abrió la página; repetirlo en un panel al final hacía de cada
+ * página una pila de tarjetas. El titular a la izquierda y las acciones a la
+ * derecha, en la misma línea de base desde `lg`. Quien lo monta decide la
  * primaria (onview la cambia con la sesión).
  */
 export function Closing({
@@ -211,22 +213,21 @@ export function Closing({
 	secondary?: { href: string; label: string };
 }) {
 	return (
-		<section className="sk-wrap pb-6 pt-20 md:pt-28">
-			<div className="sk-panel sk-hero-sky sk-band relative">
-				<BlueHourSky />
-				<div className="relative max-w-2xl px-6 pb-40 pt-14 sm:px-12 md:pb-48 md:pt-20 lg:px-16">
-					<h2 className="sk-h2 text-[2.25rem] md:text-[3.25rem]">{headline}</h2>
+		<section className="sk-wrap pb-16 pt-24 md:pb-20 md:pt-32">
+			<div className="grid items-end gap-x-10 gap-y-8 border-t border-(--sk-hair) pt-14 md:pt-20 lg:grid-cols-12">
+				<div className="lg:col-span-8">
+					<h2 className="sk-h2 max-w-[20ch] text-[2.25rem] md:text-[3.25rem]">{headline}</h2>
 					{desc && <p className="sk-body mt-5 max-w-lg text-[1.0625rem]">{desc}</p>}
-					<div className="mt-9 flex flex-wrap items-center gap-2">
-						<SkButton href={main.href}>
-							{main.label} <SkArrow />
+				</div>
+				<div className="flex flex-wrap items-center gap-2 lg:col-span-4 lg:justify-end">
+					<SkButton href={main.href}>
+						{main.label} <SkArrow />
+					</SkButton>
+					{secondary && (
+						<SkButton href={secondary.href} variant="quiet">
+							{secondary.label}
 						</SkButton>
-						{secondary && (
-							<SkButton href={secondary.href} variant="glass">
-								{secondary.label}
-							</SkButton>
-						)}
-					</div>
+					)}
 				</div>
 			</div>
 		</section>

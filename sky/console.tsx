@@ -21,12 +21,12 @@ import {
 	useState,
 	type InputHTMLAttributes,
 	type ReactNode,
-	type SelectHTMLAttributes,
 	type TextareaHTMLAttributes,
 } from "react";
 import { Check as CheckIcon, ChevronDown, CircleAlert, Copy, ExternalLink, MoreHorizontal, X, type LucideIcon } from "lucide-react";
 import { useCopy } from "../lib/use-copy";
 import { useDismiss } from "./hooks";
+import { SkSelect } from "./select";
 
 const ERROR_TEXT = "text-(--sk-danger-fg)";
 
@@ -479,7 +479,10 @@ export function TextArea({
 	);
 }
 
-/** Un desplegable nativo: el control que el sistema ya sabe manejar, con la flecha del mundo. */
+/**
+ * Un desplegable del mundo (`SkSelect`): la lista sale en un panel de niebla y
+ * no en la lista blanca del sistema. Una opción puede ir apagada con su motivo.
+ */
 export function SelectField({
 	id,
 	label,
@@ -487,24 +490,30 @@ export function SelectField({
 	value,
 	onChange,
 	options,
-	...rest
-}: Omit<SelectHTMLAttributes<HTMLSelectElement>, "id" | "value" | "onChange"> & {
+	disabled,
+	placeholder,
+}: {
 	id: string;
-	label: ReactNode;
+	label: string;
 	hint?: ReactNode;
 	value: string;
 	onChange: (value: string) => void;
-	options: { id: string; label: string }[];
+	options: { id: string; label: string; disabled?: boolean; hint?: string }[];
+	disabled?: boolean;
+	placeholder?: string;
 }) {
 	return (
 		<FieldShell id={id} label={label} hint={hint}>
-			<select id={id} value={value} aria-describedby={`${id}-msg`} onChange={(e) => onChange(e.target.value)} className="field sk-select" {...rest}>
-				{options.map((option) => (
-					<option key={option.id} value={option.id}>
-						{option.label}
-					</option>
-				))}
-			</select>
+			<SkSelect
+				id={id}
+				label={label}
+				describedBy={`${id}-msg`}
+				value={value}
+				onChange={onChange}
+				disabled={disabled}
+				placeholder={placeholder}
+				options={options.map((o) => ({ value: o.id, label: o.label, disabled: o.disabled, hint: o.hint }))}
+			/>
 		</FieldShell>
 	);
 }

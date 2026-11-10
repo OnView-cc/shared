@@ -55,7 +55,7 @@ inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (60), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (61), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -90,6 +90,7 @@ Módulos de las carpetas publicadas (60), con la primera línea de su comentario
 | [`sky/platform-client.test.ts`](../sky/platform-client.test.ts) | El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. |
 | [`sky/platform-origin-local.test.ts`](../sky/platform-origin-local.test.ts) | En local, una consola habla con el `wrangler pages dev` de onview (puerto 8900). |
 | [`sky/platform-origin.test.ts`](../sky/platform-origin.test.ts) | Sin `VITE_PLATFORM_ORIGIN`, una consola en un subdominio habla con el apex de producción. |
+| [`sky/select.tsx`](../sky/select.tsx) | El desplegable del mundo de OnView («Blue Hour»), sobre Radix: el disparador es un campo (`variant="field"`) o una píldora de la caja de «Nuevo video»… |
 | [`sky/strike-number.test.tsx`](../sky/strike-number.test.tsx) | Un número que cambia lo hace de golpe, con un resplandor; nunca rueda por los valores intermedios. |
 | [`sky/strike-number.tsx`](../sky/strike-number.tsx) | Un número que cambia (el saldo de créditos, un código de tiempo) lo hace de golpe: pinta el valor nuevo y le da un resplandor ámbar que decae en 260ms (`.sk-strike`, en… |
 | [`ui/alert-dialog.tsx`](../ui/alert-dialog.tsx) | El diálogo de consecuencias: el mismo papel que `Dialog`, pero no se cierra al pulsar fuera y el foco empieza en «Cancel», el lado que no hace nada. |
