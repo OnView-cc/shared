@@ -119,7 +119,7 @@ export function Section({
 export function Bead({ icon: Icon, size = "md", variant = "line" }: { icon: IconComponent; size?: "md" | "lg"; variant?: "glass" | "line" }) {
 	return (
 		<span
-			className={`inline-flex shrink-0 items-center justify-center rounded-[2px] text-(--sk-ink) ${
+			className={`inline-flex shrink-0 items-center justify-center rounded-(--sk-radius-thumb) text-(--sk-ink) ${
 				variant === "glass" ? "sk-glass" : "bg-(--sk-mist) ring-1 ring-(--sk-hair)"
 			} ${size === "lg" ? "size-12" : "size-10"}`}
 			aria-hidden="true">

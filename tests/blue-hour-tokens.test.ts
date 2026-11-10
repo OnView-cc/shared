@@ -29,8 +29,17 @@ describe("Blue Hour tokens", () => {
 		expect(token("ink")).toBe("#e9ecf5");
 	});
 
-	it("one corner for everything: the 2px film frame", () => {
-		expect(token("radius")).toBe("2px");
+	it("B: a corner scale by role, and --sk-radius is the field corner", () => {
+		expect(token("radius-panel")).toBe("18px");
+		expect(token("radius-card")).toBe("16px");
+		expect(token("radius-field")).toBe("12px");
+		expect(token("radius-thumb")).toBe("10px");
+		expect(token("radius-pill")).toBe("999px");
+		expect(token("radius")).toBe("var(--sk-radius-field)");
+	});
+
+	it("B: glass, ambient glow and the lit accent are tokens", () => {
+		for (const name of ["glass-panel", "glass-edge", "glass-highlight", "ambient", "accent-gradient", "accent-glow"]) expect(token(name), name).toBeTruthy();
 	});
 
 	it.each([

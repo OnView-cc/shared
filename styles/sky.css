@@ -9,19 +9,22 @@
  * otras siguen en la hoja. Contrato: onview/.impeccable/surfaces/.
  *
  * Reglas del sistema:
- * - Todo es oscuro. Fuera (portada, acceso) el cielo de la hora azul; dentro
- *   (app, cuenta, admin) la tinta del borde de película, para que los colores
- *   de las tomas se vean fieles. El cielo dentro sólo en detalles (cabecera,
- *   vacíos), nunca detrás de un visor.
+ * - Todo es oscuro y azul (B, «Blue Hour suave», elegido el 2026-11-09). Fuera
+ *   (portada, acceso) el cielo de la hora azul; dentro (app, cuenta, admin) el
+ *   azul profundo con el brillo del horizonte abajo y paneles de vidrio. Sólo lo
+ *   que rodea las tomas (la película) sigue neutro, para que sus colores se
+ *   vean fieles.
  * - Un solo color de acción: el ámbar del lápiz graso (`--sk-accent`). Botón
  *   primario, foco, la toma elegida, la marca. Nada más es ámbar.
- * - Una esquina: 2px, la del fotograma (`--sk-radius`). Círculos sólo donde el
- *   objeto es redondo (anillos, el lápiz graso).
+ * - Esquinas por papel, nunca rígidas: panel 18px, tarjeta 16px, campo 12px
+ *   (`--sk-radius`), miniatura 10px y píldora para botones, chips, filtros y
+ *   sellos. Círculos donde el objeto es redondo.
  * - Una familia, Archivo, en tres anchos: ancha para titulares, normal para el
  *   texto, estrecha y tabular para lo que se lee como borde de película
  *   (`.sk-edge`, `.sk-mono`): números de fotograma, código de tiempo, sellos.
- * - Elevación por tono (ground < mist < surface < haze) y filete de 1px; las
- *   sombras, si hay, azules y bajas.
+ * - Elevación por vidrio y tono (ground < mist < surface < haze), con un filete
+ *   de luz muy tenue y un brillo interior arriba; el primario lleva un halo
+ *   ámbar suave. Las sombras, azules y bajas.
  * - Movimiento: UI ≤ 300ms con `--sk-ease-out`; los números cambian de golpe
  *   (`.sk-strike`), nunca ruedan; con movimiento reducido, sólo opacidad.
  */
@@ -74,7 +77,22 @@
 	--sk-shadow-3: 0 2px 6px rgba(2, 5, 16, 0.5), 0 36px 72px -28px rgba(2, 5, 16, 0.9);
 
 	--sk-scroll: #2a3556;
-	--sk-radius: 2px;
+	/* B, «Blue Hour suave»: una escala de esquinas por papel */
+	--sk-radius-panel: 18px;
+	--sk-radius-card: 16px;
+	--sk-radius-field: 12px;
+	--sk-radius-thumb: 10px;
+	--sk-radius-pill: 999px;
+	--sk-radius-tick: 6px;
+	--sk-radius: var(--sk-radius-field);
+
+	/* B: el vidrio de los paneles, el brillo del horizonte y el ámbar encendido */
+	--sk-glass-panel: rgba(30, 35, 62, 0.62);
+	--sk-glass-edge: rgba(255, 255, 255, 0.07);
+	--sk-glass-highlight: rgba(255, 255, 255, 0.06);
+	--sk-ambient: radial-gradient(120% 70% at 50% 112%, rgba(244, 178, 106, 0.16), rgba(90, 111, 196, 0.14) 45%, transparent 75%);
+	--sk-accent-gradient: linear-gradient(180deg, #f6b252, #ea962c);
+	--sk-accent-glow: 0 4px 14px rgba(242, 163, 58, 0.32);
 	--sk-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 	--sk-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
@@ -191,7 +209,7 @@
 	gap: 8px;
 	height: 44px;
 	padding: 0 20px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	font-size: 0.9375rem;
 	font-weight: 560;
 	letter-spacing: -0.006em;
@@ -213,8 +231,9 @@
 	font-size: 0.875rem;
 }
 .sk .sk-btn--primary {
-	background: var(--sk-accent);
+	background: var(--sk-accent-gradient);
 	color: var(--sk-accent-ink);
+	box-shadow: var(--sk-accent-glow);
 }
 .sk .sk-btn--quiet {
 	background: transparent;
@@ -267,7 +286,7 @@
 /* ── hojas y paneles ─────────────────────────────────────────────────────── */
 .sk .sk-card {
 	background: var(--sk-surface);
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-card);
 	box-shadow: inset 0 0 0 1px var(--sk-hair);
 	transition:
 		transform 220ms var(--sk-ease-out),
@@ -281,8 +300,14 @@
 .sk a.sk-card:active {
 	transform: scale(0.99);
 }
+.site.sk .sk-card {
+	background: var(--sk-glass-panel);
+	box-shadow:
+		inset 0 0 0 1px var(--sk-glass-edge),
+		inset 0 1px 0 var(--sk-glass-highlight);
+}
 .sk .sk-panel {
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-panel);
 	overflow: hidden;
 	isolation: isolate;
 }
@@ -322,7 +347,7 @@
 	gap: 4px;
 	height: 36px;
 	padding: 0 12px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	font-size: 0.875rem;
 	font-weight: 500;
 	white-space: nowrap;
@@ -346,7 +371,7 @@
 /* Menús: entran desde su disparador; la salida es instantánea. */
 .sk .sk-menu {
 	transform-origin: top left;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-card);
 	background: var(--sk-mist);
 	box-shadow:
 		inset 0 0 0 1px var(--sk-hair-2),
@@ -365,7 +390,7 @@
 	transform-origin: top right;
 }
 .sk .sk-menu-item {
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-thumb);
 	transition: background-color 140ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -446,7 +471,7 @@
 	gap: 8px;
 	max-width: 100%;
 	padding: 10px 0;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-card);
 	background: var(--sk-film);
 	box-shadow: var(--sk-shadow-3);
 }
@@ -490,7 +515,7 @@
 	aspect-ratio: var(--sk-frame-ratio, 4 / 3);
 	padding: 0;
 	border: 0;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-thumb);
 	background: var(--sk-mist);
 	color: var(--sk-ink);
 	text-align: left;
@@ -506,7 +531,7 @@
 	position: absolute;
 	inset: 0;
 	overflow: hidden;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-thumb);
 	box-shadow: inset 0 0 0 1px var(--sk-hair);
 }
 /* El texto en pantalla va arriba y centrado, sobre el cielo, lejos de la
@@ -601,14 +626,14 @@
 	display: inline-flex;
 	padding: 3px;
 	gap: 2px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	background: var(--sk-mist);
 	box-shadow: inset 0 0 0 1px var(--sk-hair);
 }
 .sk .sk-segment > button {
 	height: 32px;
 	padding: 0 14px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	font-size: 0.8125rem;
 	font-weight: 520;
 	color: var(--sk-ink-2);
@@ -636,7 +661,7 @@
 	width: 100%;
 	min-height: 44px;
 	padding: 10px 12px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-field);
 	font: inherit;
 	font-size: 0.9375rem;
 	line-height: 1.4;
@@ -691,7 +716,7 @@
 	display: flex;
 	gap: 10px;
 	padding: 12px 14px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-card);
 	font-size: 0.875rem;
 	line-height: 1.5;
 }
@@ -708,7 +733,7 @@
 /* Tablas: una hoja con filetes finos; la cabecera en voz de borde. */
 .sk .sk-table-wrap {
 	overflow-x: auto;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-card);
 	background: var(--sk-surface);
 	box-shadow: inset 0 0 0 1px var(--sk-hair);
 }
@@ -873,7 +898,7 @@
 	gap: 8px;
 	height: 32px;
 	padding: 0 12px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	font-size: 0.8125rem;
 	font-weight: 520;
 	color: var(--sk-ink-2);
@@ -920,7 +945,7 @@
 	gap: 12px;
 	height: 36px;
 	padding: 0 12px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-thumb);
 	font-size: 0.875rem;
 	color: var(--sk-ink-2);
 	text-decoration: none;
@@ -969,25 +994,25 @@
 
 /* ══ el vocabulario de las consolas ══════════════════════════════════════════
    Las consolas heredan un vocabulario estructural (`site.css`: billete, tabla,
-   sello, anillo, riel de páginas). Aquí se viste del mundo: rectángulos de 2px,
+   sello, anillo, riel de páginas). Aquí se viste del mundo: esquinas por papel (B),
    filetes finos, el ámbar sólo en lo primario y en lo elegido. */
-/* Dentro de la app (consolas, cuenta, admin), la tinta neutra del editor: una
-   escala casi negra sin croma, para que los colores de las tomas se vean
-   fieles (contrato de dirección). El azul queda para la franja de arriba y los
-   vacíos. Fuera (portada, acceso) sigue la tinta azul del borde de película. */
+/* B, «Blue Hour suave»: dentro de la app (consolas, cuenta, admin) también es
+   la hora azul, un azul profundo con el brillo del horizonte que sube desde
+   abajo (`--sk-ambient`) y paneles de vidrio. Sólo el soporte que rodea las
+   tomas (película y perforaciones) sigue neutro y casi negro, para que sus
+   colores se vean fieles. */
 .site.sk {
-	--sk-ground: #0e0f11;
-	--sk-mist: #131417;
-	--sk-surface: #17181c;
-	--sk-haze: #212226;
-	--sk-glass: rgba(19, 20, 23, 0.86);
-	/* el soporte de la película y sus perforaciones, también neutros: es lo que
-	   rodea las tomas */
+	--sk-ground: #0d1022;
+	--sk-mist: #121736;
+	--sk-surface: #19203f;
+	--sk-haze: #232b50;
+	--sk-glass: rgba(20, 26, 56, 0.86);
 	--sk-film: #08090b;
 	--sk-perf: #222428;
-	--sk-ink-2: #b8bcc8;
-	--sk-ink-3: #8b909e;
-	background: var(--sk-ground);
+	--sk-ink-2: #c4cae0;
+	--sk-ink-3: #9aa2c0;
+	background: var(--sk-ambient), var(--sk-ground);
+	background-attachment: fixed;
 	color: var(--sk-ink);
 	font-family: var(--sk-font);
 	font-size: 15px;
@@ -1046,7 +1071,7 @@
 	padding: 0;
 }
 .site.sk button.plate-block {
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-card);
 	padding: 2px 8px;
 	margin-left: -8px;
 }
@@ -1060,7 +1085,7 @@
 	padding: 0 16px;
 	gap: 8px;
 	border: 0;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	background: transparent;
 	box-shadow: inset 0 0 0 1px var(--sk-hair-2);
 	color: var(--sk-ink);
@@ -1090,9 +1115,9 @@
 }
 .site.sk .ticket--solid,
 .site.sk .ticket[aria-pressed="true"] {
-	background: var(--sk-accent);
+	background: var(--sk-accent-gradient);
 	color: var(--sk-accent-ink);
-	box-shadow: none;
+	box-shadow: var(--sk-accent-glow);
 }
 .site.sk .ticket--solid:hover,
 .site.sk .ticket--solid:active:not(:disabled) {
@@ -1240,7 +1265,7 @@
 	gap: 5px;
 	padding: 2px 7px;
 	border: 0;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	background: transparent;
 	box-shadow: inset 0 0 0 1px var(--sk-hair-2);
 	color: var(--sk-ink-2);
@@ -1273,7 +1298,7 @@
 	min-height: 42px;
 	padding: 9px 12px;
 	border: 0;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-field);
 	background: var(--sk-ground);
 	box-shadow: inset 0 0 0 1px var(--sk-hair-2);
 	color: var(--sk-ink);
@@ -1316,7 +1341,7 @@
 /* menús, diálogos, huecos de carga y avisos */
 .site.sk .menu-panel {
 	border: 0;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-card);
 	padding: 4px;
 	background: var(--sk-mist);
 	box-shadow:
@@ -1334,7 +1359,7 @@
 	}
 }
 .site.sk .menu-panel [role="menuitem"] {
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-thumb);
 	padding: 9px 12px;
 	font-weight: 500;
 	font-size: 0.875rem;
@@ -1349,7 +1374,7 @@
 }
 .site.sk dialog.sheet-dialog {
 	border: 0;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-panel);
 	background: var(--sk-surface);
 	color: var(--sk-ink);
 	box-shadow:
@@ -1371,7 +1396,7 @@
 }
 /* Un hueco de carga es un fotograma sin revelar: sin brillo que barre. */
 .site.sk .skeleton {
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-thumb);
 	background: var(--sk-mist);
 	box-shadow: inset 0 0 0 1px var(--sk-hair);
 	animation: sk-breathe 1.6s ease-in-out infinite;
@@ -1383,7 +1408,7 @@
 }
 .site.sk [data-sonner-toast] {
 	border: 0 !important;
-	border-radius: var(--sk-radius) !important;
+	border-radius: var(--sk-radius-card) !important;
 	box-shadow:
 		inset 0 0 0 1px var(--sk-hair-2),
 		var(--sk-shadow-2) !important;
@@ -1398,7 +1423,7 @@
 	gap: 2px;
 	border-bottom: 0;
 	padding: 3px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	background: var(--sk-mist);
 	box-shadow: inset 0 0 0 1px var(--sk-hair);
 	width: fit-content;
@@ -1407,7 +1432,7 @@
 .site.sk .page-rail a {
 	height: 32px;
 	padding: 0 12px;
-	border-radius: var(--sk-radius);
+	border-radius: var(--sk-radius-pill);
 	font-weight: 520;
 	font-size: 0.8125rem;
 	color: var(--sk-ink-2);

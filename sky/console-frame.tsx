@@ -242,7 +242,7 @@ function FrameSidebar({
 							key={path}
 							to={to}
 							aria-current={active ? "page" : undefined}
-							className={`sk-sidelink flex h-9 items-center gap-3 rounded-[2px] px-3 text-[0.875rem] no-underline transition-colors duration-150 ${
+							className={`sk-sidelink flex h-9 items-center gap-3 rounded-(--sk-radius-thumb) px-3 text-[0.875rem] no-underline transition-colors duration-150 ${
 								active ? "is-active font-medium text-(--sk-ink)" : "text-(--sk-ink-2) hover:text-(--sk-ink)"
 							}`}>
 							<Icon className={`size-4 shrink-0 ${active ? "text-(--sk-ink)" : "text-(--sk-ink-3)"}`} strokeWidth={1.75} aria-hidden="true" />
@@ -260,7 +260,7 @@ function FrameSidebar({
 							<li key={href}>
 								<a
 									href={href}
-									className="sk-sidelink flex h-9 items-center gap-3 rounded-[2px] px-3 text-[0.875rem] text-(--sk-ink-2) no-underline transition-colors duration-150 hover:text-(--sk-ink)">
+									className="sk-sidelink flex h-9 items-center gap-3 rounded-(--sk-radius-thumb) px-3 text-[0.875rem] text-(--sk-ink-2) no-underline transition-colors duration-150 hover:text-(--sk-ink)">
 									<Icon className="size-4 shrink-0 text-(--sk-ink-3)" strokeWidth={1.75} aria-hidden="true" />
 									<span className="min-w-0 flex-1 truncate">{label}</span>
 									<ArrowUpRight className="size-3.5 text-(--sk-ink-3)" strokeWidth={1.75} aria-hidden="true" />
@@ -312,7 +312,7 @@ function FrameAccountMenu({ account }: { account: FrameAccount }) {
 			<button
 				ref={trigger}
 				type="button"
-				className="flex items-center gap-2 rounded-[2px] p-1 pr-2.5 transition-colors hover:bg-(--sk-mist)"
+				className="flex items-center gap-2 rounded-(--sk-radius-pill) p-1 pr-2.5 transition-colors hover:bg-(--sk-mist)"
 				onClick={() => setOpen((v) => !v)}
 				aria-expanded={open}
 				aria-haspopup="menu"

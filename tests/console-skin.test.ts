@@ -61,10 +61,20 @@ describe("Blue Hour skin", () => {
 		expect(offenders).toEqual([]);
 	});
 
-	it("has one corner: the 2px film frame", () => {
+	it("B: every corner comes from the role scale", () => {
 		const radii = [...strip(sky).matchAll(/border-radius:\s*([^;!]+)/g), ...strip(site).matchAll(/border-radius:\s*([^;!]+)/g)].map((m) => m[1].trim());
-		const odd = radii.filter((r) => !["var(--sk-radius)", "0", "50%", "1px"].includes(r));
-		expect(odd).toEqual([]);
+		const ok = ["var(--sk-radius)", "var(--sk-radius-panel)", "var(--sk-radius-card)", "var(--sk-radius-field)", "var(--sk-radius-thumb)", "var(--sk-radius-pill)", "0", "50%", "1px"];
+		expect(radii.filter((r) => !ok.includes(r))).toEqual([]);
+		// B: lo que antes era la esquina única de 2px ahora se nombra por su papel.
+		expect(radii.filter((r) => r !== "var(--sk-radius)" && r.startsWith("var(")).length).toBeGreaterThan(10);
+	});
+
+	it("B: no hard 2px corner is left in the shared components", () => {
+		for (const dir of ["sky", "ui"]) {
+			for (const f of readdirSync(new URL(`../${dir}/`, import.meta.url)).filter((f) => f.endsWith(".tsx") && !f.includes(".test."))) {
+				expect(read(`${dir}/${f}`), `${dir}/${f}`).not.toMatch(/rounded-\[2px\]|"--border-radius":\s*"2px"/);
+			}
+		}
 	});
 
 	it("the shared components carry nothing of the inherited world", () => {
@@ -77,9 +87,19 @@ describe("Blue Hour skin", () => {
 });
 
 describe("the inside ground", () => {
-	// El contrato: dentro de la app, tinta neutra oscura para que los colores de las tomas se vean fieles.
+	// B: dentro de la app, el azul de la hora azul; sólo el soporte que rodea las tomas (película) sigue neutro, para que sus colores se vean fieles.
 	const inside = sky.match(/\n\.site\.sk \{([\s\S]*?)\n\}/)?.[1] ?? "";
-	it.each(["ground", "mist", "surface", "haze", "film", "perf"])("--sk-%s is a near-black neutral, not blue ink", (name) => {
+	it("B: the app ground is the blue hour, #0d1022", () => {
+		expect(inside.match(/--sk-ground:\s*(#[0-9a-f]{6});/i)?.[1]).toBe("#0d1022");
+	});
+	it.each(["ground", "mist", "surface", "haze"])("B: --sk-%s is a deep blue, not neutral", (name) => {
+		const hex = inside.match(new RegExp(`--sk-${name}:\\s*(#[0-9a-f]{6});`, "i"))?.[1];
+		expect(hex, `--sk-${name} inside .site.sk`).toBeDefined();
+		const [r, , b] = [1, 3, 5].map((i) => parseInt(hex!.slice(i, i + 2), 16));
+		expect(b - r).toBeGreaterThanOrEqual(12);
+		expect(b).toBeLessThanOrEqual(0x60);
+	});
+	it.each(["film", "perf"])("--sk-%s (around the shots) is a near-black neutral", (name) => {
 		const hex = inside.match(new RegExp(`--sk-${name}:\\s*(#[0-9a-f]{6});`, "i"))?.[1];
 		expect(hex, `--sk-${name} inside .site.sk`).toBeDefined();
 		const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex!.slice(i, i + 2), 16));

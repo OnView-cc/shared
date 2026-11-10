@@ -236,7 +236,7 @@ export function WorkspacePlate<T extends { id: string; name: string }>({
 				<button
 					ref={trigger}
 					type="button"
-					className="-ml-2 inline-flex items-center gap-2 rounded-[2px] px-2 py-0.5 text-left transition-colors hover:bg-(--sk-mist)"
+					className="-ml-2 inline-flex items-center gap-2 rounded-(--sk-radius-thumb) px-2 py-0.5 text-left transition-colors hover:bg-(--sk-mist)"
 					aria-haspopup="menu"
 					aria-expanded={open}
 					aria-label={`Switch workspace, currently ${current.name}`}
@@ -289,12 +289,12 @@ export function Monogram({ name, logoUrl, size = "md" }: { name: string; logoUrl
 	const [failed, setFailed] = useState<string | null>(null);
 	const box =
 		size === "lg"
-			? "size-14 rounded-[2px] text-[1rem]"
+			? "size-14 rounded-(--sk-radius-thumb) text-[1rem]"
 			: size === "sm"
-				? "size-9 rounded-[2px] text-[0.75rem]"
+				? "size-9 rounded-(--sk-radius-thumb) text-[0.75rem]"
 				: size === "xs"
-					? "size-6 rounded-[2px] text-[0.625rem]"
-					: "size-11 rounded-[2px] text-[0.8125rem]";
+					? "size-6 rounded-(--sk-radius-tick) text-[0.625rem]"
+					: "size-11 rounded-(--sk-radius-thumb) text-[0.8125rem]";
 	if (logoUrl && failed !== logoUrl) {
 		return <img src={logoUrl} alt="" onError={() => setFailed(logoUrl)} className={`${box} shrink-0 object-cover shadow-(--sk-shadow-1)`} />;
 	}
@@ -539,7 +539,7 @@ export function Check({
 				/>
 				<span
 					aria-hidden="true"
-					className="flex size-5 items-center justify-center rounded-[2px] bg-(--sk-surface) shadow-[inset_0_0_0_1px_var(--sk-hair-2)] transition-[background-color,box-shadow] duration-150 peer-checked:bg-(--sk-accent) peer-checked:shadow-none peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-(--sk-accent)">
+					className="flex size-5 items-center justify-center rounded-(--sk-radius-tick) bg-(--sk-surface) shadow-[inset_0_0_0_1px_var(--sk-hair-2)] transition-[background-color,box-shadow] duration-150 peer-checked:bg-(--sk-accent) peer-checked:shadow-none peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-(--sk-accent)">
 					{checked && <CheckIcon className="size-3.5 text-(--sk-accent-ink)" strokeWidth={3} />}
 				</span>
 			</span>
@@ -595,7 +595,7 @@ export function StatusBox({
 	footer?: ReactNode;
 }) {
 	return (
-		<div className={`rounded-[2px] p-4 md:p-5 ${tone === "alert" ? "bg-(--sk-danger-bg)" : "bg-(--sk-ground)"}`}>
+		<div className={`rounded-(--sk-radius-card) p-4 md:p-5 ${tone === "alert" ? "bg-(--sk-danger-bg)" : "bg-(--sk-ground)"}`}>
 			<div className="flex flex-wrap items-center gap-x-3 gap-y-2">
 				{stamp}
 				<p className={`font-medium leading-snug ${tone === "alert" ? "text-(--sk-danger-fg)" : "text-(--sk-ink)"}`}>{title}</p>
