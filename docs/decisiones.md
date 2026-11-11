@@ -70,3 +70,10 @@ Spec: `OnView.cc/docs/superpowers/specs/2026-11-08-onview-plataforma-design.md`.
   sin cambiar de comportamiento: onview reserva y el estudio cobra o devuelve con el
   id del trabajo, y los dos leen la misma base. onview las re-exporta. El test
   (`tests/credit-settle.test.ts`) usa `node:sqlite` con las tres tablas copiadas.
+
+## v2.0.0: el mundo «Feed vertical» (subproyecto 8 de OnView, 2026-11-10)
+
+- `styles/sky.css` cambia de mundo sin cambiar de nombres: los tokens `--sk-*` toman el casi negro (`#0a0a0b`) y la tinta (`#f4f4f2`); `--sk-accent` es la tinta (no hay color de acento). El único degradado es `--sk-scrim`; el único vidrio, `.sk-over-video`. Lo prueban `tests/feed-tokens.test.ts` y `tests/feed-world.test.ts`.
+- Piezas nuevas en `sky/feed.tsx`: `VideoFrame`, `SheetFrame`, `StateTag`, `StoryBars` y `RailButton`. Hooks nuevos: `useReducedMotion` y `useStepKeys` (ignora las flechas dentro de un campo y con Alt, Ctrl o Meta).
+- La marca es un marco 9:16 con el rótulo abajo a la izquierda (`mark.ts`); Lumen, un punto con halo que late con `AiMark thinking` (`ai-mark.ts` lleva sus colores escritos para que el script de marca lo cargue sin resolver módulos).
+- Borrados: `blue-hour-sky`, `grease` (y `grease-paths`), `strike-number`, `contact-strip` y sus pruebas. `PageHero` ya no pinta el cielo.
