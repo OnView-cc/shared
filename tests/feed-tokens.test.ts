@@ -37,8 +37,6 @@ describe("Feed vertical tokens", () => {
 		expect(token("radius")).toBe("var(--sk-radius-field)");
 	});
 
-	it.todo("the only gradient is the scrim");
-
 	it("Bricolage for display, Hanken Grotesk for the interface, no Archivo", () => {
 		expect(token("display")).toContain("Bricolage Grotesque Variable");
 		expect(token("font")).toContain("Hanken Grotesk Variable");

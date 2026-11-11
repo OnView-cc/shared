@@ -7,7 +7,7 @@
  * el color y la piel los pone el mundo de OnView en `sky.css` (`.site.sk`),
  * porque toda consola monta `site sk` en su raíz. Los alias (`--paper`,
  * `--ink`, `--rule`, `--stroke` y los de shadcn) apuntan a los tokens de
- * Blue Hour para lo que aún los lee escritos en línea.
+ * Feed vertical para lo que aún los lee escritos en línea.
  */
 
 /* El reloj vive también en la raíz para que `useClockMs` pueda leerlo antes de

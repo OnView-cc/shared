@@ -1,9 +1,9 @@
 /**
- * La piel de Blue Hour sobre la consola y las páginas: las clases que usan las
- * vistas vivas existen en `styles/sky.css`; los colores salen de los tokens
- * (`--sk-*`) y no van escritos a mano fuera de sus sitios; una sola esquina
- * (`--sk-radius`, 2px); y los componentes de `sky/` y `ui/` no traen nada del
- * mundo heredado.
+ * La piel del mundo Feed vertical sobre la consola y las páginas: las clases
+ * que usan las vistas vivas existen en `styles/sky.css`; los colores salen de
+ * los tokens (`--sk-*`) y no van escritos a mano fuera de sus sitios; las
+ * esquinas salen de la escala por papel; dentro de la app, el mismo negro que
+ * fuera; y los componentes de `sky/` y `ui/` no traen nada del mundo heredado.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -42,13 +42,13 @@ const LIVE = [
 	"sk-table", "sk-sidebar", "sk-sidelink", "sk-segment", "sk-onpage", "sk-menu", "sk-navlink", "sk-prose", "sk-faq",
 	"ticket", "ticket--solid", "ticket--danger", "stamp", "stamp--live", "stamp--alert", "fare", "field", "menu-panel",
 	"sheet-dialog", "skeleton", "page-rail", "calling-at", "line-stops", "ring",
-	"sk-strip", "sk-frame", "sk-perf", "sk-grease", "sk-strike", "sk-edge",
+	"sk-edge", "sk-num", "sk-over-video", "sk-scrim",
 ];
 
-/** Donde un color escrito a mano es el sitio correcto: los tokens, el suelo del documento, los degradados del cielo, los fotogramas clave. */
-const LITERAL_OK = /^\.sk$|^\.site\.sk$|^\.sk-page$|sk-hero-sky|sk-header|^@keyframes|^(from|to|\d+%)$/;
+/** Donde un color escrito a mano es el sitio correcto: los tokens, el suelo del documento, la cabecera, los fotogramas clave. */
+const LITERAL_OK = /^\.sk$|^\.site\.sk$|^\.sk-page$|sk-header|^@keyframes|^(from|to|\d+%)$/;
 
-describe("Blue Hour skin", () => {
+describe("Feed vertical skin", () => {
 	it.each(LIVE)("styles the live class .%s", (cls) => {
 		expect(sky).toMatch(new RegExp(`\\.${cls.replace(/-/g, "\\-")}(?![\\w-])`));
 	});
@@ -63,7 +63,7 @@ describe("Blue Hour skin", () => {
 
 	it("B: every corner comes from the role scale", () => {
 		const radii = [...strip(sky).matchAll(/border-radius:\s*([^;!]+)/g), ...strip(site).matchAll(/border-radius:\s*([^;!]+)/g)].map((m) => m[1].trim());
-		const ok = ["var(--sk-radius)", "var(--sk-radius-panel)", "var(--sk-radius-card)", "var(--sk-radius-field)", "var(--sk-radius-thumb)", "var(--sk-radius-pill)", "0", "50%", "1px"];
+		const ok = ["var(--sk-radius)", "var(--sk-radius-frame)", "var(--sk-radius-panel)", "var(--sk-radius-card)", "var(--sk-radius-field)", "var(--sk-radius-thumb)", "var(--sk-radius-pill)", "0", "50%", "1px"];
 		expect(radii.filter((r) => !ok.includes(r))).toEqual([]);
 		// B: lo que antes era la esquina única de 2px ahora se nombra por su papel.
 		expect(radii.filter((r) => r !== "var(--sk-radius)" && r.startsWith("var(")).length).toBeGreaterThan(10);
@@ -87,23 +87,12 @@ describe("Blue Hour skin", () => {
 });
 
 describe("the inside ground", () => {
-	// B: dentro de la app, el azul de la hora azul; sólo el soporte que rodea las tomas (película) sigue neutro, para que sus colores se vean fieles.
+	// Feed vertical: dentro de la app (consolas, cuenta, admin) el mismo negro que fuera; ni azul ni soporte de película aparte.
 	const inside = sky.match(/\n\.site\.sk \{([\s\S]*?)\n\}/)?.[1] ?? "";
-	it("B: the app ground is the blue hour, #0d1022", () => {
-		expect(inside.match(/--sk-ground:\s*(#[0-9a-f]{6});/i)?.[1]).toBe("#0d1022");
+	it("the app sits on the same ground as the site", () => {
+		expect(inside).toMatch(/background: var\(--sk-ground\)/);
 	});
-	it.each(["ground", "mist", "surface", "haze"])("B: --sk-%s is a deep blue, not neutral", (name) => {
-		const hex = inside.match(new RegExp(`--sk-${name}:\\s*(#[0-9a-f]{6});`, "i"))?.[1];
-		expect(hex, `--sk-${name} inside .site.sk`).toBeDefined();
-		const [r, , b] = [1, 3, 5].map((i) => parseInt(hex!.slice(i, i + 2), 16));
-		expect(b - r).toBeGreaterThanOrEqual(12);
-		expect(b).toBeLessThanOrEqual(0x60);
-	});
-	it.each(["film", "perf"])("--sk-%s (around the shots) is a near-black neutral", (name) => {
-		const hex = inside.match(new RegExp(`--sk-${name}:\\s*(#[0-9a-f]{6});`, "i"))?.[1];
-		expect(hex, `--sk-${name} inside .site.sk`).toBeDefined();
-		const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex!.slice(i, i + 2), 16));
-		expect(Math.max(r, g, b) - Math.min(r, g, b)).toBeLessThanOrEqual(6);
-		expect(Math.max(r, g, b)).toBeLessThanOrEqual(0x2a);
+	it.each(["ground", "mist", "surface", "haze", "film", "perf"])("--sk-%s is not redefined inside the app", (name) => {
+		expect(inside).not.toMatch(new RegExp(`--sk-${name}:`));
 	});
 });
