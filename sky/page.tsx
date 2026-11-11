@@ -1,6 +1,6 @@
 /**
- * Las piezas de página del mundo de OnView («Blue Hour»), las del sitio de
- * onview: la cabecera de página con su panel de cielo, el encabezado de
+ * Las piezas de página del mundo de OnView («Feed vertical»), las del sitio de
+ * onview: la cabecera de página, el encabezado de
  * sección, el aro de icono, el recorrido en pasos, las preguntas, el control
  * segmentado y el cierre. Las mismas formas que las páginas de las hermanas.
  *
@@ -11,14 +11,12 @@
  *
  * Reglas que estas piezas ya cumplen y que una página no debe deshacer: sin
  * antetítulos sobre los titulares (el titular habla solo), sin ordinales como
- * adorno, el ámbar del lápiz graso como única acción, el cielo sólo en su panel, vidrio
- * sólo donde algo flota. Todo lo que es ejemplo lo dice (`ContactStrip`
- * con `exampleLabel`).
+ * adorno, la píldora blanca como única acción, vidrio sólo sobre un video.
+ * Todo lo que es ejemplo lo dice («Demostración»).
  */
 import type { ComponentType } from "react";
 import { ChevronDown } from "lucide-react";
 import { SkArrow, SkButton } from "./kit";
-import { BlueHourSky } from "./blue-hour-sky";
 
 /**
  * Un icono de lucide, tipado por su forma y no por la clase del paquete: cada
@@ -30,10 +28,8 @@ export type IconComponent = ComponentType<{ className?: string; strokeWidth?: nu
 // ─── la cabecera de página ───────────────────────────────────────────────────
 
 /**
- * La cabecera de una página: el cielo de la hora azul a sangre, subido bajo la
- * cabecera transparente del sitio (`-mt-16`), como la portada pero más bajo.
- * Arriba, el titular y la entradilla; la ciudad del cielo (`BlueHourSky`)
- * cierra la banda por abajo. Sin panel ni esquinas: una página no es una
+ * La cabecera de una página: el titular grande en Bricolage sobre el casi
+ * negro y la entradilla debajo. Sin panel ni esquinas: una página no es una
  * tarjeta. `aside` ocupa la derecha desde `lg`; `children` va debajo de la
  * entradilla: botones, un conmutador.
  */
@@ -51,11 +47,10 @@ export function PageHero({
 	const split = Boolean(aside);
 
 	return (
-		<section className="sk-hero-sky sk-band relative -mt-16">
-			<BlueHourSky />
-			<div className={`sk-wrap relative grid items-start gap-y-6 pb-32 pt-32 md:pb-40 md:pt-40 ${split ? "lg:grid-cols-12 lg:gap-x-10" : ""}`}>
-				<div className={split ? "lg:col-span-7" : "max-w-3xl"}>
-					<h1 className="sk-display sk-rise text-[2.5rem] sm:text-[3.25rem] lg:text-[3.75rem]">{title}</h1>
+		<section className="relative">
+			<div className={`sk-wrap relative grid items-start gap-y-6 pb-12 pt-16 md:pb-16 md:pt-24 ${split ? "lg:grid-cols-12 lg:gap-x-10" : ""}`}>
+				<div className={split ? "lg:col-span-7" : "max-w-4xl"}>
+					<h1 className="sk-display sk-rise text-[3rem] sm:text-[4rem] lg:text-[5rem]">{title}</h1>
 					{lead && (
 						<p className="sk-body sk-rise mt-6 max-w-2xl text-[1.0625rem] md:text-lg" style={{ "--i": 1 } as React.CSSProperties}>
 							{lead}
