@@ -16,7 +16,7 @@
 import {
 	Fragment,
 	useEffect,
-	useId,
+	useId, useLayoutEffect,
 	useRef,
 	useState,
 	type InputHTMLAttributes,
@@ -780,7 +780,9 @@ export function SheetDialog({
 	const titleId = useId();
 	const descId = useId();
 
-	useEffect(() => {
+	// Un efecto de maquetado: abre el diálogo antes de que corran los efectos de su
+	// contenido, que así pueden llevar el foco a donde quieran (la sección del editor).
+	useLayoutEffect(() => {
 		const dialog = ref.current;
 		if (!dialog) return;
 		if (open && !dialog.open) {

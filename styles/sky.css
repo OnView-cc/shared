@@ -64,7 +64,7 @@
 
 	/* lo que va sobre un video */
 	--sk-scrim: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.72));
-	--sk-glass: rgba(20, 20, 22, 0.55);
+	--sk-glass: rgba(20, 20, 22, 0.72);
 	--sk-glass-solid: #202024;
 	--sk-glass-edge: rgba(244, 244, 242, 0.12);
 
@@ -1636,7 +1636,7 @@
 .sk .sk-rail-cost {
 	font-size: 0.625rem;
 	line-height: 1;
-	opacity: 0.72;
+	color: inherit;
 }
 @media (hover: hover) and (pointer: fine) {
 	.sk .sk-rail-btn:not([aria-pressed="true"]):hover {

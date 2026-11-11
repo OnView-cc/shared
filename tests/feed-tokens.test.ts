@@ -37,6 +37,13 @@ describe("Feed vertical tokens", () => {
 		expect(token("radius")).toBe("var(--sk-radius-field)");
 	});
 
+	it("the glass over a video is dark enough for small white text over a bright frame (final review)", () => {
+		const alpha = Number(token("glass")!.match(/rgba\([^)]*,\s*([\d.]+)\)/)![1]);
+		expect(alpha).toBeGreaterThanOrEqual(0.7);
+		const cost = css.match(/\.sk \.sk-rail-cost \{([^}]*)\}/)![1];
+		expect(cost).not.toMatch(/opacity/);
+	});
+
 	it("Bricolage for display, Hanken Grotesk for the interface, no Archivo", () => {
 		expect(token("display")).toContain("Bricolage Grotesque Variable");
 		expect(token("font")).toContain("Hanken Grotesk Variable");
