@@ -1,116 +1,101 @@
 /*
- * El mundo visual de OnView: «Blue Hour».
+ * El mundo visual de OnView: «Feed vertical» (subproyecto 8, spec
+ * 2026-11-10-onview-feed-vertical-design). Sustituye a Blue Hour.
  *
- * Los veinte minutos después de la puesta de sol que los cineastas esperan
- * para filmar: el cielo pasa a un azul profundo y se encienden las primeras
- * luces de la ciudad. La forma (elegida por el usuario el 2026-11-09, seed
- * 5fce36d6) es la hoja de contactos: un video es una tira de fotogramas en un
- * borde de película, y el lápiz graso ámbar marca la toma elegida mientras las
- * otras siguen en la hoja. Contrato: onview/.impeccable/surfaces/.
+ * OnView se ve y se usa como el lugar donde se va a publicar el video: una toma
+ * ocupa su marco de borde a borde, el texto va abajo a la izquierda sobre un
+ * degradado oscuro, las acciones van en un riel de glifos a la derecha con su
+ * costo, y las tomas se pasan con un deslizamiento que encaja. Contrato:
+ * onview/.impeccable/surfaces/.
  *
  * Reglas del sistema:
- * - Todo es oscuro y azul (B, «Blue Hour suave», elegido el 2026-11-09). Fuera
- *   (portada, acceso) el cielo de la hora azul; dentro (app, cuenta, admin) el
- *   azul profundo con el brillo del horizonte abajo y paneles de vidrio. Sólo lo
- *   que rodea las tomas (la película) sigue neutro, para que sus colores se
- *   vean fieles.
- * - Un solo color de acción: el ámbar del lápiz graso (`--sk-accent`). Botón
- *   primario, foco, la toma elegida, la marca. Nada más es ámbar.
- * - Esquinas por papel, nunca rígidas: panel 18px, tarjeta 16px, campo 12px
- *   (`--sk-radius`), miniatura 10px y píldora para botones, chips, filtros y
- *   sellos. Círculos donde el objeto es redondo.
- * - Una familia, Archivo, en tres anchos: ancha para titulares, normal para el
- *   texto, estrecha y tabular para lo que se lee como borde de película
- *   (`.sk-edge`, `.sk-mono`): números de fotograma, código de tiempo, sellos.
- * - Elevación por vidrio y tono (ground < mist < surface < haze), con un filete
- *   de luz muy tenue y un brillo interior arriba; el primario lleva un halo
- *   ámbar suave. Las sombras, azules y bajas.
- * - Movimiento: UI ≤ 300ms con `--sk-ease-out`; los números cambian de golpe
- *   (`.sk-strike`), nunca ruedan; con movimiento reducido, sólo opacidad.
+ * - Interfaz blanca sobre casi negro, sin color de acento: el único color de la
+ *   pantalla es el del video de la persona. La acción primaria es una píldora
+ *   blanca con texto negro (`--sk-accent` es la tinta); la secundaria, una
+ *   píldora con borde. El error es un rojo cálido sólo en el texto y el ícono.
+ * - Profundidad por pisos (ground < mist < surface < haze) y filetes blancos
+ *   tenues; sin sombras decorativas sobre el negro.
+ * - El único degradado es el scrim bajo el texto de un video (`--sk-scrim`). El
+ *   vidrio (`--sk-glass`) va sólo en lo que flota sobre un video
+ *   (`.sk-over-video`); con transparencia reducida pasa a gris sólido.
+ * - Esquinas por papel: marco de video 16px, campo 12px (`--sk-radius`),
+ *   píldora redonda para botones, etiquetas y filtros.
+ * - Dos letras: Bricolage Grotesque gruesa y apretada (`--sk-display`) para
+ *   titulares, rótulos sobre video, logotipo y números grandes; Hanken Grotesk
+ *   (`--sk-font`) para la interfaz, con cifras tabulares en `.sk-num`.
+ * - Movimiento: el encaje (scroll-snap) es la firma; la UI ≤ 200ms con
+ *   `--sk-ease-out`; con movimiento reducido, cambios instantáneos y nada que
+ *   se reproduzca solo.
  */
 
 .sk {
-	--sk-ground: #0a1124;
-	--sk-mist: #0d1530;
-	--sk-surface: #111a35;
-	--sk-haze: #18233f;
-	--sk-glass: rgba(13, 21, 48, 0.82);
+	--sk-ground: #0a0a0b;
+	--sk-mist: #111113;
+	--sk-surface: #17171a;
+	--sk-haze: #202024;
 
-	--sk-ink: #e9ecf5;
-	--sk-ink-2: #b4bcd6;
-	--sk-ink-3: #8a93b4;
-	--sk-hair: rgba(233, 236, 245, 0.1);
-	--sk-hair-2: rgba(233, 236, 245, 0.2);
+	--sk-ink: #f4f4f2;
+	--sk-ink-2: #b6b6bb;
+	--sk-ink-3: #8c8c93;
+	--sk-hair: rgba(244, 244, 242, 0.08);
+	--sk-hair-2: rgba(244, 244, 242, 0.14);
 
-	/* el lápiz graso: el único color de acción */
-	--sk-accent: #f2a33a;
-	--sk-accent-soft: rgba(242, 163, 58, 0.14);
-	--sk-accent-deep: #d98a22;
-	--sk-accent-ink: #0a1124;
-	--sk-accent-hover: #f6b252;
-
-	/* el cielo de la hora azul */
-	--sk-sky-0: #070d22;
-	--sk-sky-1: #1d3a8a;
-	--sk-sky-2: #5a6fc4;
-	--sk-horizon: #f4b26a;
-	/* el borde de película: el soporte y sus perforaciones */
-	--sk-film: #060b19;
-	--sk-perf: #1b2440;
+	/* la acción es blanca: no hay color de acento */
+	--sk-accent: var(--sk-ink);
+	--sk-accent-ink: #0a0a0b;
+	--sk-accent-hover: #ffffff;
+	--sk-accent-soft: rgba(244, 244, 242, 0.1);
 
 	/* nombres que los componentes heredados siguen leyendo */
-	--sk-night: var(--sk-sky-0);
-	--sk-night-2: var(--sk-sky-1);
+	--sk-night: var(--sk-ground);
+	--sk-night-2: var(--sk-mist);
 	--sk-night-ink: var(--sk-ink);
 	--sk-night-ink-2: var(--sk-ink-2);
 
-	/* estados: la palabra manda; el color la apoya */
-	--sk-danger-bg: rgba(255, 128, 112, 0.12);
-	--sk-danger-fg: #ff9a8c;
-	--sk-warning-bg: rgba(240, 198, 116, 0.12);
-	--sk-warning-fg: #f0c674;
-	--sk-success-bg: rgba(127, 216, 177, 0.12);
-	--sk-success-fg: #86dcb6;
+	/* estados: la palabra manda; el color sólo en el error, y sólo en el texto */
+	--sk-danger-fg: #ff8f7e;
+	--sk-danger-bg: transparent;
+	--sk-warning-fg: var(--sk-ink);
+	--sk-warning-bg: transparent;
+	--sk-success-fg: var(--sk-ink);
+	--sk-success-bg: transparent;
 
-	--sk-shadow-1: 0 1px 0 rgba(233, 236, 245, 0.04) inset, 0 1px 2px rgba(2, 5, 16, 0.5);
-	--sk-shadow-2: 0 1px 2px rgba(2, 5, 16, 0.5), 0 16px 36px -18px rgba(2, 5, 16, 0.8);
-	--sk-shadow-3: 0 2px 6px rgba(2, 5, 16, 0.5), 0 36px 72px -28px rgba(2, 5, 16, 0.9);
+	/* lo que va sobre un video */
+	--sk-scrim: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, 0.72));
+	--sk-glass: rgba(20, 20, 22, 0.55);
+	--sk-glass-solid: #202024;
+	--sk-glass-edge: rgba(244, 244, 242, 0.12);
 
-	--sk-scroll: #2a3556;
-	/* B, «Blue Hour suave»: una escala de esquinas por papel */
-	--sk-radius-panel: 18px;
+	--sk-scroll: #2a2a2f;
+
+	--sk-radius-frame: 16px;
 	--sk-radius-card: 16px;
+	--sk-radius-panel: 16px;
 	--sk-radius-field: 12px;
 	--sk-radius-thumb: 10px;
 	--sk-radius-pill: 999px;
 	--sk-radius-tick: 6px;
 	--sk-radius: var(--sk-radius-field);
 
-	/* B: el vidrio de los paneles, el brillo del horizonte y el ámbar encendido */
-	--sk-glass-panel: rgba(30, 35, 62, 0.62);
-	--sk-glass-edge: rgba(255, 255, 255, 0.07);
-	--sk-glass-highlight: rgba(255, 255, 255, 0.06);
-	--sk-ambient: radial-gradient(120% 70% at 50% 112%, rgba(244, 178, 106, 0.16), rgba(90, 111, 196, 0.14) 45%, transparent 75%);
-	--sk-accent-gradient: linear-gradient(180deg, #f6b252, #ea962c);
-	--sk-accent-glow: 0 4px 14px rgba(242, 163, 58, 0.32);
 	--sk-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 	--sk-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+	--sk-ease-snap: cubic-bezier(0.32, 0.72, 0, 1);
 
-	--sk-font: "Archivo Variable", "Archivo", "Segoe UI", system-ui, sans-serif;
+	--sk-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
+	--sk-font: "Hanken Grotesk Variable", system-ui, sans-serif;
 	--sk-mono: var(--sk-font);
 
 	font-family: var(--sk-font);
 	color: var(--sk-ink);
 	font-feature-settings: "kern" 1;
-	letter-spacing: -0.004em;
 }
 
 /* El suelo del documento (va en la raíz, fuera de `.sk`: el color va escrito). */
 .sk-page {
-	background: #0a1124;
-	color: #e9ecf5;
+	background: #0a0a0b;
+	color: #f4f4f2;
 	color-scheme: dark;
-	scrollbar-color: #2a3556 #0a1124;
+	scrollbar-color: #2a2a2f #0a0a0b;
 }
 
 /* La columna del sitio: 1240px con márgenes de 16 / 24 / 32px. */
@@ -151,24 +136,26 @@
 
 /* ── tipografía ──────────────────────────────────────────────────────────── */
 .sk .sk-display {
-	font-stretch: 112%;
-	font-weight: 640;
-	letter-spacing: -0.026em;
-	line-height: 1.02;
+	font-family: var(--sk-display);
+	font-optical-sizing: auto;
+	font-weight: 800;
+	letter-spacing: -0.03em;
+	line-height: 0.98;
 	text-wrap: balance;
 	color: var(--sk-ink);
 }
 .sk .sk-h2 {
-	font-stretch: 108%;
-	font-weight: 620;
-	letter-spacing: -0.02em;
-	line-height: 1.08;
+	font-family: var(--sk-display);
+	font-optical-sizing: auto;
+	font-weight: 750;
+	letter-spacing: -0.025em;
+	line-height: 1.04;
 	text-wrap: balance;
 	color: var(--sk-ink);
 }
 .sk .sk-h3 {
-	font-weight: 600;
-	letter-spacing: -0.012em;
+	font-weight: 640;
+	letter-spacing: -0.01em;
 	line-height: 1.25;
 	text-wrap: balance;
 	color: var(--sk-ink);
@@ -187,15 +174,16 @@
 	color: var(--sk-ink);
 	font-weight: 560;
 }
-/* Lo que se lee como borde de película: números de fotograma, código de
-   tiempo, sellos, cifras de saldo. Estrecha, tabular, sin mayúsculas forzadas. */
+/* Cifras que se comparan: créditos, duraciones, precios, código de tiempo.
+   `.sk-edge` y `.sk-mono` quedan como alias de `.sk-num` para las vistas
+   heredadas. */
+.sk .sk-num,
 .sk .sk-edge,
 .sk .sk-mono {
 	font-family: var(--sk-font);
-	font-stretch: 75%;
-	font-weight: 520;
 	font-variant-numeric: tabular-nums;
-	letter-spacing: 0.02em;
+	font-weight: 560;
+	letter-spacing: 0;
 }
 /* La celda tabular del separador se estrecha sin comerse el punto (con -0.12em «19.99» se leía «1999»). */
 .sk .sk-decimal {
@@ -338,7 +326,7 @@
 }
 @media (prefers-reduced-transparency: reduce) {
 	.sk-header[data-scrolled="true"] {
-		background: #0a1124;
+		background: #0a0a0b;
 		backdrop-filter: none;
 	}
 }
