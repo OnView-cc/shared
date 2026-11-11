@@ -1434,3 +1434,244 @@
 		opacity: 0;
 	}
 }
+
+/* ══ las piezas del feed (sky/feed.tsx) ═══════════════════════════════════════ */
+/* El logotipo: la marca y «OnView» en Bricolage gruesa. */
+.sk .sk-wordmark {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-left: -4px;
+	padding: 4px;
+	font-family: var(--sk-display);
+	font-optical-sizing: auto;
+	font-weight: 800;
+	font-size: 1.1875rem;
+	letter-spacing: -0.03em;
+	text-decoration: none;
+}
+
+/* El marco de un video: de borde a borde, en su formato, con la esquina de un teléfono. */
+.sk .sk-frame {
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+	border-radius: var(--sk-radius-frame);
+	background: var(--sk-surface);
+}
+.sk .sk-frame-9x16 {
+	aspect-ratio: 9 / 16;
+}
+.sk .sk-frame-1x1 {
+	aspect-ratio: 1 / 1;
+}
+.sk .sk-frame-16x9 {
+	aspect-ratio: 16 / 9;
+}
+.sk .sk-frame > img,
+.sk .sk-frame > video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+/* Mientras se hace una toma, su imagen se apaga a gris. */
+.sk .sk-frame > img,
+.sk .sk-frame > video {
+	transition: filter 300ms var(--sk-ease-out);
+}
+.sk .sk-frame.is-dim > img,
+.sk .sk-frame.is-dim > video {
+	filter: grayscale(1) brightness(0.5);
+}
+/* El rótulo: abajo a la izquierda, sobre el scrim, en dos líneas como mucho. */
+.sk .sk-caption-wrap {
+	position: absolute;
+	inset: auto 0 0 0;
+	padding: 36% 12px 12px;
+	pointer-events: none;
+}
+.sk .sk-caption {
+	margin: 0;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	overflow-wrap: anywhere;
+	font-family: var(--sk-display);
+	font-optical-sizing: auto;
+	font-weight: 800;
+	font-size: 1rem;
+	line-height: 1.08;
+	letter-spacing: -0.02em;
+	color: var(--sk-ink);
+	text-wrap: balance;
+}
+
+/* La lámina: un marco sin imagen; las franjas son los colores del kit o de la toma. */
+.sk .sk-sheet-frame {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	background: var(--sk-mist);
+	box-shadow: inset 0 0 0 1px var(--sk-hair);
+}
+.sk .sk-sheet-stripes {
+	position: absolute;
+	inset: 0;
+	display: flex;
+}
+.sk .sk-sheet-stripes > i {
+	flex: 1;
+}
+.sk .sk-sheet-title {
+	position: relative;
+	margin: 0;
+	padding: 14px;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+	overflow: hidden;
+	overflow-wrap: anywhere;
+	font-family: var(--sk-display);
+	font-optical-sizing: auto;
+	font-weight: 800;
+	font-size: 1.0625rem;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--sk-ink-2);
+}
+.sk .sk-sheet-stripes ~ .sk-sheet-title {
+	padding-top: 40%;
+	background: var(--sk-scrim);
+	color: var(--sk-ink);
+}
+
+/* La etiqueta de estado (spec §3.5). */
+.sk .sk-tag {
+	display: inline-flex;
+	align-items: center;
+	height: 24px;
+	padding: 0 10px;
+	border-radius: var(--sk-radius-pill);
+	font-size: 0.75rem;
+	font-weight: 600;
+	line-height: 1;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.sk .sk-tag--line {
+	color: var(--sk-ink);
+	box-shadow: inset 0 0 0 1px var(--sk-line);
+}
+.sk .sk-tag--solid {
+	color: var(--sk-accent-ink);
+	background: var(--sk-ink);
+}
+.sk .sk-tag--alert {
+	color: var(--sk-danger-fg);
+	box-shadow: inset 0 0 0 1px currentColor;
+}
+
+/* Las barras de avance por toma, como en las historias. */
+.sk .sk-story {
+	display: flex;
+	gap: 4px;
+}
+.sk .sk-story > span {
+	flex: 1;
+	height: 3px;
+	overflow: hidden;
+	border-radius: var(--sk-radius-pill);
+	background: var(--sk-line);
+}
+.sk .sk-story > span > i {
+	display: block;
+	height: 100%;
+	background: var(--sk-ink);
+	transform: scaleX(0);
+	transform-origin: left center;
+	transition: transform 120ms linear;
+}
+.sk .sk-story > span.is-done > i {
+	transform: none;
+}
+
+/* Un glifo del riel: trazo fino, la etiqueta corta debajo y su costo. */
+.sk .sk-rail-btn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 3px;
+	width: 60px;
+	padding: 9px 4px 8px;
+	border-radius: var(--sk-radius-card);
+	color: var(--sk-ink);
+	cursor: pointer;
+	transition:
+		transform 120ms var(--sk-ease-out),
+		background-color 160ms ease,
+		color 160ms ease;
+}
+.sk .sk-rail-btn:active {
+	transform: scale(0.96);
+}
+.sk .sk-rail-btn[aria-pressed="true"] {
+	background: var(--sk-ink);
+	color: var(--sk-accent-ink);
+}
+.sk .sk-rail-icon {
+	width: 22px;
+	height: 22px;
+}
+.sk .sk-rail-label {
+	max-width: 100%;
+	font-size: 0.6875rem;
+	font-weight: 600;
+	line-height: 1.1;
+	text-align: center;
+	overflow-wrap: anywhere;
+}
+.sk .sk-rail-cost {
+	font-size: 0.625rem;
+	line-height: 1;
+	opacity: 0.72;
+}
+@media (hover: hover) and (pointer: fine) {
+	.sk .sk-rail-btn:not([aria-pressed="true"]):hover {
+		background: var(--sk-haze);
+	}
+}
+
+/* Lumen mientras piensa: el halo late. */
+.sk-ai-thinking .sk-ai-halo {
+	transform-box: fill-box;
+	transform-origin: center;
+	animation: sk-halo 1.4s var(--sk-ease-in-out) infinite;
+}
+@keyframes sk-halo {
+	0%,
+	100% {
+		transform: scale(0.82);
+		opacity: 0.22;
+	}
+	50% {
+		transform: scale(1.08);
+		opacity: 0.62;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sk .sk-rail-btn:active {
+		transform: none;
+	}
+	.sk-ai-thinking .sk-ai-halo {
+		animation: none;
+	}
+	.sk .sk-story > span > i,
+	.sk .sk-frame > img,
+	.sk .sk-frame > video {
+		transition: none;
+	}
+}

@@ -1,57 +1,42 @@
 /**
- * Las piezas del mundo de OnView («Blue Hour»): la marca, el botón como enlace
- * y la flecha. La geometría de la marca vive una sola vez en `mark.ts`.
+ * Las piezas de marca del mundo de OnView («Feed vertical»): la marca, el
+ * símbolo de Lumen, el logotipo, el botón como enlace y la flecha. La
+ * geometría vive una sola vez en `mark.ts` y `ai-mark.ts`.
  */
-import { useId } from "react";
 import { ArrowRight } from "lucide-react";
 import { MARK, MARK_COLORS, type MarkTone } from "./mark";
 import { AI_MARK } from "./ai-mark";
+import { useReducedMotion } from "./hooks";
 
-/** La marca: el fotograma y el círculo abierto del lápiz graso. `tone="paper"` sobre papel claro. */
+/** La marca: el marco 9:16 con su rótulo. `tone="paper"` sobre papel claro. */
 export function Mark({ className = "size-6", tone = "night" }: { className?: string; tone?: MarkTone }) {
 	const c = MARK_COLORS[tone];
-	const { frame: f, grease: g } = MARK;
+	const { frame: f, caption: k } = MARK;
 	return (
 		<svg viewBox={MARK.viewBox} className={className} aria-hidden="true">
-			<rect x={f.x} y={f.y} width={f.w} height={f.h} rx={f.rx} fill="none" stroke={c.frame} strokeWidth={f.width} />
-			<path d={g.d} fill="none" stroke={c.grease} strokeWidth={g.width} strokeLinecap="round" strokeLinejoin="round" />
+			<rect x={f.x} y={f.y} width={f.w} height={f.h} rx={f.rx} fill="none" stroke={c} strokeWidth={f.width} />
+			<rect x={k.x} y={k.y} width={k.w} height={k.h} rx={k.rx} fill={c} />
 		</svg>
 	);
 }
 
-/** Lumen, la IA: la ventana encendida con su cruceta; de noche, un halo tenue. */
-export function AiMark({ className = "size-6", tone = "night" }: { className?: string; tone?: MarkTone }) {
-	// useId trae caracteres que una referencia url(#…) de SVG no admite.
-	const halo = `lumen${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
-	const { window: w, mullion: m, sill: s } = AI_MARK;
-	const fill = w.fill[tone];
-	const cx = w.x + w.w / 2;
+/** Lumen, la IA: un punto blanco con halo. `thinking`: el halo late mientras piensa (nunca con movimiento reducido). */
+export function AiMark({ className = "size-6", tone = "night", thinking = false }: { className?: string; tone?: MarkTone; thinking?: boolean }) {
+	const reduced = useReducedMotion();
+	const c = MARK_COLORS[tone];
+	const { dot, halo } = AI_MARK;
 	return (
-		<svg viewBox={AI_MARK.viewBox} className={className} aria-hidden="true">
-			{tone === "night" && (
-				<>
-					<defs>
-						<filter id={halo} x="-50%" y="-50%" width="200%" height="200%">
-							<feGaussianBlur stdDeviation={AI_MARK.halo.blur} />
-						</filter>
-					</defs>
-					<rect x={w.x} y={w.y} width={w.w} height={w.h} rx={w.rx} fill={fill} opacity={AI_MARK.halo.opacity} filter={`url(#${halo})`} />
-				</>
-			)}
-			<rect x={w.x} y={w.y} width={w.w} height={w.h} rx={w.rx} fill={fill} />
-			<line x1={cx} y1={w.y} x2={cx} y2={w.y + w.h} stroke={m.color[tone]} strokeWidth={m.width} />
-			<line x1={w.x} y1={m.crossY} x2={w.x + w.w} y2={m.crossY} stroke={m.color[tone]} strokeWidth={m.width} />
-			<path d={`M${w.x - 1} ${s.y}H${w.x + w.w + 1}`} stroke={s.color[tone]} strokeWidth={s.width} strokeLinecap="round" />
+		<svg viewBox={AI_MARK.viewBox} className={`sk-ai-mark ${thinking && !reduced ? "sk-ai-thinking" : ""} ${className}`} aria-hidden="true">
+			<circle className="sk-ai-halo" cx={12} cy={12} r={halo.r} fill="none" stroke={c} strokeWidth={halo.width} opacity={halo.opacity} />
+			<circle cx={12} cy={12} r={dot.r} fill={c} />
 		</svg>
 	);
 }
 
-/** La marca con su nombre: «OnView» en Archivo ancha y firme. Hereda el color de quien la monta. */
+/** La marca con su nombre: «OnView» en Bricolage gruesa. Hereda el color de quien la monta. */
 export function Wordmark({ href, className = "", tone = "night" }: { href: string; className?: string; tone?: MarkTone }) {
 	return (
-		<a
-			href={href}
-			className={`inline-flex items-center gap-2 -ml-1 px-1 py-1 text-[1.125rem] font-[640] tracking-[-0.018em] [font-stretch:112%] no-underline ${tone === "paper" ? "text-(--sk-accent-ink)" : "text-(--sk-ink)"} ${className}`}>
+		<a href={href} className={`sk-wordmark ${tone === "paper" ? "text-(--sk-accent-ink)" : "text-(--sk-ink)"} ${className}`}>
 			<Mark tone={tone} />
 			OnView
 		</a>
@@ -62,7 +47,7 @@ export function SkArrow({ className = "size-4" }: { className?: string }) {
 	return <ArrowRight className={`sk-arrow shrink-0 ${className}`} strokeWidth={1.75} aria-hidden="true" />;
 }
 
-/** Un botón de fotograma (2px) como enlace. `primary` (ámbar, con texto de tinta) es la acción principal de cada vista. */
+/** Una píldora como enlace. `primary` (blanca, con texto negro) es la acción principal de cada vista; `quiet` lleva borde. */
 export function SkButton({
 	href,
 	children,

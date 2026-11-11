@@ -1,33 +1,31 @@
-/** La marca de Blue Hour: un fotograma rodeado por el círculo abierto del lápiz graso ámbar. */
+/** La marca del mundo Feed vertical: un marco 9:16 redondeado con el rótulo macizo en su tercio bajo. */
 import { describe, expect, it } from "vitest";
 import { MARK, MARK_COLORS, markSvg } from "./mark";
 
 describe("markSvg", () => {
-	it("draws the grease circle in amber over the paper-coloured frame at night", () => {
-		const svg = markSvg("night");
-		expect(svg).toContain("#f2a33a");
-		expect(svg).toContain(MARK_COLORS.night.frame);
-		expect(MARK_COLORS.night.frame).toBe("#e9ecf5");
-	});
-
-	it("on paper the frame is the film-rebate ink", () => {
-		expect(MARK_COLORS.paper.frame).toBe("#0a1124");
-		expect(markSvg("paper")).toContain("#0a1124");
-	});
-
-	it("the circle is one hand-drawn open stroke, never a geometric circle", () => {
-		const svg = markSvg("night");
-		expect(svg).not.toMatch(/<circle|<ellipse/);
-		expect(svg).toMatch(/<path d="M[^"]+" fill="none" stroke="#f2a33a" stroke-width="[\d.]+" stroke-linecap="round" stroke-linejoin="round"\/>/);
-		// abierto: el trazo no vuelve a su punto de partida
-		const [start] = MARK.grease.d.match(/^M\s*[\d.]+\s+[\d.]+/)!;
-		expect(MARK.grease.d.trim().endsWith(start.slice(1).trim())).toBe(false);
-	});
-
-	it("the frame is a 4:3 film frame with the 2px corner of the world", () => {
+	it("is a rounded vertical 9:16 frame", () => {
 		const { w, h, rx } = MARK.frame;
-		expect(w / h).toBeCloseTo(4 / 3, 2);
-		expect(rx).toBeLessThanOrEqual(1.5);
+		expect(w / h).toBeCloseTo(0.5625, 2);
+		expect(rx).toBeGreaterThan(1.5);
+		expect(markSvg("night")).toMatch(/<rect [^>]*rx="[\d.]+"[^>]*fill="none"/);
+	});
+
+	it("carries a solid caption bar in the lower third of the frame", () => {
+		const { frame: f, caption: c } = MARK;
+		expect(c.y).toBeGreaterThan(f.y + (f.h * 2) / 3 - 1);
+		expect(c.y + c.h).toBeLessThan(f.y + f.h);
+		expect(c.x).toBeGreaterThan(f.x);
+		expect(markSvg("night")).toMatch(/<rect [^>]*fill="#f4f4f2"\/>/);
+	});
+
+	it("is white on the ground and black on paper, with no other colour", () => {
+		expect(MARK_COLORS.night).toBe("#f4f4f2");
+		expect(MARK_COLORS.paper).toBe("#0a0a0b");
+		for (const tone of ["night", "paper"] as const) {
+			const colours = new Set(markSvg(tone).match(/#[0-9a-f]{6}/gi));
+			expect([...colours]).toEqual([MARK_COLORS[tone]]);
+		}
+		expect(markSvg("night")).not.toMatch(/f2a33a/i);
 	});
 
 	it("is a square standalone svg at the size it is asked for, with no text inside", () => {

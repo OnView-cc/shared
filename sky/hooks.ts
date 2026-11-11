@@ -10,7 +10,7 @@
  * recarga completa en cada cambio de texto es justo lo que el servidor de
  * desarrollo está para evitar.
  */
-import { useCallback, useState, useEffect, useRef, type RefObject } from "react";
+import { useCallback, useState, useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from "react";
 
 /**
  * El reloj del horario en milisegundos, leído de `--clock` en `.site` para que
@@ -148,4 +148,35 @@ export function useMountVisible() {
 		return () => cancelAnimationFrame(id);
 	}, []);
 	return visible;
+}
+
+/** `true` cuando la persona pidió menos movimiento; se reevalúa si cambia. */
+export function useReducedMotion(): boolean {
+	return useNarrow("(prefers-reduced-motion: reduce)");
+}
+
+/** Lo que escribe la persona no mueve nada: dentro de un campo, las flechas son del campo. */
+function isTyping(target: EventTarget | null): boolean {
+	if (!(target instanceof HTMLElement)) return false;
+	return target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+}
+
+/**
+ * El paso de toma con las flechas (spec §4.6): abajo o a la derecha, la
+ * siguiente; arriba o a la izquierda, la anterior; sin salirse de los límites.
+ * Devuelve el manejador para el `onKeyDown` del contenedor.
+ */
+export function useStepKeys({ count, index, onIndex, keys }: { count: number; index: number; onIndex: (i: number) => void; keys?: "vertical" | "horizontal" }) {
+	return useCallback(
+		(e: ReactKeyboardEvent | KeyboardEvent) => {
+			if (isTyping(e.target) || e.altKey || e.ctrlKey || e.metaKey) return;
+			const next = keys === "horizontal" ? { ArrowRight: 1, ArrowLeft: -1 } : keys === "vertical" ? { ArrowDown: 1, ArrowUp: -1 } : { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+			const step = next[e.key as keyof typeof next];
+			if (!step) return;
+			const to = Math.min(count - 1, Math.max(0, index + step));
+			e.preventDefault();
+			if (to !== index) onIndex(to);
+		},
+		[count, index, onIndex, keys],
+	);
 }

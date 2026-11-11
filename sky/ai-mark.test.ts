@@ -1,4 +1,4 @@
-/** Lumen, la IA de OnView: su nombre y su símbolo, la primera ventana que se enciende a la hora azul. */
+/** Lumen, la IA de OnView: su nombre y su símbolo, un punto blanco con halo. */
 import { describe, expect, it } from "vitest";
 import { AI_MARK, AI_NAME, aiMarkSvg } from "./ai-mark";
 
@@ -7,18 +7,18 @@ describe("Lumen", () => {
 		expect(AI_NAME).toBe("Lumen");
 	});
 
-	it("draws a lit amber window with its mullions in both tones", () => {
-		for (const tone of ["night", "paper"] as const) {
-			const svg = aiMarkSvg(tone);
-			expect(svg).toContain(AI_MARK.window.fill[tone]);
-			expect(svg.match(/<line /g)?.length).toBe(2);
-		}
-		expect(AI_MARK.window.fill.night).toBe("#f2a33a");
+	it("draws a solid dot inside a faint halo ring", () => {
+		const svg = aiMarkSvg("night");
+		expect(svg).toMatch(new RegExp(`<circle [^>]*r="${AI_MARK.dot.r}"[^>]*fill="#f4f4f2"`));
+		const ring = svg.match(/<circle [^>]*fill="none"[^>]*opacity="([\d.]+)"/);
+		expect(ring).not.toBeNull();
+		expect(Number(ring![1])).toBeLessThan(1);
+		expect(AI_MARK.halo.r).toBeGreaterThan(AI_MARK.dot.r);
 	});
 
-	it("glows only at night", () => {
-		expect(aiMarkSvg("night")).toContain("feGaussianBlur");
-		expect(aiMarkSvg("paper")).not.toContain("feGaussianBlur");
+	it("is white on the ground and black on paper, never amber", () => {
+		expect(aiMarkSvg("paper")).toContain("#0a0a0b");
+		for (const tone of ["night", "paper"] as const) expect(aiMarkSvg(tone)).not.toMatch(/f2a33a|d98a22/i);
 	});
 
 	it("is a square standalone svg at the size asked", () => {
