@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 /**
- * Blue Hour es oscuro entero (spec §10): el cielo fuera, la tinta del editor
- * dentro. No hay tema claro ni lo elige el sistema.
+ * El mundo Feed vertical es oscuro entero (subproyecto 8): el mismo casi negro
+ * fuera y dentro. No hay tema claro ni lo elige el sistema.
  *
  * Este proveedor sobrevive para que las apps que lo montan sigan compilando. No
  * lee `localStorage` ni escucha al sistema: pone la clase `dark` en la raíz

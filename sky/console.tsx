@@ -1,5 +1,5 @@
 /**
- * Las piezas de la consola, en el mundo «Blue Hour» (2026-11-09).
+ * Las piezas de la consola, en el mundo «Feed vertical» (2026-11-09).
  *
  * Vienen de las consolas de la familia; las pintan onview (el área con sesión)
  * y admin, con el bloque de consola de `styles/sky.css`. La API es la de cuando
@@ -296,7 +296,7 @@ export function Monogram({ name, logoUrl, size = "md" }: { name: string; logoUrl
 					? "size-6 rounded-(--sk-radius-tick) text-[0.625rem]"
 					: "size-11 rounded-(--sk-radius-thumb) text-[0.8125rem]";
 	if (logoUrl && failed !== logoUrl) {
-		return <img src={logoUrl} alt="" onError={() => setFailed(logoUrl)} className={`${box} shrink-0 object-cover shadow-(--sk-shadow-1)`} />;
+		return <img src={logoUrl} alt="" onError={() => setFailed(logoUrl)} className={`${box} shrink-0 object-cover shadow-[inset_0_0_0_1px_var(--sk-hair)]`} />;
 	}
 	return (
 		<span aria-hidden="true" className={`${box} inline-flex shrink-0 items-center justify-center bg-(--sk-haze) font-semibold text-(--sk-ink-2)`}>

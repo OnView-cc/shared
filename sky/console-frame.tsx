@@ -1,5 +1,5 @@
 /**
- * El marco de consola del admin, en el mundo «Blue Hour»: la forma de una app de
+ * El marco de consola del admin, en el mundo «Feed vertical»: la forma de una app de
  * trabajo, la misma que el área con sesión de onview.
  *
  * - A la izquierda, la barra lateral: la marca con el nombre de la consola, sus
@@ -14,7 +14,7 @@
  *
  * Vive en `@onview/shared` y cada consola le pasa sus destinos. La raíz lleva
  * `site sk` para que el vocabulario del mapa que aún escriben las vistas se
- * pinte en Blue Hour (bloque de consola de `styles/sky.css`). Mientras se ve, el
+ * pinte en el mundo Feed vertical (bloque de consola de `styles/sky.css`). Mientras se ve, el
  * documento entero lleva esa tinta (`useDayDocument(INSIDE_GROUND)`).
  *
  * Salir: un enlace de cuenta con `href: "#signout"` cierra la sesión en el apex
@@ -201,7 +201,7 @@ export function ConsoleFrame({
 						className="absolute inset-0 bg-[rgba(4,8,22,0.66)] backdrop-blur-[2px]"
 						onClick={() => setDrawerAt(null)}
 					/>
-					<aside className="sk-sheet sk-sidebar absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col overflow-y-auto px-3 pb-4 pt-4 shadow-(--sk-shadow-3)">
+					<aside className="sk-sheet sk-sidebar absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col overflow-y-auto px-3 pb-4 pt-4 shadow-[inset_-1px_0_0_var(--sk-hair)]">
 						{sidebar}
 					</aside>
 				</div>

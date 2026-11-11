@@ -1,5 +1,5 @@
 /**
- * El desplegable del mundo de OnView («Blue Hour»), sobre Radix: el
+ * El desplegable del mundo de OnView («Feed vertical»), sobre Radix: el
  * disparador es un campo (`variant="field"`) o una píldora de la caja de
  * «Nuevo video» (`variant="chip"`), y las opciones un panel de niebla que sale
  * de su disparador. Sustituye al `<select>` nativo, cuya lista pinta el
