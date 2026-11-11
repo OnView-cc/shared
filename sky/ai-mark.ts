@@ -11,7 +11,7 @@
  * legales. Geometría en un lienzo de 24; la pintan `AiMark` (`kit.tsx`) y
  * `aiMarkSvg` (texto, para el kit de marca).
  */
-import { MARK_COLORS, type MarkTone } from "./mark";
+import type { MarkTone } from "./mark";
 
 export const AI_NAME = "Lumen";
 
@@ -19,11 +19,13 @@ export const AI_MARK = {
 	viewBox: "0 0 24 24",
 	dot: { r: 4.4 },
 	halo: { r: 8.6, width: 1.6, opacity: 0.38 },
+	/** Los mismos dos de la marca (`MARK_COLORS`); escritos aquí para que el script de marca lo cargue sin resolver módulos. */
+	colors: { night: "#f4f4f2", paper: "#0a0a0b" } as Record<MarkTone, string>,
 } as const;
 
 /** El símbolo como SVG autónomo. */
 export function aiMarkSvg(tone: MarkTone, size = 24): string {
-	const c = MARK_COLORS[tone];
+	const c = AI_MARK.colors[tone];
 	const { dot, halo } = AI_MARK;
 	return (
 		`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${AI_MARK.viewBox}">` +

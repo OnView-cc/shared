@@ -15,7 +15,7 @@ export const MARK = {
 	/** El marco: 14.4 × 25.6 (9:16), centrado, con la esquina de un teléfono. */
 	frame: { x: 8.8, y: 3.2, w: 14.4, h: 25.6, rx: 3.6, width: 2.4 },
 	/** El rótulo: una barra maciza abajo a la izquierda, dentro del marco. */
-	caption: { x: 12.2, y: 21.2, w: 7.6, h: 2.8, rx: 1.4 },
+	caption: { x: 11.8, y: 21.2, w: 5.8, h: 2.8, rx: 1.4 },
 } as const;
 
 /** `night`: sobre el casi negro. `paper`: sobre papel claro (correos, documentos). */
