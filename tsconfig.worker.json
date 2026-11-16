@@ -13,5 +13,6 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["worker"]
+  "include": ["worker", "video"],
+  "exclude": ["video/**/*.test.ts"]
 }

@@ -8,7 +8,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	esbuild: { jsx: "automatic" },
 	test: {
-		include: ["tests/**/*.test.ts", "sky/**/*.test.ts", "sky/**/*.test.tsx"],
+		include: ["tests/**/*.test.ts", "sky/**/*.test.ts", "sky/**/*.test.tsx", "video/**/*.test.ts"],
 		environment: "node",
 	},
 });
