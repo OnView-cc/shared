@@ -77,3 +77,10 @@ Spec: `OnView.cc/docs/superpowers/specs/2026-11-08-onview-plataforma-design.md`.
 - Piezas nuevas en `sky/feed.tsx`: `VideoFrame`, `SheetFrame`, `StateTag`, `StoryBars` y `RailButton`. Hooks nuevos: `useReducedMotion` y `useStepKeys` (ignora las flechas dentro de un campo y con Alt, Ctrl o Meta).
 - La marca es un marco 9:16 con el rótulo abajo a la izquierda (`mark.ts`); Lumen, un punto con halo que late con `AiMark thinking` (`ai-mark.ts` lleva sus colores escritos para que el script de marca lo cargue sin resolver módulos).
 - Borrados: `blue-hour-sky`, `grease` (y `grease-paths`), `strike-number`, `contact-strip` y sus pruebas. `PageHero` ya no pinta el cielo.
+
+## v2.1.0: `video/`, cómo se arma un video (subproyecto 5 de OnView, 2026-11-16)
+
+- `video/compose.ts`: `composeVideo` convierte los datos de un proyecto, lo que decide su kit y los límites del plan en la **composición** (escenas con recorte, textos con su momento, logo, voces, música, efectos, cierre de 2 s, marca de agua, tamaño del cuadro). La usan el editor (con URL) y la exportación (con claves del almacén): por eso vive aquí y no en onview.
+- `video/mix.ts`: `resolveAudio` resuelve con las duraciones reales lo que la composición no puede saber: la voz que no cabe se acelera hasta 1.15× y, si aun así no cabe, se corta con un fundido de 0.15 s; la música baja al 45 % bajo la voz con rampas de 0.25 s. El volumen de la música es una lista de puntos unidos por rectas, y esa lista es la verdad para el navegador y para ffmpeg.
+- `video/brand.ts`: las reglas de qué marca, qué versión del logo y qué tipografía lleva un video salen de `onview/src/features/brand` sin cambiar; onview las re-exporta.
+- Las fracciones del texto, del logo y de la marca de agua son del lado corto del cuadro y viven en `compose.ts`: el CSS del editor y la exportación leen las mismas.
