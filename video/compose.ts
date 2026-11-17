@@ -204,8 +204,16 @@ export function composeVideo(input: ComposeInput): Composition {
 	const voices: VoiceCue[] = [];
 	let at = 0;
 	for (const shot of [...input.shots].sort((a, b) => a.position - b.position)) {
-		const from = shot.clip ? shot.trimIn : 0;
-		const to = shot.clip ? (shot.trimOut ?? shot.clip.seconds) : shot.seconds;
+		// El recorte se valida contra lo pedido, no contra el clip: una entrada más allá de su final
+		// vuelve dentro de él, y una escena nunca acaba antes de empezar (revisión final, I1).
+		let from = 0;
+		let to = shot.seconds;
+		if (shot.clip) {
+			const length = shot.clip.seconds;
+			from = Math.min(Math.max(0, shot.trimIn), Math.max(0, length - 1 / FPS));
+			to = shot.trimOut ?? length;
+			if (!(to > from)) to = Math.max(from + 1 / FPS, length);
+		}
 		const length = Math.max(0, to - from);
 		scenes.push({ shotId: shot.id, src: shot.clip?.src ?? null, still: shot.clip ? null : shot.still, from, to, at });
 		const textIn = Math.min(Math.max(0, shot.textIn), length);

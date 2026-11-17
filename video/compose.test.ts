@@ -134,3 +134,19 @@ describe("chooseVersion", () => {
 		expect(chooseVersion([], null)).toBeNull();
 	});
 });
+
+describe("composeVideo and impossible trims (review I1)", () => {
+	it("keeps a scene whose trim starts at or past the end of its clip inside the clip", () => {
+		const c = composeVideo({ ...base, shots: [shot({ clip: { src: "A", seconds: 6 }, trimIn: 7 }), shot({ id: "b", position: 1, clip: { src: "B", seconds: 4 } })] });
+		const [a, b] = c.scenes;
+		expect(a!.from).toBeLessThan(6);
+		expect(a!.to).toBeGreaterThan(a!.from);
+		expect(b!.at).toBeCloseTo(a!.to - a!.from);
+	});
+
+	it("never lets a scene end before it starts", () => {
+		const c = composeVideo({ ...base, shots: [shot({ clip: { src: "A", seconds: 6 }, trimIn: 3, trimOut: 2 })] });
+		expect(c.scenes[0]!.to).toBeGreaterThan(c.scenes[0]!.from);
+		expect(c.total).toBeGreaterThan(0);
+	});
+});
