@@ -48,6 +48,12 @@ export const LOGO_MAX_H = 0.12;
 /** El logo del cierre: centrado, dentro de estas fracciones del ancho y del alto. */
 export const CLOSING_LOGO_W = 0.6;
 export const CLOSING_LOGO_H = 0.22;
+/** Dónde va el centro del logo del cierre, como fracción del alto: solo, al medio; con la línea, un poco más arriba. */
+export const CLOSING_LOGO_Y = 0.5;
+export const CLOSING_LOGO_Y_WITH_TEXT = 0.44;
+/** El centro de la línea del cierre, como fracción del alto, y su tamaño, del lado corto. */
+export const CLOSING_TEXT_Y = 0.62;
+export const CLOSING_TEXT_SIZE = 0.044;
 /** La marca de agua de los planes que la llevan: esquina, margen y ancho (del lado corto) y opacidad. */
 export const WATERMARK = { corner: "top-left", margin: 0.028, width: 0.2, opacity: 0.6 } as const;
 
