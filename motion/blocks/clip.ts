@@ -17,9 +17,9 @@
  */
 import { gsap } from "gsap";
 import { FALLBACK_CLOSING, FPS, LOGO_MARGIN, LOGO_MAX_H, LOGO_MAX_W, TEXT_BOTTOM, TEXT_SIDE, TEXT_SIZE, TEXT_TOP } from "../../video/compose";
-import { placeImages } from "../../video/scene-images";
 import { registerBlock } from "../registry";
 import type { ClipParams } from "../types";
+import { drawSceneImages } from "./scene-images";
 
 registerBlock("clip", (ctx) => {
 	const { el, tl, moment, u, doc: motion } = ctx;
@@ -81,21 +81,7 @@ registerBlock("clip", (ctx) => {
 
 	// Las imágenes de escena, en su caja y con su entrada.
 	const text = params.text.trim();
-	const placed = placeImages({ layout: params.imagesLayout, entrance: params.imagesEntrance, images: moment.images, format: motion.format, seconds: moment.seconds, textPosition: text ? params.textPosition : null });
-	for (const p of placed) {
-		const image = moment.images[p.index]!;
-		const img = doc.createElement("img");
-		img.className = "motion-img motion-sceneimg";
-		img.alt = "";
-		img.src = image.src;
-		Object.assign(img.style, { left: `${p.x * W}px`, top: `${p.y * H}px`, width: `${p.w * W}px`, height: `${p.h * H}px` });
-		el.appendChild(img);
-		gsap.set(img, { opacity: 0, y: 0 });
-		const from = moment.at + p.from;
-		if (p.fade > 0) tl.fromTo(img, { opacity: 0, y: p.rise * short }, { opacity: 1, y: 0, duration: p.fade, ease: "power2.out", immediateRender: false }, from);
-		else tl.set(img, { opacity: 1 }, from);
-		if (p.to < moment.seconds - 1e-6) tl.set(img, { opacity: 0 }, moment.at + p.to);
-	}
+	drawSceneImages(ctx, params.imagesLayout, params.imagesEntrance, text ? params.textPosition : null);
 
 	// El logo de la esquina.
 	if (motion.brand.sceneLogo) {

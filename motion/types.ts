@@ -29,6 +29,9 @@ export interface TextParams {
 	lines: string[];
 	/** Un fondo de color propio (`#rrggbb`); null = el fondo del template. */
 	color: string | null;
+	/** Cómo se colocan y entran las imágenes de la escena (las tarjetas de antes); sin ellas, rejilla y una a una. */
+	imagesLayout?: ImagesLayout;
+	imagesEntrance?: ImagesEntrance;
 }
 
 export interface IconsParams {
@@ -125,7 +128,12 @@ const oneOf = <T extends string>(raw: unknown, values: readonly T[], fallback: T
 export function parseBlockParams<K extends BlockKind>(block: K, raw: unknown): BlockParams[K] {
 	const r = obj(raw);
 	const out: { [B in BlockKind]: () => BlockParams[B] } = {
-		text: () => ({ lines: lines(r.lines), color: hex(r.color) }),
+		text: () => {
+			const out: TextParams = { lines: lines(r.lines), color: hex(r.color) };
+			if ((["grid", "sequence", "center", "corner"] as const).includes(r.imagesLayout as ImagesLayout)) out.imagesLayout = r.imagesLayout as ImagesLayout;
+			if ((["none", "fade", "stagger"] as const).includes(r.imagesEntrance as ImagesEntrance)) out.imagesEntrance = r.imagesEntrance as ImagesEntrance;
+			return out;
+		},
 		product: () => ({ lines: lines(r.lines) }),
 		logo: () => ({ line: str(r.line, MAX_LINE) }),
 		icons: () => {

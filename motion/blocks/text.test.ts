@@ -61,6 +61,25 @@ describe("text block", () => {
 	});
 });
 
+describe("text block with scene images", () => {
+	it("a text moment draws its scene images with their layout, entering one by one", async () => {
+		const images = [0, 1, 2, 3].map((i) => ({ id: `i${i}`, src: `i${i}.png`, width: 400, height: 400 }));
+		const m = mount([{ ...shot("text", { lines: ["Too many apps"], color: "#0b1f44", imagesLayout: "grid", imagesEntrance: "stagger" }, 8), images }]);
+		const imgs = [...root.querySelectorAll<HTMLElement>("img.motion-sceneimg")];
+		expect(imgs.map((i) => i.getAttribute("src"))).toEqual(["i0.png", "i1.png", "i2.png", "i3.png"]);
+		await m.seek(0.05);
+		expect(op(imgs[3])).toBe(0);
+		await m.seek(3);
+		expect(imgs.every((i) => op(i) === 1)).toBe(true);
+	});
+
+	it("parses the images layout of a text moment only when it is given", () => {
+		expect(parseBlockParams("text", { lines: ["a"] })).toEqual({ lines: ["a"], color: null });
+		expect(parseBlockParams("text", { imagesLayout: "center", imagesEntrance: "fade" })).toMatchObject({ imagesLayout: "center", imagesEntrance: "fade" });
+		expect(parseBlockParams("text", { imagesLayout: "nope" })).toEqual({ lines: [], color: null });
+	});
+});
+
 describe("logo block", () => {
 	it("the closing shows the closing logo and its line over the closing colour", async () => {
 		const m = mount([shot("text", { lines: ["Hola"] }, 4)], "onview.cc");

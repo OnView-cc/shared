@@ -5,6 +5,9 @@
  * transición del momento. El tamaño y los cortes de línea los decide
  * `textLayout` según el formato.
  *
+ * Si el momento lleva imágenes de escena (las tarjetas de antes), las coloca
+ * con su disposición y su entrada, dejando libre la franja del texto.
+ *
  * Sobre el fondo del template escribe con la tinta del fondo (`ctx.ink`); con
  * un color propio (`params.color`), rellena la capa y elige blanco o negro, el
  * que se lea.
@@ -14,6 +17,7 @@ import { textLayout } from "../layout";
 import { gsap } from "gsap";
 import { registerBlock } from "../registry";
 import type { TextParams } from "../types";
+import { drawSceneImages } from "./scene-images";
 
 /** Cuándo entra cada grupo: en los golpes 1, 2, 3…; en un momento corto, más juntos. */
 export function entryBeats(groups: number, beats: number): number[] {
@@ -58,6 +62,8 @@ registerBlock("text", (ctx) => {
 		return span;
 	});
 	fill.appendChild(text);
+	// Las imágenes de la escena (las tarjetas de antes con logos), bajo el texto; dejan libre su franja.
+	if (moment.images.length) drawSceneImages(ctx, params.imagesLayout ?? "grid", params.imagesEntrance ?? "stagger", groups.length ? "center" : null);
 	el.appendChild(fill);
 
 	const beats = moment.seconds / ctx.beatSeconds;
