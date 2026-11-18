@@ -5,3 +5,5 @@
 import "./text";
 import "./logo";
 import "./icons";
+import "./ui";
+import "./product";
