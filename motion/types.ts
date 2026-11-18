@@ -88,6 +88,8 @@ export interface TemplateMoment {
 	/** Se puede quitar para que el video quepa en el límite del plan. */
 	optional: boolean;
 	slots: { lines?: { max: number; wordsPerLine: number }; images?: { min: number; max: number } };
+	/** Qué va en este momento, para Lumen (en inglés: es una instrucción para el modelo). */
+	write: string;
 	/** Lo que lleva al crear el video, por idioma. */
 	sample: Partial<Record<Language, Partial<AnyBlockParams>>>;
 }

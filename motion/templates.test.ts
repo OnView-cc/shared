@@ -23,7 +23,13 @@ describe("templates", () => {
 		for (const m of t.moments.filter((m) => m.block === "text")) {
 			for (const lang of ["en", "es", "pt"] as const) expect((m.sample[lang] as { lines?: string[] }).lines?.length).toBeGreaterThan(0);
 		}
-		expect((t.moments[0]!.sample.es as { lines: string[] }).lines.join(" ")).toBe("Seis apps que ya se conocen.");
+		// Guías genéricas, nunca el texto de una marca (el de OnDesk salía a todo el mundo).
+		const all = JSON.stringify(t.moments.map((m) => m.sample));
+		expect(all).not.toMatch(/apps|OnDesk|Seis|Six|Seis apps/i);
+	});
+
+	it("every moment tells Lumen what to write", () => {
+		for (const m of getTemplate("software-launch")!.moments) expect(m.write.length).toBeGreaterThan(20);
 	});
 
 	it("an unknown id gives null", () => {
