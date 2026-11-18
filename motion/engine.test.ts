@@ -100,6 +100,14 @@ describe("createMotion", () => {
 		expect(opacity(layer(root, 1))).toBe(0);
 	});
 
+	it("a push transition shows the outgoing moment alone, then the incoming one alone", async () => {
+		const m = mount(doc(["push", "cut", "cut"]));
+		await m.seek(2 - 0.125);
+		expect([opacity(layer(root, 0)) > 0, opacity(layer(root, 1)) > 0]).toEqual([true, false]);
+		await m.seek(2 + 0.125);
+		expect([opacity(layer(root, 0)) > 0, opacity(layer(root, 1)) > 0]).toEqual([false, true]);
+	});
+
 	it("a cut transition never shows two moments", async () => {
 		const m = mount(doc(["cut", "cut", "cut"]));
 		for (let t = 0; t < 6; t += 1 / 30) {

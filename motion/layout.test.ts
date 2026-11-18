@@ -3,7 +3,7 @@ import { textLayout } from "./layout";
 
 describe("textLayout", () => {
 	it("textLayout keeps one line in landscape for short text", () => {
-		expect(textLayout(["Seis apps", "que ya se", "conocen."], "landscape")).toEqual({ sizeU: 8.6, widthPct: 84, wrap: false });
+		expect(textLayout(["Seis apps", "que ya se", "conocen."], "landscape")).toEqual({ sizeU: 9.2, widthPct: 84, wrap: false });
 	});
 
 	it("textLayout wraps in portrait", () => {
@@ -16,7 +16,7 @@ describe("textLayout", () => {
 	it("textLayout wraps between groups in landscape when the whole text is long", () => {
 		const l = textLayout(["Apps que se comportan", "como un solo producto."], "landscape");
 		expect(l.wrap).toBe(true);
-		expect(l.sizeU).toBe(8.6);
+		expect(l.sizeU).toBe(9.2);
 	});
 
 	it("textLayout shrinks a group that does not fit a line", () => {
@@ -31,6 +31,6 @@ describe("textLayout", () => {
 	});
 
 	it("textLayout of nothing is the base size", () => {
-		expect(textLayout([], "square").sizeU).toBe(8.6);
+		expect(textLayout([], "square").sizeU).toBe(9.2);
 	});
 });

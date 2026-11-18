@@ -6,7 +6,7 @@
  * prueba de integración del Container comprueba con la medida real del
  * navegador que nada se sale.
  *
- * - Horizontal y cuadrado: 8.6 u, en una línea mientras quepa entero.
+ * - Horizontal y cuadrado: 9.2 u, en una línea mientras quepa entero.
  * - Vertical: 11 u, partido en líneas a 78 % del ancho.
  * - Si el texto entero no cabe en una línea, se parte entre grupos; si un
  *   grupo no cabe solo en una línea, el tamaño baja hasta que quepa, nunca por
@@ -17,8 +17,8 @@ export type Orientation = "landscape" | "portrait" | "square";
 
 export const TEXT_MIN_U = 6;
 const BASE: Record<Orientation, { sizeU: number; widthPct: number; widthU: number }> = {
-	landscape: { sizeU: 8.6, widthPct: 84, widthU: (1920 / 1080) * 100 },
-	square: { sizeU: 8.6, widthPct: 84, widthU: 100 },
+	landscape: { sizeU: 9.2, widthPct: 84, widthU: (1920 / 1080) * 100 },
+	square: { sizeU: 9.2, widthPct: 84, widthU: 100 },
 	portrait: { sizeU: 11, widthPct: 78, widthU: 100 },
 };
 /** El ancho medio de una letra, en «emes». */

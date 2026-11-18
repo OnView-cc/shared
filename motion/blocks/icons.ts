@@ -3,9 +3,10 @@
  *
  * - `burst`: la marca entra en el centro con un rebote en el medio golpe y en
  *   el golpe 1 suelta los iconos, que vuelan a su puesto (0.05 s uno tras otro,
- *   girados ±6°) y luego flotan. La marca es el logo de cierre sobre una ficha
- *   del color de cierre (ese logo está elegido para leerse ahí); sin logo de
- *   cierre, el logo de la esquina; sin ninguno, el primer icono en grande.
+ *   girados ±6°) y luego flotan. La marca es el logo del kit para fondos claros,
+ *   tal cual; sin él, el logo de cierre sobre una ficha del color de cierre (ese
+ *   logo está elegido para leerse ahí); sin ninguno, el logo de la esquina o el
+ *   primer icono en grande.
  * - `list`: filas icono + nombre; la activa al centro, nítida; las vecinas, más
  *   pequeñas, transparentes y desenfocadas. Pasa a la siguiente cada `every`
  *   golpes con `expo.inOut`.
@@ -18,9 +19,9 @@ import { registerBlock } from "../registry";
 import type { IconsParams } from "../types";
 import type { Orientation } from "../layout";
 
-export const ICON_U = 12;
-const MARK_U = 27;
-const ROW_GAP_U = 12;
+export const ICON_U = 13;
+const MARK_U = 36;
+const ROW_GAP_U = 15;
 
 /** Los puestos de N iconos alrededor del centro, en `u` (centro = 0, 0): un óvalo que no toca los bordes. */
 export function burstPositions(n: number, o: Orientation): [number, number][] {
@@ -47,7 +48,10 @@ function burst(ctx: Parameters<Parameters<typeof registerBlock>[1]>[0]) {
 	const size = MARK_U * u;
 	Object.assign(mark.style, { position: "absolute", left: `${-size / 2}px`, top: `${-size / 2}px`, width: `${size}px`, height: `${size}px`, display: "grid", placeItems: "center" });
 	Object.assign(markImg.style, { maxWidth: "100%", maxHeight: "100%", objectFit: "contain", display: "block" });
-	if (motion.brand.closingLogo) {
+	if (motion.brand.lightLogo) {
+		// El logo para fondos claros va tal cual, como el símbolo de Arcade.
+		markImg.src = motion.brand.lightLogo;
+	} else if (motion.brand.closingLogo) {
 		markImg.src = motion.brand.closingLogo;
 		Object.assign(mark.style, { background: motion.brand.closingColor, borderRadius: `${size * 0.24}px`, padding: `${size * 0.18}px`, boxSizing: "border-box", boxShadow: `0 ${u}px ${3 * u}px rgba(20, 30, 60, 0.18)` });
 	} else {
@@ -73,8 +77,9 @@ function burst(ctx: Parameters<Parameters<typeof registerBlock>[1]>[0]) {
 	fill.appendChild(center);
 	el.appendChild(fill);
 
-	gsap.set(mark, { scale: 0, opacity: 0 });
-	tl.fromTo(mark, { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.8)", immediateRender: false }, ctx.beat(0.5));
+	// Nada nace de la nada: la marca entra desde la mitad, desenfocada.
+	gsap.set(mark, { scale: 0.5, opacity: 0, filter: "blur(10px)" });
+	tl.fromTo(mark, { scale: 0.5, opacity: 0, filter: "blur(10px)" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.6, ease: "back.out(1.6)", immediateRender: false }, ctx.beat(0.5));
 	tl.to(mark, { scale: 1.06, duration: Math.max(0.1, moment.seconds - ctx.beatSeconds - 0.6), ease: "sine.inOut", immediateRender: false }, ctx.beat(1) + 0.6);
 	gsap.set(icons, { x: 0, y: 0, scale: 0.2, opacity: 0, rotation: 0 });
 	icons.forEach((icon, i) => {
@@ -90,8 +95,8 @@ function list(ctx: Parameters<Parameters<typeof registerBlock>[1]>[0], params: I
 	const { el, tl, moment, u, orientation, doc: motion } = ctx;
 	const doc = el.ownerDocument;
 	const portrait = orientation === "portrait";
-	const fontU = portrait ? 10 : 8.4;
-	const iconU = 10;
+	const fontU = portrait ? 11 : 10.5;
+	const iconU = 12;
 	const halfW = (motion.width / Math.min(motion.width, motion.height)) * 50;
 	const listX = portrait ? -38 : Math.max(-62, -halfW + 14);
 

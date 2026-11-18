@@ -7,7 +7,9 @@
  * - `blur`: el que sale encoge un poco y se desenfoca; el que entra llega
  *   desenfocado y se aclara (lo de Arcade).
  * - `push`: la cámara empuja hacia lo siguiente: el que sale crece y se
- *   desenfoca; el que entra viene de un poco más pequeño.
+ *   desenfoca en el medio golpe de antes del corte; el que entra viene de un
+ *   poco más pequeño en el medio golpe de después. Nunca se mezclan (en Arcade,
+ *   el grupo de iconos se va solo y la lista llega después).
  * - `cut`: corte seco en el golpe; nunca hay dos momentos a la vez.
  *
  * Cada capa empieza invisible (`autoAlpha` 0: tampoco se pinta) y la línea de
@@ -33,8 +35,10 @@ export function wireTransitions(tl: Tl, layers: HTMLElement[], moments: Moment[]
 			tl.set(layer, { autoAlpha: 1 }, m.at);
 		} else {
 			const half = Math.min(beatSeconds / 2, prev.seconds / 2, m.seconds / 2);
-			const from = prev.transition === "push" ? { autoAlpha: 0, scale: 0.92, filter: "blur(14px)" } : { autoAlpha: 0, scale: 1.03, filter: "blur(16px)" };
-			tl.fromTo(layer, from, { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: 2 * half, ease: "power2.out", immediateRender: false }, m.at - half);
+			// `push` no mezcla: el que entra llega en el medio golpe de después del corte; `blur` funde los dos.
+			const push = prev.transition === "push";
+			const from = push ? { autoAlpha: 0, scale: 0.92, filter: "blur(14px)" } : { autoAlpha: 0, scale: 1.03, filter: "blur(16px)" };
+			tl.fromTo(layer, from, { autoAlpha: 1, scale: 1, filter: "blur(0px)", duration: push ? half : 2 * half, ease: "expo.out", immediateRender: false }, push ? m.at : m.at - half);
 		}
 		// Salida.
 		if (!next) return;
@@ -44,7 +48,9 @@ export function wireTransitions(tl: Tl, layers: HTMLElement[], moments: Moment[]
 			return;
 		}
 		const half = Math.min(beatSeconds / 2, m.seconds / 2, next.seconds / 2);
-		const to = m.transition === "push" ? { scale: 1.3, filter: "blur(20px)" } : { scale: 0.94, filter: "blur(18px)" };
-		tl.to(layer, { ...to, autoAlpha: 0, duration: 2 * half, ease: "power2.in", immediateRender: false }, end - half);
+		// `push`: el que sale se va en el medio golpe de antes del corte, creciendo hacia la cámara.
+		const push = m.transition === "push";
+		const to = push ? { scale: 1.3, filter: "blur(20px)" } : { scale: 0.94, filter: "blur(18px)" };
+		tl.to(layer, { ...to, autoAlpha: 0, duration: push ? half : 2 * half, ease: "power2.in", immediateRender: false }, end - half);
 	});
 }

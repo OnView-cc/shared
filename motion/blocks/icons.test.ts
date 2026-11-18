@@ -8,7 +8,7 @@ import { burstPositions, ICON_U } from "./icons";
 const HALF = { landscape: [(1920 / 1080) * 50, 50], portrait: [50, (1920 / 1080) * 50], square: [50, 50] } as const;
 const img = (i: number) => ({ id: `i${i}`, src: `i${i}.png`, width: 256, height: 256 });
 
-function mount(params: Record<string, unknown>, n: number, format: "16:9" | "9:16" = "16:9") {
+function mount(params: Record<string, unknown>, n: number, format: "16:9" | "9:16" = "16:9", lightLogo: string | null = null) {
 	const shot: ComposeShot = { id: "m0", position: 0, seconds: 2, block: "icons", params: parseBlockParams("icons", params), beats: 12, transition: "cut", trimIn: 0, trimOut: null, clip: null, still: null, voice: null, images: Array.from({ length: n }, (_, i) => img(i)) };
 	const c = composeVideo({
 		format,
@@ -23,7 +23,7 @@ function mount(params: Record<string, unknown>, n: number, format: "16:9" | "9:1
 		shots: [shot],
 		music: null,
 		sfx: [],
-		brand: { textColor: "#ffffff", closingColor: "#0b1f44", accentColor: "#f1844d", colors: [], primary: { family: "inter", weight: 500 }, secondary: { family: "inter", weight: 500 }, sceneLogo: "scene.png", closingLogo: null },
+		brand: { textColor: "#ffffff", closingColor: "#0b1f44", accentColor: "#f1844d", colors: [], primary: { family: "inter", weight: 500 }, secondary: { family: "inter", weight: 500 }, sceneLogo: "scene.png", closingLogo: null, lightLogo },
 		limits: { maxResolution: "1080p", watermark: false },
 	});
 	root = document.createElement("div");
@@ -87,5 +87,12 @@ describe("icons block", () => {
 	it("burst puts the scene logo in the centre when there is no closing logo", () => {
 		mount({ variant: "burst" }, 2);
 		expect(root.querySelector(".motion-mark img")?.getAttribute("src")).toBe("scene.png");
+	});
+
+	it("burst puts the light-background logo in the centre as it is, with no tile", () => {
+		mount({ variant: "burst" }, 2, "16:9", "light.png");
+		const mark = root.querySelector<HTMLElement>(".motion-mark")!;
+		expect(mark.querySelector("img")?.getAttribute("src")).toBe("light.png");
+		expect(mark.style.background).toBe("");
 	});
 });

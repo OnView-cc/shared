@@ -106,6 +106,8 @@ export interface ComposeBrand {
 	secondary: Face;
 	sceneLogo: string | null;
 	closingLogo: string | null;
+	/** El logo para fondos claros (el fondo de los templates); sin él, se usa otro. */
+	lightLogo?: string | null;
 }
 
 export interface ComposeInput {
@@ -150,6 +152,7 @@ export interface MotionBrand {
 	colors: string[];
 	sceneLogo: string | null;
 	closingLogo: string | null;
+	lightLogo: string | null;
 }
 
 export interface VoiceCue {
@@ -254,6 +257,7 @@ export function composeVideo(input: ComposeInput): Composition {
 		colors: brand?.colors ?? [],
 		sceneLogo: brand?.sceneLogo ?? null,
 		closingLogo: brand?.closingLogo ?? null,
+		lightLogo: brand?.lightLogo ?? null,
 	};
 	if (moments.at(-1)?.block !== "logo" && motionBrand.closingLogo) {
 		const seconds = CLOSING_BEATS * beat;

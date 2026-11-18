@@ -24,15 +24,16 @@ describe("pickLogo and pickLogos", () => {
 
 	it("asks for the light-background logo on a light closing colour and falls back to the other version", () => {
 		const marks = [mark({ isDefault: true, onDark: "D", onLight: "L" })];
-		expect(pickLogos(marks, {}, "#ffffff")).toEqual({ scene: "D", closing: "L" });
-		expect(pickLogos(marks, { version: "on_light" }, "#000000")).toEqual({ scene: "L", closing: "D" });
-		expect(pickLogos([mark({ isDefault: true, onLight: "L" })], {}, "#000000")).toEqual({ scene: "L", closing: "L" });
-		expect(pickLogos([], {}, null)).toEqual({ scene: null, closing: null });
+		expect(pickLogos(marks, {}, "#ffffff")).toEqual({ scene: "D", closing: "L", light: "L" });
+		expect(pickLogos(marks, { version: "on_light" }, "#000000")).toEqual({ scene: "L", closing: "D", light: "L" });
+		expect(pickLogos([mark({ isDefault: true, onLight: "L" })], {}, "#000000")).toEqual({ scene: "L", closing: "L", light: "L" });
+		expect(pickLogos([mark({ isDefault: true, onDark: "D" })], {}, null)).toEqual({ scene: "D", closing: "D", light: "D" });
+		expect(pickLogos([], {}, null)).toEqual({ scene: null, closing: null, light: null });
 	});
 
 	it("uses the video's mark in the corner and in the closing", () => {
 		const marks = [mark({ id: "a", isDefault: true, onDark: "A" }), mark({ id: "b", onDark: "B" })];
-		expect(pickLogos(marks, { markId: "b" }, null)).toEqual({ scene: "B", closing: "B" });
+		expect(pickLogos(marks, { markId: "b" }, null)).toEqual({ scene: "B", closing: "B", light: "B" });
 	});
 });
 

@@ -57,10 +57,10 @@ export function pickLogo<L>(mark: Pick<MarkLike<L>, "onDark" | "onLight"> | null
 	return want === "on_dark" ? (mark.onDark ?? mark.onLight) : (mark.onLight ?? mark.onDark);
 }
 
-/** Los dos logos de un video: el de la esquina de las escenas y el del cierre. */
-export function pickLogos<L>(marks: MarkLike<L>[], pick: LogoChoice, closingColor: string | null | undefined): { scene: L | null; closing: L | null } {
+/** Los logos de un video: el de la esquina de las escenas, el del cierre y el de fondos claros (el fondo de los templates). */
+export function pickLogos<L>(marks: MarkLike<L>[], pick: LogoChoice, closingColor: string | null | undefined): { scene: L | null; closing: L | null; light: L | null } {
 	const mark = pickMark(marks, pick.markId);
-	return { scene: pickLogo(mark, pick.version ?? "on_dark"), closing: pickLogo(mark, closingVersion(closingColor)) };
+	return { scene: pickLogo(mark, pick.version ?? "on_dark"), closing: pickLogo(mark, closingVersion(closingColor)), light: pickLogo(mark, "on_light") };
 }
 
 /** La tipografía que toca en un video: la elegida, la de por defecto del kit, la primera o Bricolage a 600. */
