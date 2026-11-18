@@ -16,6 +16,8 @@
  * por eso el texto mide lo mismo en la pantalla que en el archivo.
  */
 
+import { placeImages, type ImagesEntrance, type ImagesLayout, type PlacedImage } from "./scene-images";
+
 export type Format = "9:16" | "1:1" | "16:9";
 export type Quality = "standard_720p" | "standard_1080p" | "premium_1080p";
 export type Resolution = "720p" | "1080p";
@@ -82,6 +84,12 @@ export interface ComposeShot {
 	still: string | null;
 	/** La voz lista de la escena. */
 	voice: { src: string } | null;
+	/** El fondo: el video de IA o un color (una tarjeta, sin clip ni recorte). */
+	background: { kind: "video" } | { kind: "card"; color: string };
+	/** Las imágenes de la escena, en su orden, con su tamaño en píxeles. */
+	images: { src: string; width: number; height: number }[];
+	imagesLayout: ImagesLayout;
+	imagesEntrance: ImagesEntrance;
 }
 
 export interface ComposeBrand {
@@ -118,6 +126,10 @@ export interface Scene {
 	to: number;
 	/** Dónde empieza en el video armado. */
 	at: number;
+	/** El color de una tarjeta; null en una escena de video. */
+	card: string | null;
+	/** Sus imágenes colocadas, con `from`/`to` en el video armado. */
+	images: (PlacedImage & { src: string })[];
 }
 
 export interface TextCue {
@@ -206,16 +218,27 @@ export function composeVideo(input: ComposeInput): Composition {
 	for (const shot of [...input.shots].sort((a, b) => a.position - b.position)) {
 		// El recorte se valida contra lo pedido, no contra el clip: una entrada más allá de su final
 		// vuelve dentro de él, y una escena nunca acaba antes de empezar (revisión final, I1).
+		const card = shot.background.kind === "card" ? shot.background.color : null;
 		let from = 0;
 		let to = shot.seconds;
-		if (shot.clip) {
+		if (shot.clip && !card) {
 			const length = shot.clip.seconds;
 			from = Math.min(Math.max(0, shot.trimIn), Math.max(0, length - 1 / FPS));
 			to = shot.trimOut ?? length;
 			if (!(to > from)) to = Math.max(from + 1 / FPS, length);
 		}
 		const length = Math.max(0, to - from);
-		scenes.push({ shotId: shot.id, src: shot.clip?.src ?? null, still: shot.clip ? null : shot.still, from, to, at });
+		const placed = placeImages({
+			layout: shot.imagesLayout,
+			entrance: shot.imagesEntrance,
+			images: shot.images,
+			format: input.format,
+			seconds: length,
+			textPosition: shot.onScreenText ? shot.textPosition : null,
+		});
+		const images = placed.map((p) => ({ ...p, from: at + p.from, to: at + p.to, src: shot.images[p.index]!.src }));
+		const src = card ? null : (shot.clip?.src ?? null);
+		scenes.push({ shotId: shot.id, src, still: card || shot.clip ? null : shot.still, from, to, at, card, images });
 		const textIn = Math.min(Math.max(0, shot.textIn), length);
 		const textOut = Math.max(textIn, Math.min(shot.textOut ?? length, length));
 		if (shot.onScreenText && textOut > textIn) texts.push({ shotId: shot.id, text: shot.onScreenText, position: shot.textPosition, from: at + textIn, to: at + textOut });

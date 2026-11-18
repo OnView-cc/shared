@@ -15,6 +15,10 @@ const shot = (o: Partial<ComposeInput["shots"][number]>): ComposeInput["shots"][
 	clip: null,
 	still: null,
 	voice: null,
+	background: { kind: "video" },
+	images: [],
+	imagesLayout: "grid",
+	imagesEntrance: "stagger",
 	...o,
 });
 

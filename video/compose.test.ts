@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { chooseVersion, composeVideo, DEFAULT_FACE, frameSize, type ComposeInput } from "./compose";
+import { IMAGE_STAGGER, placeImages } from "./scene-images";
 
 const shot = (o: Partial<ComposeInput["shots"][number]>): ComposeInput["shots"][number] => ({
 	id: "a",
@@ -14,6 +15,10 @@ const shot = (o: Partial<ComposeInput["shots"][number]>): ComposeInput["shots"][
 	clip: null,
 	still: null,
 	voice: null,
+	background: { kind: "video" },
+	images: [],
+	imagesLayout: "grid",
+	imagesEntrance: "stagger",
 	...o,
 });
 
@@ -79,7 +84,7 @@ describe("composeVideo", () => {
 
 	it("fills a scene without a clip with its photo for its asked seconds", () => {
 		const c = composeVideo({ ...base, shots: [shot({ seconds: 6, still: "PHOTO", trimIn: 2, trimOut: 3 })] });
-		expect(c.scenes).toEqual([{ shotId: "a", src: null, still: "PHOTO", from: 0, to: 6, at: 0 }]);
+		expect(c.scenes).toEqual([{ shotId: "a", src: null, still: "PHOTO", from: 0, to: 6, at: 0, card: null, images: [] }]);
 	});
 
 	it("keeps a text inside its scene and drops an empty or zero-length one", () => {
@@ -148,5 +153,38 @@ describe("composeVideo and impossible trims (review I1)", () => {
 		const c = composeVideo({ ...base, shots: [shot({ clip: { src: "A", seconds: 6 }, trimIn: 3, trimOut: 2 })] });
 		expect(c.scenes[0]!.to).toBeGreaterThan(c.scenes[0]!.from);
 		expect(c.total).toBeGreaterThan(0);
+	});
+});
+
+describe("composeVideo with cards and scene images", () => {
+	const logo = (src: string) => ({ src, width: 400, height: 400 });
+
+	it("a card scene has its colour, no clip and lasts its seconds", () => {
+		const c = composeVideo({ ...base, shots: [shot({ id: "a", seconds: 5, background: { kind: "card", color: "#1c3b2f" }, clip: { src: "x.mp4", seconds: 8 }, still: "s.png" })] });
+		expect(c.scenes[0]).toMatchObject({ shotId: "a", card: "#1c3b2f", src: null, still: null, from: 0, to: 5, at: 0 });
+		expect(c.scenesTotal).toBe(5);
+	});
+
+	it("scene images are placed in video time", () => {
+		const c = composeVideo({
+			...base,
+			shots: [shot({ id: "a", position: 0, seconds: 4 }), shot({ id: "b", position: 1, seconds: 6, background: { kind: "card", color: "#000000" }, images: [logo("i1"), logo("i2")] })],
+		});
+		const images = c.scenes[1]!.images;
+		expect(images.map((i) => i.src)).toEqual(["i1", "i2"]);
+		expect(images.map((i) => i.from)).toEqual([4, 4 + IMAGE_STAGGER]);
+		expect(images.every((i) => i.to === 10)).toBe(true);
+		expect(c.scenes[0]!.images).toEqual([]);
+		expect(c.scenes[0]!.card).toBeNull();
+	});
+
+	it("a video scene keeps its trim and gets its images on top", () => {
+		const c = composeVideo({
+			...base,
+			shots: [shot({ id: "a", seconds: 6, trimIn: 1, trimOut: 4, clip: { src: "x.mp4", seconds: 6 }, onScreenText: "Hi", textPosition: "center", images: [logo("i1")], imagesLayout: "center", imagesEntrance: "none" })],
+		});
+		expect(c.scenes[0]).toMatchObject({ src: "x.mp4", from: 1, to: 4, card: null });
+		const expected = placeImages({ layout: "center", entrance: "none", images: [logo("i1")], format: "9:16", seconds: 3, textPosition: "center" })[0]!;
+		expect(c.scenes[0]!.images).toEqual([{ ...expected, src: "i1" }]);
 	});
 });
