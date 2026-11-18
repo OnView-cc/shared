@@ -5,7 +5,9 @@
   "type": "module",
   "description": "Código compartido de la plataforma OnView (UI, el kit del mundo Feed vertical, CRUD, el cliente de plataforma, helpers de worker). TypeScript crudo: lo compila el bundler de la app que lo consume.",
   "sideEffects": [
-    "styles/*.css"
+    "styles/*.css",
+    "motion/blocks/*.ts",
+    "motion/index.ts"
   ],
   "scripts": {
     "check:neutral": "node scripts/check-neutral.mjs",

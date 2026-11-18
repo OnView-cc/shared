@@ -1,0 +1,139 @@
+/**
+ * El motor de animación (spec 2026-11-18 §8): dibuja una composición de
+ * momentos sobre un elemento del DOM con una sola línea de tiempo de GSAP,
+ * **pausada**. Quien lo monta la mueve con `seek(t)`:
+ *
+ * - el editor, con su reloj (vista previa);
+ * - el Container de exportación, cuadro a cuadro (`seek` → captura).
+ *
+ * Así la vista previa y el MP4 son la misma página. Nada se mueve fuera de la
+ * línea de tiempo: el mismo `seek(t)` da siempre el mismo cuadro.
+ *
+ * El escenario se dibuja al tamaño del cuadro del video (p. ej. 1920×1080) y
+ * en la vista previa se escala con CSS al tamaño del visor; `--u` (1 % del lado
+ * corto) es la unidad de todos los tamaños. Cada momento es una capa; su
+ * bloque (`blocks/*`, registrado en `registry.ts`) dibuja dentro y anima con
+ * tiempos absolutos. `transitions.ts` enciende y apaga las capas.
+ */
+import { gsap } from "gsap";
+import { WATERMARK } from "../video/compose";
+import { beatSeconds as beatOf } from "./fit";
+import { drawSky, skyInk } from "./background";
+import { blockFor } from "./registry";
+import { injectMotionCss } from "./style";
+import { wireTransitions } from "./transitions";
+import type { MotionDoc } from "./doc";
+
+export type { MotionDoc, MotionMedia } from "./doc";
+export { registerBlock, type BlockCtx, type BlockBuilder } from "./registry";
+
+export interface MotionHandle {
+	duration: number;
+	/** Fuentes e imágenes cargadas. */
+	ready: Promise<void>;
+	/** Lleva el video al segundo `t`; en la exportación, resuelve cuando lo visible está decodificado. */
+	seek(t: number): Promise<void>;
+	destroy(): void;
+}
+
+export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "preview" | "export" }): MotionHandle {
+	const document = root.ownerDocument;
+	injectMotionCss(document);
+	root.replaceChildren();
+	const W = doc.width;
+	const H = doc.height;
+	const u = Math.min(W, H) / 100;
+	const orientation = W > H ? "landscape" : W < H ? "portrait" : "square";
+	const beat = beatOf(doc.tempo.bpm);
+
+	const stage = document.createElement("div");
+	stage.className = "motion-stage";
+	stage.style.width = `${W}px`;
+	stage.style.height = `${H}px`;
+	stage.style.setProperty("--u", `${u}px`);
+	const font = (family: string) => doc.media.font?.(family) ?? `"${family}", "Noto Sans", sans-serif`;
+	stage.style.fontFamily = font(doc.brand.face.family);
+	stage.style.fontWeight = String(doc.brand.face.weight);
+	root.appendChild(stage);
+	drawSky(stage, doc.brand, u);
+	const ink = skyInk(doc.brand);
+
+	const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
+	const layers = doc.moments.map((moment, i) => {
+		const el = document.createElement("div");
+		el.className = "motion-layer";
+		el.dataset.moment = String(i);
+		el.dataset.block = moment.block;
+		stage.appendChild(el);
+		return el;
+	});
+	wireTransitions(tl, layers, doc.moments, beat);
+	doc.moments.forEach((moment, i) => {
+		blockFor(moment.block)?.({
+			el: layers[i]!,
+			tl,
+			moment,
+			doc,
+			u,
+			orientation,
+			mode: opts.mode,
+			beat: (n) => moment.at + n * beat,
+			beatSeconds: beat,
+			ink,
+			font,
+		});
+	});
+	// La línea de tiempo mide exactamente el video, aunque el último bloque acabe antes.
+	tl.set({}, {}, doc.total);
+
+	if (doc.watermark && doc.media.watermark) {
+		const wm = document.createElement("img");
+		wm.className = "motion-watermark";
+		wm.alt = "";
+		wm.src = doc.media.watermark;
+		Object.assign(wm.style, { left: `${WATERMARK.margin * u * 100}px`, top: `${WATERMARK.margin * u * 100}px`, width: `${WATERMARK.width * u * 100}px`, opacity: String(WATERMARK.opacity) });
+		stage.appendChild(wm);
+	}
+
+	// Vista previa: el escenario se escala al ancho del visor.
+	let observer: ResizeObserver | null = null;
+	if (opts.mode === "preview") {
+		const fit = () => {
+			const scale = root.clientWidth > 0 ? root.clientWidth / W : 1;
+			stage.style.transform = `scale(${scale})`;
+		};
+		fit();
+		if (typeof ResizeObserver !== "undefined") {
+			observer = new ResizeObserver(fit);
+			observer.observe(root);
+		}
+	}
+
+	const images = () => [...stage.querySelectorAll("img")];
+	const loaded = (img: HTMLImageElement) =>
+		img.complete
+			? Promise.resolve()
+			: new Promise<void>((resolve) => {
+					img.addEventListener("load", () => resolve(), { once: true });
+					img.addEventListener("error", () => resolve(), { once: true });
+				});
+	const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
+	const ready = Promise.all([fonts?.ready ?? Promise.resolve(), ...images().map(loaded)]).then(() => undefined);
+
+	tl.seek(0, false);
+	return {
+		duration: doc.total,
+		ready,
+		async seek(t: number) {
+			tl.seek(Math.max(0, Math.min(t, doc.total)), false);
+			if (opts.mode !== "export") return;
+			const visible = images().filter((img) => img.closest<HTMLElement>(".motion-layer")?.style.visibility !== "hidden");
+			await Promise.all(visible.map((img) => (typeof img.decode === "function" ? img.decode().catch(() => undefined) : undefined)));
+		},
+		destroy() {
+			observer?.disconnect();
+			tl.kill();
+			root.replaceChildren();
+		},
+	};
+}
