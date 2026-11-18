@@ -1,28 +1,26 @@
 import { describe, expect, it } from "vitest";
 import { composeVideo, type ComposeInput } from "./compose";
+import { parseBlockParams } from "../motion/types";
 import { fitVoice, gainAt, musicEnvelope, resolveAudio } from "./mix";
 
 const shot = (o: Partial<ComposeInput["shots"][number]>): ComposeInput["shots"][number] => ({
 	id: "a",
 	position: 0,
 	seconds: 4,
-	onScreenText: "",
-	textPosition: "bottom",
-	textIn: 0,
-	textOut: null,
+	block: "clip",
+	params: parseBlockParams("clip", {}),
+	beats: null,
+	transition: "cut",
 	trimIn: 0,
 	trimOut: null,
 	clip: null,
 	still: null,
 	voice: null,
-	background: { kind: "video" },
 	images: [],
-	imagesLayout: "grid",
-	imagesEntrance: "stagger",
 	...o,
 });
 
-/** 8 s de escenas (a y b, 4 s cada una) más el cierre: 10 s; música "M" y una voz en la escena a. */
+/** 8 s de escenas (a y b, 4 s cada una) más el cierre de 4 golpes a 120 BPM: 10 s; música "M" y una voz en la escena a. */
 const composition = () =>
 	composeVideo({
 		format: "9:16",
@@ -31,11 +29,13 @@ const composition = () =>
 		musicVolume: 0.4,
 		musicFadeIn: 0,
 		musicFadeOut: 2,
-		closingText: "",
+		closingLine: "",
+		tempo: { bpm: 120, offset: 0 },
+		template: null,
 		shots: [shot({ id: "a", position: 0, clip: { src: "A", seconds: 4 }, voice: { src: "VA" } }), shot({ id: "b", position: 1, clip: { src: "B", seconds: 4 } })],
 		music: { src: "M" },
 		sfx: [],
-		brand: { textColor: null, closingColor: null, accentColor: null, primary: { family: "inter", weight: 600 }, secondary: { family: "inter", weight: 600 }, sceneLogo: null, closingLogo: "L" },
+		brand: { textColor: null, closingColor: null, accentColor: null, colors: [], primary: { family: "inter", weight: 600 }, secondary: { family: "inter", weight: 600 }, sceneLogo: null, closingLogo: "L" },
 		limits: { maxResolution: "1080p", watermark: false },
 	});
 
