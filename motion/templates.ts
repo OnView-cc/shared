@@ -4,7 +4,8 @@
  * cada equipo pueda crear los suyos (paso 5).
  *
  * «Lanzamiento de software» sigue al video de Arcade que el usuario dio como
- * referencia: sin voz (sólo música y texto), una frase que entra golpe a golpe,
+ * referencia, con voz desde el 2026-11-18 (el usuario la pidió: Lumen escribe
+ * una frase por momento y el momento se alarga a ella); una frase que entra golpe a golpe,
  * la marca que suelta los iconos de sus productos, una lista que pasa, una
  * demostración de la interfaz, el beneficio y el cierre. La lista y la demo son
  * opcionales: se quitan para caber en los 15 s del plan Free.
@@ -20,7 +21,7 @@ const SOFTWARE_LAUNCH: Template = {
 	id: "software-launch",
 	kinds: ["platform"],
 	defaultBpm: 116,
-	voice: false,
+	voice: true,
 	background: "sky",
 	moments: [
 		{
