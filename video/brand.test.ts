@@ -27,13 +27,14 @@ describe("pickLogo and pickLogos", () => {
 		expect(pickLogos(marks, {}, "#ffffff")).toEqual({ scene: "D", closing: "L", light: "L" });
 		expect(pickLogos(marks, { version: "on_light" }, "#000000")).toEqual({ scene: "L", closing: "D", light: "L" });
 		expect(pickLogos([mark({ isDefault: true, onLight: "L" })], {}, "#000000")).toEqual({ scene: "L", closing: "L", light: "L" });
-		expect(pickLogos([mark({ isDefault: true, onDark: "D" })], {}, null)).toEqual({ scene: "D", closing: "D", light: "D" });
+		// Sin versión para fondos claros, no hay logo claro: uno blanco desaparecería sobre el fondo de los templates.
+		expect(pickLogos([mark({ isDefault: true, onDark: "D" })], {}, null)).toEqual({ scene: "D", closing: "D", light: null });
 		expect(pickLogos([], {}, null)).toEqual({ scene: null, closing: null, light: null });
 	});
 
 	it("uses the video's mark in the corner and in the closing", () => {
 		const marks = [mark({ id: "a", isDefault: true, onDark: "A" }), mark({ id: "b", onDark: "B" })];
-		expect(pickLogos(marks, { markId: "b" }, null)).toEqual({ scene: "B", closing: "B", light: "B" });
+		expect(pickLogos(marks, { markId: "b" }, null)).toEqual({ scene: "B", closing: "B", light: null });
 	});
 });
 

@@ -27,6 +27,22 @@ const CHAR_EM = 0.5;
 /** Cuántas letras caben en una línea a un tamaño dado. */
 const capacity = (o: Orientation, sizeU: number) => ((BASE[o].widthPct / 100) * BASE[o].widthU) / (CHAR_EM * sizeU);
 
+/**
+ * Encoge un texto que no cabe en `maxPx` según lo que mide de verdad (con las
+ * fuentes ya cargadas): la estimación por letras falla con letras anchas
+ * (Bricolage o Montserrat gruesas). Nunca por debajo de `minPx`. Devuelve el
+ * tamaño nuevo, o null si cabía. Sin medidas (`scrollWidth` 0), no hace nada.
+ */
+export function shrinkToFit(sizeEl: HTMLElement, measured: HTMLElement[], maxPx: number, minPx: number): number | null {
+	const widest = Math.max(0, ...measured.map((el) => el.scrollWidth));
+	if (!(widest > maxPx) || !(maxPx > 0)) return null;
+	const current = parseFloat(sizeEl.style.fontSize);
+	if (!(current > 0)) return null;
+	const next = Math.max(minPx, Math.floor(current * (maxPx / widest) * 0.98 * 10) / 10);
+	sizeEl.style.fontSize = `${next}px`;
+	return next;
+}
+
 export function textLayout(lines: string[], o: Orientation): { sizeU: number; widthPct: number; wrap: boolean } {
 	const { sizeU: base, widthPct } = BASE[o];
 	const groups = lines.map((l) => l.trim()).filter(Boolean);

@@ -8,11 +8,12 @@
  *   `blockParams`.
  * - Una frase (`text`) con imágenes (las tarjetas de antes) las coloca también
  *   por sus campos de siempre (los del panel de imágenes).
- * - Unos `icons` nombran cada imagen sin nombre con su descripción (la que el
- *   estudio escribe al subirla), recortada a 24 letras.
+ * - Unos `icons` llevan sólo los nombres que la persona escribió: la descripción
+ *   que el estudio hace de una imagen nunca sale en el video (el editor la enseña
+ *   como sugerencia).
  * - Los demás bloques llevan sus `blockParams`, validados.
  */
-import { MAX_LABEL, parseBlockParams, type AnyBlockParams, type BlockKind, type IconsParams, type Transition } from "../motion/types";
+import { parseBlockParams, type AnyBlockParams, type BlockKind, type IconsParams, type Transition } from "../motion/types";
 import type { ComposeShot, TextPosition } from "./compose";
 import type { ImagesEntrance, ImagesLayout } from "./scene-images";
 
@@ -43,10 +44,7 @@ export function toComposeShot(r: MomentRow): ComposeShot {
 	if (r.block === "clip") {
 		params = parseBlockParams("clip", { text: r.onScreenText, textPosition: r.textPosition, textIn: r.textIn, textOut: r.textOut, imagesLayout: r.imagesLayout, imagesEntrance: r.imagesEntrance });
 	} else if (r.block === "icons") {
-		const icons = parseBlockParams("icons", r.blockParams) as IconsParams;
-		const labels = { ...icons.labels };
-		for (const image of r.images) if (!labels[image.id] && image.description) labels[image.id] = image.description.slice(0, MAX_LABEL);
-		params = { ...icons, labels };
+		params = parseBlockParams("icons", r.blockParams) as IconsParams;
 	} else if (r.block === "text" && r.images.length > 0) {
 		// Las imágenes de una frase (las tarjetas de antes) se colocan por sus campos, como en un clip.
 		params = { ...parseBlockParams("text", r.blockParams), imagesLayout: r.imagesLayout, imagesEntrance: r.imagesEntrance };

@@ -13,7 +13,7 @@
  * que se lea.
  */
 import { contrast, DARK_INK } from "../background";
-import { textLayout } from "../layout";
+import { shrinkToFit, TEXT_MIN_U, textLayout } from "../layout";
 import { gsap } from "gsap";
 import { registerBlock } from "../registry";
 import type { TextParams } from "../types";
@@ -62,6 +62,11 @@ registerBlock("text", (ctx) => {
 		return span;
 	});
 	fill.appendChild(text);
+	// Con las fuentes ya cargadas: si un grupo no cabe en su ancho, la frase entera baja (y a 6 u se parte por dentro).
+	ctx.onReady(() => {
+		const next = shrinkToFit(text, spans, (layout.widthPct / 100) * ctx.doc.width, TEXT_MIN_U * u);
+		if (next !== null && next <= TEXT_MIN_U * u + 0.01) for (const s of spans) s.style.whiteSpace = "normal";
+	});
 	// Las imágenes de la escena (las tarjetas de antes con logos), bajo el texto; dejan libre su franja.
 	if (moment.images.length) drawSceneImages(ctx, params.imagesLayout ?? "grid", params.imagesEntrance ?? "stagger", groups.length ? "center" : null);
 	el.appendChild(fill);

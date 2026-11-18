@@ -26,7 +26,7 @@ function mount(shots: ComposeShot[], closingLine = "") {
 	const c = composeVideo({ format: "16:9", quality: "standard_1080p", voiceVolume: 1, musicVolume: 0.35, musicFadeIn: 0, musicFadeOut: 1.5, closingLine, tempo: { bpm: 120, offset: 0 }, template: null, shots, music: null, sfx: [], brand, limits: { maxResolution: "1080p", watermark: false } });
 	root = document.createElement("div");
 	document.body.appendChild(root);
-	return createMotion(root, { ...c, media: { watermark: null } }, { mode: "export" });
+	return createMotion(root, { ...c, media: { watermark: null } }, { mode: "export", imageWaitMs: 10 });
 }
 
 let root: HTMLElement;
@@ -58,6 +58,24 @@ describe("text block", () => {
 		const layer = root.querySelector<HTMLElement>('[data-block="text"]')!;
 		expect(layer.style.background).toBe("rgb(11, 31, 68)");
 		expect(root.querySelector<HTMLElement>(".motion-text")!.style.color).toBe("rgb(255, 255, 255)");
+	});
+});
+
+describe("text that does not fit", () => {
+	it("a phrase wider than its box shrinks once the fonts are in", async () => {
+		const real = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollWidth");
+		Object.defineProperty(HTMLElement.prototype, "scrollWidth", { configurable: true, get() { return (this as HTMLElement).classList.contains("motion-line") ? 3000 : 0; } });
+		try {
+			const m = mount([shot("text", { lines: ["Aplicativos que se comportam"] }, 4)]);
+			const text = root.querySelector<HTMLElement>(".motion-text")!;
+			const before = parseFloat(text.style.fontSize);
+			await m.ready;
+			expect(parseFloat(text.style.fontSize)).toBeLessThan(before);
+			// Nunca por debajo de 6 u (6 × 10.8 px en 1920×1080).
+			expect(parseFloat(text.style.fontSize)).toBeGreaterThanOrEqual(6 * 10.8 - 0.01);
+		} finally {
+			if (real) Object.defineProperty(HTMLElement.prototype, "scrollWidth", real);
+		}
 	});
 });
 

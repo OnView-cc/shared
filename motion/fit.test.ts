@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { beatSeconds, fitTemplate } from "./fit";
+import { beatSeconds, FIT_HEADROOM, fitTemplate } from "./fit";
 import { getTemplate } from "./templates";
 import { parseBlockParams } from "./types";
 
@@ -12,12 +12,13 @@ describe("fitTemplate", () => {
 		expect(kept).toHaveLength(6);
 	});
 
-	it("fitTemplate drops optional moments from the end until it fits Free", () => {
+	it("fitTemplate drops optional moments from the end until it fits Free, with room for a slower measured tempo", () => {
 		const kept = fitTemplate(launch, { bpm: 116, maxSeconds: 15 });
-		expect(kept.map((m) => m.key)).toEqual(["hook", "products", "list", "benefit", "close"]);
+		expect(kept.map((m) => m.key)).toEqual(["hook", "products", "benefit", "close"]);
 		const counted = kept.slice(0, -1).reduce((n, m) => n + m.beats, 0);
-		expect(counted).toBe(28);
-		expect(counted * beatSeconds(116)).toBeLessThanOrEqual(15);
+		expect(counted).toBe(16);
+		// La música medida puede ir más lenta que la pedida: cabe aun a un 15 % menos de tempo.
+		expect(counted * beatSeconds(116 * FIT_HEADROOM)).toBeLessThanOrEqual(15);
 	});
 
 	it("fitTemplate returns what is left even if it still does not fit", () => {

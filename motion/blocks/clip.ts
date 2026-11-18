@@ -39,7 +39,8 @@ registerBlock("clip", (ctx) => {
 		img.alt = "";
 		Object.assign(img.style, cover);
 		el.appendChild(img);
-		const last = Math.max(0, Math.ceil((clip.to - clip.from) * FPS) - 1);
+		// El último cuadro que hay: la misma cuenta que el plan de render (`frames`).
+		const last = Math.max(0, Math.ceil((clip.to - clip.from) * FPS - 1e-6) - 1);
 		let shown = -1;
 		ctx.onSeek((t) => {
 			const n = Math.min(last, Math.max(0, Math.floor((t - moment.at) * FPS + 1e-6)));

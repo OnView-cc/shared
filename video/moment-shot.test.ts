@@ -30,14 +30,14 @@ describe("toComposeShot", () => {
 		expect(s.params).toEqual({ text: "Hola", textPosition: "top", textIn: 0.5, textOut: 3, imagesLayout: "center", imagesEntrance: "fade" });
 	});
 
-	it("icons name an image by its description when it has no label", () => {
+	it("icons never put an image description in the video: an image without a label has no name", () => {
 		const images = [
 			{ id: "a", src: "a.png", width: 1, height: 1, description: "Logo de Soporte" },
 			{ id: "b", src: "b.png", width: 1, height: 1, description: "x".repeat(40) },
 			{ id: "c", src: "c.png", width: 1, height: 1, description: null },
 		];
 		const s = toComposeShot(row({ block: "icons", blockParams: { variant: "list", labels: { a: "Soporte" } }, images }));
-		expect(s.params).toMatchObject({ variant: "list", labels: { a: "Soporte", b: "x".repeat(24) } });
+		expect((s.params as { labels: Record<string, string> }).labels).toEqual({ a: "Soporte" });
 		expect(s.images).toEqual(images.map(({ description: _d, ...rest }) => rest));
 	});
 

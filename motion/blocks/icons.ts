@@ -17,7 +17,7 @@
 import { gsap } from "gsap";
 import { registerBlock } from "../registry";
 import type { IconsParams } from "../types";
-import type { Orientation } from "../layout";
+import { shrinkToFit, type Orientation } from "../layout";
 
 export const ICON_U = 13;
 const MARK_U = 36;
@@ -130,6 +130,9 @@ function list(ctx: Parameters<Parameters<typeof registerBlock>[1]>[0], params: I
 		const name = doc.createElement("span");
 		name.textContent = params.labels[image.id] ?? "";
 		row.append(img, name);
+		// El nombre cabe hasta 6 u del borde derecho; si no, baja (hasta la mitad de su tamaño).
+		const room = motion.width / 2 + listX * u + (iconU + 2.4) * u;
+		ctx.onReady(() => void shrinkToFit(row, [name], motion.width - room - 6 * u, (fontU / 2) * u));
 		column.appendChild(row);
 		return row;
 	});

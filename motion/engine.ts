@@ -36,7 +36,10 @@ export interface MotionHandle {
 	destroy(): void;
 }
 
-export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "preview" | "export" }): MotionHandle {
+/** Lo más que se espera a una imagen antes de seguir sin ella: una pieza que no llega no cuelga la grabación. */
+const IMAGE_WAIT_MS = 8000;
+
+export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "preview" | "export"; imageWaitMs?: number }): MotionHandle {
 	const document = root.ownerDocument;
 	injectMotionCss(document);
 	root.replaceChildren();
@@ -60,6 +63,7 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 
 	const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
 	const seekers: ((t: number) => void)[] = [];
+	const fitters: (() => void)[] = [];
 	const layers = doc.moments.map((moment, i) => {
 		const el = document.createElement("div");
 		el.className = "motion-layer";
@@ -83,6 +87,7 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 			ink,
 			font,
 			onSeek: (fn) => seekers.push(fn),
+			onReady: (fn) => fitters.push(fn),
 		});
 	});
 	// La línea de tiempo mide exactamente el video, aunque el último bloque acabe antes.
@@ -118,9 +123,15 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 			: new Promise<void>((resolve) => {
 					img.addEventListener("load", () => resolve(), { once: true });
 					img.addEventListener("error", () => resolve(), { once: true });
+					setTimeout(resolve, opts.imageWaitMs ?? IMAGE_WAIT_MS);
 				});
+	// Las letras que usa el video se piden ya: `fonts.ready` sólo espera las que algo pidió, y el cuadro 0 tiene que llevarlas.
 	const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
-	const ready = Promise.all([fonts?.ready ?? Promise.resolve(), ...images().map(loaded)]).then(() => undefined);
+	const faces = [doc.brand.face, doc.brand.secondary].map((f) => `${f.weight} 32px ${font(f.family)}`);
+	const fontsIn = fonts ? Promise.all(faces.map((f) => fonts.load(f).catch(() => undefined))).then(() => fonts.ready) : Promise.resolve();
+	const ready = Promise.all([fontsIn, ...images().map(loaded)]).then(() => {
+		for (const fn of fitters) fn();
+	});
 
 	tl.seek(0, false);
 	for (const fn of seekers) fn(0);

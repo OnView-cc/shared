@@ -9,6 +9,14 @@ import type { Template, TemplateMoment } from "./types";
 
 export const beatSeconds = (bpm: number): number => 60 / bpm;
 
+/**
+ * El margen de tempo al encajar: la música se pide al BPM del template, pero la
+ * pista medida puede ir más lenta. Se encaja como si fuera un 15 % más lenta, para
+ * que medir el tempo nunca empuje el video por encima del límite del plan después
+ * de pagar la música.
+ */
+export const FIT_HEADROOM = 0.85;
+
 /** Lo que cuenta para el límite: todo menos el `logo` final. */
 export function countedBeats(moments: Pick<TemplateMoment, "block" | "beats">[]): number {
 	const last = moments.at(-1);
@@ -18,7 +26,7 @@ export function countedBeats(moments: Pick<TemplateMoment, "block" | "beats">[])
 
 export function fitTemplate(t: Template, opts: { bpm: number; maxSeconds: number }): TemplateMoment[] {
 	const kept = [...t.moments];
-	const fits = () => countedBeats(kept) * beatSeconds(opts.bpm) <= opts.maxSeconds + 1e-6;
+	const fits = () => countedBeats(kept) * beatSeconds(opts.bpm * FIT_HEADROOM) <= opts.maxSeconds + 1e-6;
 	for (let i = kept.length - 1; i >= 0 && !fits(); i--) if (kept[i]!.optional) kept.splice(i, 1);
 	return kept;
 }

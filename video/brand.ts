@@ -60,7 +60,8 @@ export function pickLogo<L>(mark: Pick<MarkLike<L>, "onDark" | "onLight"> | null
 /** Los logos de un video: el de la esquina de las escenas, el del cierre y el de fondos claros (el fondo de los templates). */
 export function pickLogos<L>(marks: MarkLike<L>[], pick: LogoChoice, closingColor: string | null | undefined): { scene: L | null; closing: L | null; light: L | null } {
 	const mark = pickMark(marks, pick.markId);
-	return { scene: pickLogo(mark, pick.version ?? "on_dark"), closing: pickLogo(mark, closingVersion(closingColor)), light: pickLogo(mark, "on_light") };
+	return { scene: pickLogo(mark, pick.version ?? "on_dark"), closing: pickLogo(mark, closingVersion(closingColor)), // Sólo la versión para fondos claros: la de fondos oscuros (blanca, casi siempre) no se leería.
+		light: mark?.onLight ?? null };
 }
 
 /** La tipografía que toca en un video: la elegida, la de por defecto del kit, la primera o Bricolage a 600. */
