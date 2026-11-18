@@ -115,6 +115,14 @@ describe("resolveAudio", () => {
 		expect(gainAt(e, 5)).toBeCloseTo(0.4);
 	});
 
+	it("starts the music at its first beat so the beat grid lines up with the video", () => {
+		const c = { ...composition(), tempo: { bpm: 120, offset: 0.31 } };
+		const plan = resolveAudio(c, { voices: { a: 3 }, music: 4 })!.music!;
+		expect(plan.start).toBe(0.31);
+		// La pista se repite contando desde su primer golpe: 10 s de video con 3.69 s útiles por vuelta.
+		expect(plan.loops).toBe(3);
+	});
+
 	it("has no music plan without music", () => {
 		const c = { ...composition(), music: null };
 		expect(resolveAudio(c, { voices: { a: 3 }, music: null }).music).toBeNull();

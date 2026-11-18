@@ -136,6 +136,8 @@ export function resolveAudio(c: Composition, d: AudioDurations): AudioPlan {
 	const voices: VoicePlan[] = c.voices.map((v) => ({ shotId: v.shotId, src: v.src, at: v.at, ...fitVoice(d.voices[v.shotId], v.slot) }));
 	if (!c.music) return { voices, music: null };
 	const voiced = voices.filter((v) => v.play > 0).map((v) => ({ from: v.at, to: v.at + v.play }));
-	const loops = d.music != null && d.music > 0 ? Math.max(1, Math.ceil(c.total / d.music)) : 1;
-	return { voices, music: { src: c.music.src, loops, envelope: musicEnvelope(c.total, c.music.volume, c.music.fadeIn, c.music.fadeOut, voiced) } };
+	// La pista suena desde su primer golpe (`tempo.offset`): así la rejilla de golpes del video cae sobre la música.
+	const start = Math.max(0, c.tempo.offset);
+	const loops = d.music != null && d.music > 0 ? Math.max(1, Math.ceil((c.total + start) / d.music)) : 1;
+	return { voices, music: { src: c.music.src, start, loops, envelope: musicEnvelope(c.total, c.music.volume, c.music.fadeIn, c.music.fadeOut, voiced) } };
 }
