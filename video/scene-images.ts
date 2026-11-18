@@ -17,7 +17,7 @@
  *
  * Código puro: no sabe del navegador ni de ffmpeg.
  */
-import { LOGO_MARGIN, TEXT_BOTTOM, TEXT_SIDE, TEXT_SIZE, TEXT_TOP, type Format, type TextPosition } from "./compose";
+import { FALLBACK_CLOSING, LOGO_MARGIN, TEXT_BOTTOM, TEXT_SIDE, TEXT_SIZE, TEXT_TOP, type Format, type TextPosition } from "./compose";
 
 export type Background = "video" | "card";
 export type ImagesLayout = "grid" | "sequence" | "center" | "corner";
@@ -78,6 +78,15 @@ interface Box {
 	top: number;
 	width: number;
 	height: number;
+}
+
+/**
+ * El color de una tarjeta: el suyo, o el de cierre del kit (el mismo fondo que el
+ * cierre; el primero del kit es el del texto y lo taparía), o el de cierre de
+ * OnView sin kit.
+ */
+export function cardFill(own: string | null, kitClosing: string | null | undefined): string {
+	return own ?? kitClosing ?? FALLBACK_CLOSING;
 }
 
 /** El cuadro con el lado corto = 1. */
