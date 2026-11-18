@@ -41,6 +41,12 @@ describe("toComposeShot", () => {
 		expect(s.images).toEqual(images.map(({ description: _d, ...rest }) => rest));
 	});
 
+	it("a text moment with images lays them out by its own fields", () => {
+		const images = [{ id: "a", src: "a.png", width: 1, height: 1 }];
+		const s = toComposeShot(row({ block: "text", blockParams: { lines: ["Too many apps"] }, imagesLayout: "sequence", imagesEntrance: "fade", images }));
+		expect(s.params).toEqual({ lines: ["Too many apps"], color: null, imagesLayout: "sequence", imagesEntrance: "fade" });
+	});
+
 	it("other blocks keep their params, validated", () => {
 		expect(toComposeShot(row({ block: "text", blockParams: { lines: ["a", "b", "c", "d"] }, beats: 4, transition: "blur" }))).toMatchObject({ block: "text", params: { lines: ["a", "b", "c"], color: null }, beats: 4, transition: "blur" });
 	});
