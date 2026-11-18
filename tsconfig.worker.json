@@ -13,6 +13,6 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["worker", "video"],
-  "exclude": ["video/**/*.test.ts"]
+  "include": ["worker", "video", "motion/types.ts", "motion/templates.ts", "motion/fit.ts", "motion/tempo.ts"],
+  "exclude": ["video/**/*.test.ts", "motion/**/*.test.ts"]
 }

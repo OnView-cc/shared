@@ -37,6 +37,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "esbuild": "0.24.2",
     "jsdom": "^29.1.1",
     "lucide-react": "^0.575.0",
     "radix-ui": "^1.4.3",
@@ -46,5 +47,8 @@
     "tailwind-merge": "^3.5.0",
     "typescript": "~5.9.3",
     "vitest": "^3.2.7"
+  },
+  "dependencies": {
+    "gsap": "3.13.0"
   }
 }
