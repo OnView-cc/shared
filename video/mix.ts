@@ -56,7 +56,8 @@ export interface GainPoint {
 
 export interface AudioPlan {
 	voices: VoicePlan[];
-	music: { src: string; loops: number; envelope: GainPoint[] } | null;
+	/** `start`: el segundo de la pista que suena en el 0 del video (su primer golpe). */
+	music: { src: string; start: number; loops: number; envelope: GainPoint[] } | null;
 }
 
 /**
