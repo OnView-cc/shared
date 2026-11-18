@@ -49,6 +49,20 @@ describe("placeImages", () => {
 		expect(Math.abs(left - (1 - right))).toBeLessThan(1e-9);
 	});
 
+	it("grid keeps square images together: the gap between columns is the gap between rows", () => {
+		for (const format of ["16:9", "9:16"] as const) {
+			const { W, H } = frame(format);
+			const [a, b, c] = placeImages({ layout: "grid", entrance: "none", images: many(4), format, seconds: 6, textPosition: null });
+			const across = (b!.x - (a!.x + a!.w)) * W;
+			const down = (c!.y - (a!.y + a!.h)) * H;
+			expect(Math.abs(across - down), format).toBeLessThan(1e-9);
+			// Y el bloque queda centrado en vertical en el área libre (márgenes iguales arriba y abajo).
+			const top = a!.y;
+			const bottom = 1 - (c!.y + c!.h);
+			expect(Math.abs(top - bottom), format).toBeLessThan(1e-9);
+		}
+	});
+
 	it("grid leaves the band of a centred text free", () => {
 		for (const format of FORMATS) {
 			const { H } = frame(format);

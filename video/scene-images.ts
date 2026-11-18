@@ -128,35 +128,42 @@ function gridShape(n: number, tall: boolean): { cols: number; rows: number } {
 	return tall ? { cols: 2, rows: 3 } : { cols: 3, rows: 2 };
 }
 
-/** Las celdas de la rejilla, fila a fila; con el texto al centro, las filas se reparten arriba y abajo de él. */
-function gridCells(n: number, W: number, H: number, format: Format, text: TextPosition | null): Box[] {
+/**
+ * Las celdas de la rejilla, fila a fila. Las celdas toman la proporción de las
+ * imágenes (no se estiran a lo ancho ni a lo alto del área libre), así que las
+ * imágenes quedan juntas, y el bloque va centrado en su franja. Con el texto al
+ * centro, las filas se reparten arriba y abajo de él.
+ */
+function gridCells(images: { width: number; height: number }[], W: number, format: Format, bands: { top: number; bottom: number }[]): Box[] {
+	const n = images.length;
 	const { cols, rows } = gridShape(n, format === "9:16");
-	const bands = freeBands(H, text);
-	const rowBoxes: { top: number; height: number }[] = [];
-	if (bands.length === 2) {
-		const above = Math.ceil(rows / 2);
-		const split = [above, rows - above];
-		bands.forEach((band, i) => {
-			const count = split[i]!;
-			if (!count) return;
-			const height = (band.bottom - band.top - (count - 1) * IMAGE_GAP) / count;
-			for (let r = 0; r < count; r++) rowBoxes.push({ top: band.top + r * (height + IMAGE_GAP), height });
-		});
-	} else {
-		const band = bands[0]!;
-		const height = (band.bottom - band.top - (rows - 1) * IMAGE_GAP) / rows;
-		for (let r = 0; r < rows; r++) rowBoxes.push({ top: band.top + r * (height + IMAGE_GAP), height });
-	}
+	const split = bands.length === 2 ? [Math.ceil(rows / 2), rows - Math.ceil(rows / 2)] : [rows];
+	const aspects = images.map((i) => i.width / i.height);
+	const widest = Math.max(...aspects);
+	const tallest = Math.min(...aspects);
 	const areaWidth = W - 2 * TEXT_SIDE;
-	const cellWidth = (areaWidth - (cols - 1) * IMAGE_GAP) / cols;
+	// El alto de fila que cabe en cada franja, el ancho de columna que cabe en el área, y los dos acotados por la proporción.
+	const rowRoom = Math.min(...split.map((count, i) => (count ? (bands[i]!.bottom - bands[i]!.top - (count - 1) * IMAGE_GAP) / count : Infinity)));
+	const colRoom = (areaWidth - (cols - 1) * IMAGE_GAP) / cols;
+	const cellWidth = Math.min(colRoom, rowRoom * widest);
+	const rowHeight = Math.min(rowRoom, cellWidth / tallest);
+	const blockWidth = cols * cellWidth + (cols - 1) * IMAGE_GAP;
+	const left = TEXT_SIDE + (areaWidth - blockWidth) / 2;
+	const rowTops: number[] = [];
+	split.forEach((count, i) => {
+		if (!count) return;
+		const band = bands[i]!;
+		const blockHeight = count * rowHeight + (count - 1) * IMAGE_GAP;
+		const top = band.top + (band.bottom - band.top - blockHeight) / 2;
+		for (let r = 0; r < count; r++) rowTops.push(top + r * (rowHeight + IMAGE_GAP));
+	});
 	const cells: Box[] = [];
 	for (let i = 0; i < n; i++) {
 		const row = Math.floor(i / cols);
 		const inRow = Math.min(cols, n - row * cols);
 		// Una fila incompleta va centrada.
 		const offset = ((cols - inRow) * (cellWidth + IMAGE_GAP)) / 2;
-		const col = i % cols;
-		cells.push({ left: TEXT_SIDE + offset + col * (cellWidth + IMAGE_GAP), top: rowBoxes[row]!.top, width: cellWidth, height: rowBoxes[row]!.height });
+		cells.push({ left: left + offset + (i % cols) * (cellWidth + IMAGE_GAP), top: rowTops[row]!, width: cellWidth, height: rowHeight });
 	}
 	return cells;
 }
@@ -174,7 +181,7 @@ export function placeImages(input: PlaceInput): PlacedImage[] {
 
 	let boxes: { index: number; box: Box; from: number; to: number }[];
 	if (layout === "grid") {
-		const cells = gridCells(images.length, W, H, format, textPosition);
+		const cells = gridCells(images, W, format, freeBands(H, textPosition));
 		boxes = images.map((image, index) => ({ index, box: contain(image, cells[index]!, CELL_FILL), from: 0, to: seconds }));
 	} else if (layout === "sequence") {
 		const area = bigArea(W, H, textPosition);
