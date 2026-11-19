@@ -84,3 +84,13 @@ Spec: `OnView.cc/docs/superpowers/specs/2026-11-08-onview-plataforma-design.md`.
 - `video/mix.ts`: `resolveAudio` resuelve con las duraciones reales lo que la composición no puede saber: la voz que no cabe se acelera hasta 1.15× y, si aun así no cabe, se corta con un fundido de 0.15 s; la música baja al 45 % bajo la voz con rampas de 0.25 s. El volumen de la música es una lista de puntos unidos por rectas, y esa lista es la verdad para el navegador y para ffmpeg.
 - `video/brand.ts`: las reglas de qué marca, qué versión del logo y qué tipografía lleva un video salen de `onview/src/features/brand` sin cambiar; onview las re-exporta.
 - Las fracciones del texto, del logo y de la marca de agua son del lado corto del cuadro y viven en `compose.ts`: el CSS del editor y la exportación leen las mismas.
+
+## v2.4.0 (pendiente de etiquetar): todo con código (OnView, 2026-11-19)
+
+Spec `../docs/superpowers/specs/2026-11-18-onview-todo-codigo-design.md`.
+
+- **Sin clips, calidad ni resolución** (`motion/`, `video/`): `BlockKind` es `text | icons | ui | product | logo`; la composición siempre a 1080 en el lado corto; `template: { id, voice }` sólo decide si hay voces.
+- **Templates que se adaptan**: `motion/types.ts` dice qué material pide cada template y cada momento (`consumes`, `repeat`, `onMissing`, `expandable`, `shared`); `motion/adapt.ts` (`adaptTemplate`) arma el video con el material de la persona y la duración del plan, sin repetir claves (`clave#n`) y dejando fuera lo opcional que no cabe.
+- **La biblioteca de la entrega 1** (`motion/templates.ts`, `TEMPLATE_IDS`): Lanzamiento de software, Novedades, Integraciones, Producto, Catálogo, Cómo se usa, Oferta e Historia de marca, con nombre y descripción en en/es/pt, cuándo elegirlo (para Lumen) y muestras genéricas (nunca el texto de una marca).
+- **Material con tipo** (`MaterialKind`: captura, foto de producto, logo, otra; `parseMaterialKind` lee lo desconocido como «otra»).
+- **Pulido tras la comparación con Arcade** (tarea 0b del plan): ver el commit `6a55d16`.

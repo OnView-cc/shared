@@ -1,6 +1,6 @@
 # Pendiente — @onview/shared
 
-_Última revisión: 2026-11-09._
+_Última revisión: 2026-11-19._
 
 | Qué | Estado |
 |---|---|
@@ -8,3 +8,4 @@ _Última revisión: 2026-11-09._
 | **Mundo «Blue Hour»** (subproyecto 2): sustituye a «Airglow», heredado del fork | hecho (v1.1.0 a v1.2.1) |
 
 | **Mundo «Feed vertical»** (subproyecto 8, v2.0.0): sustituye a «Blue Hour». Tag local; se empuja con el repo cuando el usuario lo decida | tag local; falta empujar |
+| **v2.4.0** (todo con código: templates que se adaptan, sin clips): en la rama `todo-codigo`; se fusiona, se etiqueta y se empuja al desplegar (`onview/docs/plataforma.md`) | falta etiquetar y empujar |
