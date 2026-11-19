@@ -3,34 +3,39 @@ import { textLayout } from "./layout";
 
 describe("textLayout", () => {
 	it("textLayout keeps one line in landscape for short text", () => {
-		expect(textLayout(["Seis apps", "que ya se", "conocen."], "landscape")).toEqual({ sizeU: 9.2, widthPct: 84, wrap: false });
+		expect(textLayout(["Seis apps", "que ya se", "conocen."], "landscape")).toEqual({ sizeU: 11.4, widthPct: 84, wrap: false, breakGroups: false });
 	});
 
 	it("textLayout wraps in portrait", () => {
 		const l = textLayout(["Seis apps", "que ya se", "conocen."], "portrait");
 		expect(l.wrap).toBe(true);
-		expect(l.sizeU).toBe(11);
+		expect(l.sizeU).toBe(12.5);
 		expect(l.widthPct).toBe(78);
 	});
 
 	it("textLayout wraps between groups in landscape when the whole text is long", () => {
 		const l = textLayout(["Apps que se comportan", "como un solo producto."], "landscape");
 		expect(l.wrap).toBe(true);
-		expect(l.sizeU).toBe(9.2);
+		expect(l.sizeU).toBe(11.4);
 	});
 
 	it("textLayout shrinks a group that does not fit a line", () => {
 		const l = textLayout(["Aplicativos que se comportam", "como um só produto."], "portrait");
-		expect(l.sizeU).toBeLessThan(11);
+		expect(l.sizeU).toBeLessThan(12.5);
 		expect(l.sizeU).toBeGreaterThanOrEqual(6);
 	});
 
 	it("textLayout never goes below 6u", () => {
-		expect(textLayout(["x".repeat(60)], "portrait").sizeU).toBe(6);
+		expect(textLayout(["x".repeat(60)], "portrait").sizeU).toBe(10);
 		expect(textLayout(["x".repeat(60)], "landscape").sizeU).toBeGreaterThanOrEqual(6);
 	});
 
+	it("in portrait a long group breaks between its words instead of shrinking under 80 % (tarea 0b)", () => {
+		expect(textLayout(["Start your workspace today"], "portrait")).toEqual({ sizeU: 10, widthPct: 78, wrap: true, breakGroups: true });
+		expect(textLayout(["Seis apps"], "portrait").breakGroups).toBe(false);
+	});
+
 	it("textLayout of nothing is the base size", () => {
-		expect(textLayout([], "square").sizeU).toBe(9.2);
+		expect(textLayout([], "square").sizeU).toBe(11.4);
 	});
 });

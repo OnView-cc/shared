@@ -1,8 +1,13 @@
 /**
- * Bloque `logo`, el cierre (spec 2026-11-18 §5): sobre el color de cierre del
- * kit, su logo de cierre entra con un rebote (`back.out`) en el medio golpe y,
- * si hay línea, ésta sube debajo en el golpe 1.5. Sin logo de cierre en el kit,
- * sólo la línea. El logo cabe en el 40 % del ancho y el 22 % del alto.
+ * Bloque `logo`, el cierre (spec 2026-11-18 §5): el logo entra con un rebote
+ * (`back.out`) en el medio golpe y, si hay línea, ésta sube debajo en el golpe
+ * 1.5. El logo cabe en el 40 % del ancho y el 22 % del alto.
+ *
+ * Con logo para fondos claros en el kit, el cierre se queda sobre el cielo del
+ * template, con ese logo y la tinta del cielo (tarea 0b del plan
+ * 2026-11-18-onview-todo-codigo: como Arcade, sin saltar a un fondo de color al
+ * final). Sin él, como antes: el color de cierre del kit con su logo de cierre;
+ * sin logo de cierre, sólo la línea.
  */
 import { gsap } from "gsap";
 import { registerBlock } from "../registry";
@@ -12,8 +17,11 @@ import { readableOn } from "./text";
 registerBlock("logo", (ctx) => {
 	const { el, tl, moment, u, doc: motion } = ctx;
 	const params = moment.params as LogoParams;
+	const onSky = Boolean(motion.brand.lightLogo);
 	const bg = motion.brand.closingColor;
-	el.style.background = bg;
+	if (!onSky) el.style.background = bg;
+	const ink = onSky ? ctx.ink : readableOn(bg);
+	const logo = onSky ? motion.brand.lightLogo : motion.brand.closingLogo;
 	const doc = el.ownerDocument;
 	const fill = doc.createElement("div");
 	fill.className = "motion-fill";
@@ -21,11 +29,11 @@ registerBlock("logo", (ctx) => {
 	Object.assign(column.style, { display: "flex", flexDirection: "column", alignItems: "center", gap: `${3 * u}px` });
 
 	const parts: HTMLElement[] = [];
-	if (motion.brand.closingLogo) {
+	if (logo) {
 		const img = doc.createElement("img");
 		img.className = "motion-logo";
 		img.alt = "";
-		img.src = motion.brand.closingLogo;
+		img.src = logo;
 		Object.assign(img.style, { display: "block", maxWidth: `${motion.width * 0.4}px`, maxHeight: `${motion.height * 0.22}px`, objectFit: "contain" });
 		column.appendChild(img);
 		gsap.set(img, { opacity: 0, scale: 0.6 });
@@ -38,7 +46,7 @@ registerBlock("logo", (ctx) => {
 		span.className = "motion-line";
 		span.textContent = line;
 		Object.assign(span.style, {
-			color: readableOn(bg),
+			color: ink,
 			fontSize: `${4.4 * u}px`,
 			fontFamily: ctx.font(motion.brand.secondary.family),
 			fontWeight: String(motion.brand.secondary.weight),

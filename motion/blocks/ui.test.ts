@@ -71,6 +71,26 @@ describe("ui block", () => {
 		mount("ui", {}, [image("a", 1200, 800)]);
 		expect(root.querySelector(".motion-cursor")).toBeNull();
 	});
+
+	it("without a zoom, the screenshot slowly comes closer over the moment (tarea 0b)", async () => {
+		const m = mount("ui", {}, [image("a", 1600, 900)]);
+		const box = root.querySelector<HTMLElement>(".motion-shot")!.parentElement!;
+		await m.seek(1);
+		const early = Number(gsap.getProperty(box, "scale"));
+		await m.seek(3.9);
+		expect(Number(gsap.getProperty(box, "scale"))).toBeGreaterThan(early);
+		expect(Number(gsap.getProperty(box, "scale"))).toBeGreaterThanOrEqual(1.1);
+	});
+
+	it("in portrait, a wide screenshot is cropped to a 4:5 card instead of shrinking whole (tarea 0b)", () => {
+		mount("ui", {}, [image("a", 1600, 900)], "9:16");
+		const shot = root.querySelector<HTMLElement>(".motion-shot")!;
+		const w = parseFloat(shot.parentElement!.style.width);
+		const h = parseFloat(shot.parentElement!.style.height);
+		expect(w / h).toBeCloseTo(4 / 5, 2);
+		expect(w).toBeGreaterThanOrEqual(0.8 * 1080);
+		expect(shot.querySelector("img")!.style.objectFit).toBe("cover");
+	});
 });
 
 describe("product block", () => {

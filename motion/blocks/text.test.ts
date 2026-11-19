@@ -22,8 +22,8 @@ const shot = (block: BlockKind, params: Record<string, unknown>, beats: number, 
 
 const brand = { textColor: "#ffffff", closingColor: "#0b1f44", accentColor: "#f1844d", colors: ["#ffffff", "#0b1f44"], primary: { family: "inter", weight: 500 }, secondary: { family: "inter", weight: 500 }, sceneLogo: "logo.png", closingLogo: "closing.png" };
 
-function mount(shots: ComposeShot[], closingLine = "") {
-	const c = composeVideo({ format: "16:9", quality: "standard_1080p", voiceVolume: 1, musicVolume: 0.35, musicFadeIn: 0, musicFadeOut: 1.5, closingLine, tempo: { bpm: 120, offset: 0 }, template: null, shots, music: null, sfx: [], brand, limits: { maxResolution: "1080p", watermark: false } });
+function mount(shots: ComposeShot[], closingLine = "", over: Partial<typeof brand> & { lightLogo?: string | null } = {}, format: "16:9" | "9:16" = "16:9") {
+	const c = composeVideo({ format, quality: "standard_1080p", voiceVolume: 1, musicVolume: 0.35, musicFadeIn: 0, musicFadeOut: 1.5, closingLine, tempo: { bpm: 120, offset: 0 }, template: null, shots, music: null, sfx: [], brand: { ...brand, ...over }, limits: { maxResolution: "1080p", watermark: false } });
 	root = document.createElement("div");
 	document.body.appendChild(root);
 	return createMotion(root, { ...c, media: { watermark: null } }, { mode: "export", imageWaitMs: 10 });
@@ -34,18 +34,55 @@ afterEach(() => root?.remove());
 const op = (el: Element | null | undefined) => Number((el as HTMLElement | null)?.style.opacity || "0");
 
 describe("text block", () => {
-	it("each line of a text moment appears on its beat", async () => {
+	it("each group of a text moment enters on its beat, the first one right away", async () => {
 		const m = mount([shot("text", { lines: ["Seis apps", "que ya se", "conocen."] }, 4)]);
 		const lines = () => [...root.querySelectorAll(".motion-line")];
 		expect(lines().map((l) => l.textContent)).toEqual(["Seis apps", "que ya se", "conocen."]);
-		// Golpe = 0.5 s a 120 BPM: la frase 1 entra en 0.5, la 2 en 1.0, la 3 en 1.5.
+		// Golpe = 0.5 s a 120 BPM: el grupo 1 entra en 0 (durante la transición, como en Arcade), el 2 en 0.5, el 3 en 1.0.
 		await m.seek(0.45);
-		expect(lines().map(op)).toEqual([0, 0, 0]);
+		expect(op(lines()[0])).toBeGreaterThan(0.5);
+		expect(op(lines()[1])).toBe(0);
 		await m.seek(0.5 + 0.7);
-		expect(op(lines()[0])).toBe(1);
-		expect(op(lines()[2])).toBe(0);
-		await m.seek(1.5 + 0.7);
+		expect(op(lines()[1])).toBe(1);
+		await m.seek(1.0 + 0.7);
 		expect(lines().map(op)).toEqual([1, 1, 1]);
+	});
+
+	it("a blur transition into a phrase never leaves the frame empty", async () => {
+		// Tarea 0b: tras la captura, la frase entraba un golpe tarde y quedaba medio segundo de fondo solo.
+		const blurred = (i: number) => ({ ...shot("text", { lines: [`Line ${i}`] }, 4, i), transition: "blur" as const });
+		const m = mount([blurred(0), blurred(1)]);
+		const layer = (i: number) => root.querySelector(`[data-moment="${i}"]`);
+		const shown = (i: number) => op(layer(i)) * Math.max(0, ...[...(layer(i)?.querySelectorAll(".motion-line") ?? [])].map(op));
+		for (const t of [1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4]) {
+			await m.seek(t);
+			expect([t, Math.max(shown(0), shown(1)) > 0.2]).toEqual([t, true]);
+		}
+	});
+
+	it("in portrait a long group can break between its words", () => {
+		mount([shot("text", { lines: ["Start your workspace today"] }, 4)], "", {}, "9:16");
+		expect(root.querySelector<HTMLElement>(".motion-line")!.style.whiteSpace).toBe("normal");
+	});
+
+	it("a line break inside a group splits it in two groups", () => {
+		mount([shot("text", { lines: ["Unified workspace\nlimitless possibilities"] }, 4)]);
+		expect([...root.querySelectorAll(".motion-line")].map((l) => l.textContent)).toEqual(["Unified workspace", "limitless possibilities"]);
+	});
+
+	it("each word enters grey and darkens to the ink", async () => {
+		const m = mount([shot("text", { lines: ["Seis apps"] }, 4)]);
+		const words = [...root.querySelectorAll<HTMLElement>(".motion-word")];
+		expect(words.map((w) => w.textContent)).toEqual(["Seis", "apps"]);
+		await m.seek(0.05);
+		expect(words[0]!.style.color).not.toBe("rgb(11, 31, 68)");
+		await m.seek(1.5);
+		expect(words.map((w) => w.style.color)).toEqual(["rgb(11, 31, 68)", "rgb(11, 31, 68)"]);
+	});
+
+	it("a phrase never uses a weight over 500, even if the kit's is bolder", () => {
+		mount([shot("text", { lines: ["Hola"] }, 4)], "", { primary: { family: "inter", weight: 700 } });
+		expect(root.querySelector<HTMLElement>(".motion-text")!.style.fontWeight).toBe("500");
 	});
 
 	it("writes in the sky ink, not the kit text colour meant for video", () => {
@@ -107,5 +144,13 @@ describe("logo block", () => {
 		expect(layer.textContent).toContain("onview.cc");
 		await m.seek(m.duration - 0.01);
 		expect(op(layer.querySelector(".motion-logo"))).toBe(1);
+	});
+
+	it("with a light-background logo, the closing sits on the template's sky", () => {
+		mount([shot("text", { lines: ["Hola"] }, 4)], "onview.cc", { lightLogo: "light.png" });
+		const layer = root.querySelector<HTMLElement>('[data-block="logo"]')!;
+		expect(layer.style.background).toBe("");
+		expect(layer.querySelector("img")?.getAttribute("src")).toBe("light.png");
+		expect(layer.querySelector<HTMLElement>(".motion-line")!.style.color).toBe("rgb(11, 31, 68)");
 	});
 });

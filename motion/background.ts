@@ -45,6 +45,14 @@ export function tint(hex: string, amount: number): string {
 	return `#${c.map((v) => Math.round(v + (255 - v) * amount).toString(16).padStart(2, "0")).join("")}`;
 }
 
+/** Un color llevado hacia otro: `amount` 0 = `from`, 1 = `to`. Si alguno no es `#rrggbb`, devuelve `from`. */
+export function mix(from: string, to: string, amount: number): string {
+	const a = rgb(from);
+	const b = rgb(to);
+	if (!a || !b) return from;
+	return `#${a.map((v, i) => Math.round(v + (b[i]! - v) * amount).toString(16).padStart(2, "0")).join("")}`;
+}
+
 export function skyInk(brand: Pick<MotionBrand, "textColor" | "closingColor">): string {
 	if (contrast(brand.textColor, SKY_BASE) >= 4.5) return brand.textColor;
 	if (contrast(brand.closingColor, SKY_BASE) >= 4.5) return brand.closingColor;

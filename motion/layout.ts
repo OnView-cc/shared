@@ -6,8 +6,13 @@
  * prueba de integración del Container comprueba con la medida real del
  * navegador que nada se sale.
  *
- * - Horizontal y cuadrado: 9.2 u, en una línea mientras quepa entero.
- * - Vertical: 11 u, partido en líneas a 78 % del ancho.
+ * - Horizontal y cuadrado: 11.4 u, en una línea mientras quepa entero.
+ * - Vertical: 12.5 u, partido en líneas a 78 % del ancho.
+ *
+ * (Tarea 0b del plan 2026-11-18-onview-todo-codigo: Arcade escribe a 11.6 u, en
+ * una línea que ocupa el 71 % del ancho; antes eran 9.2 y 11 u y se veía tímido.
+ * La letra media se estima en 0.46 «emes», lo que mide Inter a peso 500; la
+ * medida real del navegador corrige con `shrinkToFit` si una letra es más ancha.)
  * - Si el texto entero no cabe en una línea, se parte entre grupos; si un
  *   grupo no cabe solo en una línea, el tamaño baja hasta que quepa, nunca por
  *   debajo de 6 u (ahí el grupo se parte por dentro).
@@ -17,12 +22,12 @@ export type Orientation = "landscape" | "portrait" | "square";
 
 export const TEXT_MIN_U = 6;
 const BASE: Record<Orientation, { sizeU: number; widthPct: number; widthU: number }> = {
-	landscape: { sizeU: 9.2, widthPct: 84, widthU: (1920 / 1080) * 100 },
-	square: { sizeU: 9.2, widthPct: 84, widthU: 100 },
-	portrait: { sizeU: 11, widthPct: 78, widthU: 100 },
+	landscape: { sizeU: 11.4, widthPct: 84, widthU: (1920 / 1080) * 100 },
+	square: { sizeU: 11.4, widthPct: 84, widthU: 100 },
+	portrait: { sizeU: 12.5, widthPct: 78, widthU: 100 },
 };
 /** El ancho medio de una letra, en «emes». */
-const CHAR_EM = 0.5;
+const CHAR_EM = 0.46;
 
 /** Cuántas letras caben en una línea a un tamaño dado. */
 const capacity = (o: Orientation, sizeU: number) => ((BASE[o].widthPct / 100) * BASE[o].widthU) / (CHAR_EM * sizeU);
@@ -43,15 +48,24 @@ export function shrinkToFit(sizeEl: HTMLElement, measured: HTMLElement[], maxPx:
 	return next;
 }
 
-export function textLayout(lines: string[], o: Orientation): { sizeU: number; widthPct: number; wrap: boolean } {
+/**
+ * En vertical una frase no encoge por debajo del 80 % de su tamaño: un grupo más
+ * largo se parte entre sus palabras (`breakGroups`), como cualquier texto en un
+ * móvil. Antes encogía hasta 6 u y «Start your workspace today» quedaba
+ * diminuto (tarea 0b).
+ */
+const PORTRAIT_FLOOR = 0.8;
+
+export function textLayout(lines: string[], o: Orientation): { sizeU: number; widthPct: number; wrap: boolean; breakGroups: boolean } {
 	const { sizeU: base, widthPct } = BASE[o];
 	const groups = lines.map((l) => l.trim()).filter(Boolean);
-	if (groups.length === 0) return { sizeU: base, widthPct, wrap: false };
+	if (groups.length === 0) return { sizeU: base, widthPct, wrap: false, breakGroups: false };
 	const whole = groups.join(" ").length;
 	const portrait = o === "portrait";
-	if (!portrait && whole <= capacity(o, base)) return { sizeU: base, widthPct, wrap: false };
+	if (!portrait && whole <= capacity(o, base)) return { sizeU: base, widthPct, wrap: false, breakGroups: false };
 	const longest = Math.max(...groups.map((g) => g.length));
+	const floor = portrait ? Math.round(base * PORTRAIT_FLOOR * 10) / 10 : TEXT_MIN_U;
 	let sizeU = base;
-	if (longest > capacity(o, base)) sizeU = Math.max(TEXT_MIN_U, Math.floor((((widthPct / 100) * BASE[o].widthU) / (CHAR_EM * longest)) * 10) / 10);
-	return { sizeU, widthPct, wrap: portrait || whole > capacity(o, sizeU) };
+	if (longest > capacity(o, base)) sizeU = Math.max(floor, Math.floor((((widthPct / 100) * BASE[o].widthU) / (CHAR_EM * longest)) * 10) / 10);
+	return { sizeU, widthPct, wrap: portrait || whole > capacity(o, sizeU), breakGroups: longest > capacity(o, sizeU) };
 }

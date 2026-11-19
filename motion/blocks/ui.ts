@@ -8,6 +8,15 @@
  *
  * El cursor vive dentro de la captura, así sigue al zoom. Es un dibujo propio,
  * sin marcas de ningún sistema.
+ *
+ * Pulido de la tarea 0b (plan 2026-11-18-onview-todo-codigo), tras ver una
+ * captura de panel entera, diminuta y quieta frente a la tarjeta de Arcade:
+ * - sin `zoom`, la captura se acerca despacio durante todo el momento, hacia la
+ *   parte de arriba (donde suele estar lo que importa);
+ * - en vertical, una captura ancha sin `zoom` ni `click` se recorta a una
+ *   tarjeta 4:5 que ocupa el ancho, en vez de encogerse entera hasta no leerse.
+ *   Con un punto marcado no se recorta: el punto se refiere a la imagen entera.
+ * Sin `click` no hay cursor: un clic inventado se ve falso.
  */
 import { gsap } from "gsap";
 import { registerBlock } from "../registry";
@@ -16,6 +25,8 @@ import type { UiParams } from "../types";
 const CURSOR_SVG =
 	'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 2.5 L4 19.5 L8.6 15.3 L11.6 21.6 L14.6 20.2 L11.7 14 L18 14 Z" fill="#111317" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/></svg>';
 const CURSOR_SRC = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(CURSOR_SVG)}`;
+/** Hasta dónde se acerca una captura sin zoom marcado, al final del momento. */
+const UI_DRIFT_SCALE = 1.14;
 
 /** Una imagen de `iw × ih` metida entera en el cuadro `W × H` con un margen, centrada. */
 export function fitContain(iw: number, ih: number, W: number, H: number, margin: number): { x: number; y: number; w: number; h: number } {
@@ -34,7 +45,9 @@ registerBlock("ui", (ctx) => {
 	if (!main) return;
 	const after = params.afterImageId ? moment.images.find((i) => i.id === params.afterImageId) : undefined;
 	const doc = el.ownerDocument;
-	const r = fitContain(main.width, main.height, motion.width, motion.height, 8 * u);
+	// En vertical, una captura ancha sin puntos marcados va recortada en tarjeta 4:5 (ver arriba).
+	const card = ctx.orientation === "portrait" && main.width > main.height && !params.zoom && !params.click;
+	const r = card ? fitContain(4, 5, motion.width, motion.height, 5 * u) : fitContain(main.width, main.height, motion.width, motion.height, 8 * u);
 
 	const shot = doc.createElement("div");
 	shot.className = "motion-shot";
@@ -52,7 +65,7 @@ registerBlock("ui", (ctx) => {
 		const img = doc.createElement("img");
 		img.alt = "";
 		img.src = src;
-		Object.assign(img.style, { position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "contain", display: "block" });
+		Object.assign(img.style, { position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: card ? "cover" : "contain", objectPosition: card ? "50% 0%" : "50% 50%", display: "block" });
 		return img;
 	};
 	shot.appendChild(picture(main.src));
@@ -76,6 +89,12 @@ registerBlock("ui", (ctx) => {
 		const origin = `${params.zoom.x * r.w}px ${params.zoom.y * r.h}px`;
 		gsap.set(zoomBox, { transformOrigin: origin });
 		tl.to(zoomBox, { scale: params.zoom.scale, duration: 2 * ctx.beatSeconds, ease: "power2.inOut", immediateRender: false }, ctx.beat(1));
+	} else {
+		// Sin zoom marcado: un acercamiento lento a lo largo del momento, hacia arriba.
+		gsap.set(zoomBox, { transformOrigin: "50% 30%" });
+		const from = ctx.beat(0) + 0.8;
+		const until = moment.at + moment.seconds;
+		if (until > from) tl.fromTo(zoomBox, { scale: 1 }, { scale: UI_DRIFT_SCALE, duration: until - from, ease: "sine.inOut", immediateRender: false }, from);
 	}
 	if (params.click) {
 		const cursor = doc.createElement("img");
