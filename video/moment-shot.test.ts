@@ -5,29 +5,21 @@ const row = (o: Partial<MomentRow>): MomentRow => ({
 	id: "s1",
 	position: 0,
 	seconds: 4,
-	block: "clip",
+	block: "text",
 	blockParams: {},
 	beats: null,
 	transition: "cut",
-	onScreenText: "",
-	textPosition: "bottom",
-	textIn: 0,
-	textOut: null,
 	imagesLayout: "grid",
 	imagesEntrance: "stagger",
-	trimIn: 0,
-	trimOut: null,
-	clip: null,
-	still: null,
 	voice: null,
 	images: [],
 	...o,
 });
 
 describe("toComposeShot", () => {
-	it("a clip takes its text and layout from its own fields", () => {
-		const s = toComposeShot(row({ onScreenText: "Hola", textPosition: "top", textIn: 0.5, textOut: 3, imagesLayout: "center", imagesEntrance: "fade", blockParams: { text: "stale" } }));
-		expect(s.params).toEqual({ text: "Hola", textPosition: "top", textIn: 0.5, textOut: 3, imagesLayout: "center", imagesEntrance: "fade" });
+	it("a text moment takes its lines from its params", () => {
+		const s = toComposeShot(row({ blockParams: { lines: ["Hola"] } }));
+		expect(s.params).toEqual({ lines: ["Hola"], color: null });
 	});
 
 	it("icons never put an image description in the video: an image without a label has no name", () => {

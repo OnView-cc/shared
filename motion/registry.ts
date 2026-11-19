@@ -26,8 +26,6 @@ export interface BlockCtx {
 	ink: string;
 	/** La familia CSS de una letra del kit. */
 	font(family: string): string;
-	/** Lo que no puede ir en la línea de tiempo (el cuadro de un clip): se llama en cada `seek`, con el segundo. */
-	onSeek(fn: (t: number) => void): void;
 	/** Lo que necesita las fuentes ya cargadas (medir y encoger un texto que no cabe): se llama una vez, antes de `ready`. */
 	onReady(fn: () => void): void;
 }

@@ -11,11 +11,7 @@ const shot = (block: BlockKind, params: Record<string, unknown>, beats: number, 
 	block,
 	params: parseBlockParams(block, params),
 	beats,
-	transition: "cut",
-	trimIn: 0,
-	trimOut: null,
-	clip: null,
-	still: null,
+	transition: "cut",
 	voice: null,
 	images: [],
 });
@@ -23,7 +19,7 @@ const shot = (block: BlockKind, params: Record<string, unknown>, beats: number, 
 const brand = { textColor: "#ffffff", closingColor: "#0b1f44", accentColor: "#f1844d", colors: ["#ffffff", "#0b1f44"], primary: { family: "inter", weight: 500 }, secondary: { family: "inter", weight: 500 }, sceneLogo: "logo.png", closingLogo: "closing.png" };
 
 function mount(shots: ComposeShot[], closingLine = "", over: Partial<typeof brand> & { lightLogo?: string | null } = {}, format: "16:9" | "9:16" = "16:9") {
-	const c = composeVideo({ format, quality: "standard_1080p", voiceVolume: 1, musicVolume: 0.35, musicFadeIn: 0, musicFadeOut: 1.5, closingLine, tempo: { bpm: 120, offset: 0 }, template: null, shots, music: null, sfx: [], brand: { ...brand, ...over }, limits: { maxResolution: "1080p", watermark: false } });
+	const c = composeVideo({ format, voiceVolume: 1, musicVolume: 0.35, musicFadeIn: 0, musicFadeOut: 1.5, closingLine, tempo: { bpm: 120, offset: 0 }, template: null, shots, music: null, sfx: [], brand: { ...brand, ...over }, limits: { watermark: false } });
 	root = document.createElement("div");
 	document.body.appendChild(root);
 	return createMotion(root, { ...c, media: { watermark: null } }, { mode: "export", imageWaitMs: 10 });

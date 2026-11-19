@@ -3,8 +3,8 @@
  * qué es un **template** (una lista de momentos), qué bloque usa cada **momento**
  * y qué **parámetros** lleva cada bloque.
  *
- * Un momento se dibuja con uno de seis bloques: `clip` (el clip de IA con texto
- * e imágenes encima, las escenas de siempre), `text` (frases que entran golpe a
+ * Un momento se dibuja con uno de cinco bloques (sin clips de IA desde la spec
+ * 2026-11-18-onview-todo-codigo): `text` (frases que entran golpe a
  * golpe), `icons` (iconos o logos que vuelan o una lista que pasa), `ui` (una
  * captura real con zoom y cursor), `product` (la foto del producto con
  * movimiento de cámara) y `logo` (el cierre). Pasa al siguiente con una
@@ -15,13 +15,12 @@
  * recorta lo que se pase. Código puro, sin navegador.
  */
 import type { ImagesEntrance, ImagesLayout } from "../video/scene-images";
-import type { TextPosition } from "../video/compose";
 
-export type BlockKind = "clip" | "text" | "icons" | "ui" | "product" | "logo";
+export type BlockKind = "text" | "icons" | "ui" | "product" | "logo";
 export type Transition = "blur" | "push" | "cut";
 export type Language = "en" | "es" | "pt";
 
-export const BLOCKS: readonly BlockKind[] = ["clip", "text", "icons", "ui", "product", "logo"];
+export const BLOCKS: readonly BlockKind[] = ["text", "icons", "ui", "product", "logo"];
 export const TRANSITIONS: readonly Transition[] = ["blur", "push", "cut"];
 
 export interface TextParams {
@@ -55,15 +54,6 @@ export interface ProductParams {
 	lines: string[];
 }
 
-export interface ClipParams {
-	text: string;
-	textPosition: TextPosition;
-	textIn: number;
-	textOut: number | null;
-	imagesLayout: ImagesLayout;
-	imagesEntrance: ImagesEntrance;
-}
-
 export interface LogoParams {
 	/** La línea opcional del cierre. */
 	line: string;
@@ -74,7 +64,6 @@ export interface BlockParams {
 	icons: IconsParams;
 	ui: UiParams;
 	product: ProductParams;
-	clip: ClipParams;
 	logo: LogoParams;
 }
 
@@ -151,14 +140,6 @@ export function parseBlockParams<K extends BlockKind>(block: K, raw: unknown): B
 				afterImageId: typeof r.afterImageId === "string" && r.afterImageId ? r.afterImageId : null,
 			};
 		},
-		clip: () => ({
-			text: str(r.text, 200),
-			textPosition: oneOf(r.textPosition, ["top", "center", "bottom"] as const, "bottom"),
-			textIn: Math.max(0, num(r.textIn, 0)),
-			textOut: typeof r.textOut === "number" && Number.isFinite(r.textOut) ? Math.max(0, r.textOut) : null,
-			imagesLayout: oneOf(r.imagesLayout, ["grid", "sequence", "center", "corner"] as const, "grid"),
-			imagesEntrance: oneOf(r.imagesEntrance, ["none", "fade", "stagger"] as const, "stagger"),
-		}),
 	};
 	return out[block]() as BlockParams[K];
 }

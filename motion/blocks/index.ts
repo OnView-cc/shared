@@ -7,4 +7,3 @@ import "./logo";
 import "./icons";
 import "./ui";
 import "./product";
-import "./clip";

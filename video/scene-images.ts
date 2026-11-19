@@ -19,11 +19,9 @@
  */
 import { FALLBACK_CLOSING, LOGO_MARGIN, TEXT_BOTTOM, TEXT_SIDE, TEXT_SIZE, TEXT_TOP, type Format, type TextPosition } from "./compose";
 
-export type Background = "video" | "card";
 export type ImagesLayout = "grid" | "sequence" | "center" | "corner";
 export type ImagesEntrance = "none" | "fade" | "stagger";
 
-export const BACKGROUNDS: readonly Background[] = ["video", "card"];
 export const IMAGES_LAYOUTS: readonly ImagesLayout[] = ["grid", "sequence", "center", "corner"];
 export const IMAGES_ENTRANCES: readonly ImagesEntrance[] = ["none", "fade", "stagger"];
 

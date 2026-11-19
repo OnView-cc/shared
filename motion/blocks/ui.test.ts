@@ -9,10 +9,9 @@ import { fitContain } from "./ui";
 const image = (id: string, width: number, height: number) => ({ id, src: `${id}.png`, width, height });
 
 function mount(block: BlockKind, params: Record<string, unknown>, images: ComposeShot["images"], format: "16:9" | "9:16" = "16:9") {
-	const shot: ComposeShot = { id: "m0", position: 0, seconds: 2, block, params: parseBlockParams(block, params), beats: 8, transition: "cut", trimIn: 0, trimOut: null, clip: null, still: null, voice: null, images };
+	const shot: ComposeShot = { id: "m0", position: 0, seconds: 2, block, params: parseBlockParams(block, params), beats: 8, transition: "cut", voice: null, images };
 	const c = composeVideo({
 		format,
-		quality: "standard_1080p",
 		voiceVolume: 1,
 		musicVolume: 0.35,
 		musicFadeIn: 0,
@@ -24,7 +23,7 @@ function mount(block: BlockKind, params: Record<string, unknown>, images: Compos
 		music: null,
 		sfx: [],
 		brand: null,
-		limits: { maxResolution: "1080p", watermark: false },
+		limits: { watermark: false },
 	});
 	root = document.createElement("div");
 	document.body.appendChild(root);

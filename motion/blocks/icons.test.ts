@@ -9,10 +9,9 @@ const HALF = { landscape: [(1920 / 1080) * 50, 50], portrait: [50, (1920 / 1080)
 const img = (i: number) => ({ id: `i${i}`, src: `i${i}.png`, width: 256, height: 256 });
 
 function mount(params: Record<string, unknown>, n: number, format: "16:9" | "9:16" = "16:9", lightLogo: string | null = null) {
-	const shot: ComposeShot = { id: "m0", position: 0, seconds: 2, block: "icons", params: parseBlockParams("icons", params), beats: 12, transition: "cut", trimIn: 0, trimOut: null, clip: null, still: null, voice: null, images: Array.from({ length: n }, (_, i) => img(i)) };
+	const shot: ComposeShot = { id: "m0", position: 0, seconds: 2, block: "icons", params: parseBlockParams("icons", params), beats: 12, transition: "cut", voice: null, images: Array.from({ length: n }, (_, i) => img(i)) };
 	const c = composeVideo({
 		format,
-		quality: "standard_1080p",
 		voiceVolume: 1,
 		musicVolume: 0.35,
 		musicFadeIn: 0,
@@ -24,7 +23,7 @@ function mount(params: Record<string, unknown>, n: number, format: "16:9" | "9:1
 		music: null,
 		sfx: [],
 		brand: { textColor: "#ffffff", closingColor: "#0b1f44", accentColor: "#f1844d", colors: [], primary: { family: "inter", weight: 500 }, secondary: { family: "inter", weight: 500 }, sceneLogo: "scene.png", closingLogo: null, lightLogo },
-		limits: { maxResolution: "1080p", watermark: false },
+		limits: { watermark: false },
 	});
 	root = document.createElement("div");
 	document.body.appendChild(root);

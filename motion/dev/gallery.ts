@@ -54,11 +54,7 @@ const moment = (block: BlockKind, beats: number, transition: Transition, params:
 	block,
 	params: parseBlockParams(block, params),
 	beats,
-	transition,
-	trimIn: 0,
-	trimOut: null,
-	clip: null,
-	still: null,
+	transition,
 	voice: null,
 	images,
 });
@@ -75,7 +71,6 @@ const shots: ComposeShot[] = [
 const logo = iconDir ? `${iconDir}/logo.svg` : icon(3, 400, 400).src;
 const doc = composeVideo({
 	format,
-	quality: "standard_1080p",
 	voiceVolume: 1,
 	musicVolume: 0.35,
 	musicFadeIn: 0,
@@ -87,7 +82,7 @@ const doc = composeVideo({
 	music: null,
 	sfx: [],
 	brand: { textColor: "#ffffff", closingColor: "#0b1f44", accentColor: "#f1844d", colors: ["#ffffff", "#0b1f44", "#f1844d", "#3e5dda"], primary: { family: "inter", weight: 500 }, secondary: { family: "inter", weight: 500 }, sceneLogo: logo, closingLogo: logo, lightLogo: iconDir ? logo : null },
-	limits: { maxResolution: "1080p", watermark: q.get("watermark") === "1" },
+	limits: { watermark: q.get("watermark") === "1" },
 });
 
 const root = document.getElementById("root")!;

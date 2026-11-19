@@ -7,14 +7,10 @@ const shot = (o: Partial<ComposeInput["shots"][number]>): ComposeInput["shots"][
 	id: "a",
 	position: 0,
 	seconds: 4,
-	block: "clip",
-	params: parseBlockParams("clip", {}),
+	block: "text",
+	params: parseBlockParams("text", {}),
 	beats: null,
-	transition: "cut",
-	trimIn: 0,
-	trimOut: null,
-	clip: null,
-	still: null,
+	transition: "cut",
 	voice: null,
 	images: [],
 	...o,
@@ -24,7 +20,6 @@ const shot = (o: Partial<ComposeInput["shots"][number]>): ComposeInput["shots"][
 const composition = () =>
 	composeVideo({
 		format: "9:16",
-		quality: "standard_720p",
 		voiceVolume: 1,
 		musicVolume: 0.4,
 		musicFadeIn: 0,
@@ -32,11 +27,11 @@ const composition = () =>
 		closingLine: "",
 		tempo: { bpm: 120, offset: 0 },
 		template: null,
-		shots: [shot({ id: "a", position: 0, clip: { src: "A", seconds: 4 }, voice: { src: "VA" } }), shot({ id: "b", position: 1, clip: { src: "B", seconds: 4 } })],
+		shots: [shot({ id: "a", position: 0, voice: { src: "VA" } }), shot({ id: "b", position: 1 })],
 		music: { src: "M" },
 		sfx: [],
 		brand: { textColor: null, closingColor: null, accentColor: null, colors: [], primary: { family: "inter", weight: 600 }, secondary: { family: "inter", weight: 600 }, sceneLogo: null, closingLogo: "L" },
-		limits: { maxResolution: "1080p", watermark: false },
+		limits: { watermark: false },
 	});
 
 describe("fitVoice", () => {

@@ -10,7 +10,6 @@ import { skyBlobs, skyInk } from "./background";
 function doc(transitions: Transition[], o: Partial<ComposeInput> = {}): MotionDoc {
 	const c = composeVideo({
 		format: "16:9",
-		quality: "standard_1080p",
 		voiceVolume: 1,
 		musicVolume: 0.35,
 		musicFadeIn: 0,
@@ -25,18 +24,14 @@ function doc(transitions: Transition[], o: Partial<ComposeInput> = {}): MotionDo
 			block: "text",
 			params: parseBlockParams("text", { lines: [`Line ${i}`] }),
 			beats: 4,
-			transition,
-			trimIn: 0,
-			trimOut: null,
-			clip: null,
-			still: null,
+			transition,
 			voice: null,
 			images: [],
 		})),
 		music: null,
 		sfx: [],
 		brand: null,
-		limits: { maxResolution: "1080p", watermark: false },
+		limits: { watermark: false },
 		...o,
 	});
 	return { ...c, media: { watermark: null } };
@@ -124,7 +119,7 @@ describe("createMotion", () => {
 	});
 
 	it("shows the watermark when the plan has one", () => {
-		mount({ ...doc(["cut"], { limits: { maxResolution: "1080p", watermark: true } }), media: { watermark: "/wm.png" } });
+		mount({ ...doc(["cut"], { limits: { watermark: true } }), media: { watermark: "/wm.png" } });
 		expect(root.querySelector<HTMLImageElement>(".motion-watermark")?.getAttribute("src")).toBe("/wm.png");
 	});
 

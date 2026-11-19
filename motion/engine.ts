@@ -62,7 +62,6 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	const ink = skyInk(doc.brand);
 
 	const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
-	const seekers: ((t: number) => void)[] = [];
 	const fitters: (() => void)[] = [];
 	const layers = doc.moments.map((moment, i) => {
 		const el = document.createElement("div");
@@ -86,7 +85,6 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 			beatSeconds: beat,
 			ink,
 			font,
-			onSeek: (fn) => seekers.push(fn),
 			onReady: (fn) => fitters.push(fn),
 		});
 	});
@@ -134,14 +132,12 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	});
 
 	tl.seek(0, false);
-	for (const fn of seekers) fn(0);
 	return {
 		duration: doc.total,
 		ready,
 		async seek(t: number) {
 			const at = Math.max(0, Math.min(t, doc.total));
 			tl.seek(at, false);
-			for (const fn of seekers) fn(at);
 			if (opts.mode !== "export") return;
 			const visible = images().filter((img) => img.closest<HTMLElement>(".motion-layer")?.style.visibility !== "hidden");
 			await Promise.all(visible.map((img) => (typeof img.decode === "function" ? img.decode().catch(() => undefined) : undefined)));

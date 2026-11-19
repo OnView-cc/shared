@@ -9,8 +9,9 @@
  * (`@onview/shared/motion`) la dibuja; la mezcla del sonido (que depende de la
  * duración real de cada archivo) se resuelve aparte, en `mix.ts`.
  *
- * - Un momento con golpes dura `beats × 60 / bpm`; uno sin golpes (las escenas
- *   de siempre, bloque `clip`), lo que su recorte o los segundos pedidos.
+ * - Un momento con golpes dura `beats × 60 / bpm`; uno sin golpes, sus segundos.
+ * - Todo video sale a 1080 en el lado corto, en cualquier plan (spec
+ *   2026-11-18-onview-todo-codigo: sin clips de IA, sin calidades ni resolución).
  * - Si el último momento no es un `logo` y el kit tiene logo de cierre, se
  *   añade un `logo` de 4 golpes con la línea del cierre (`shotId: null`).
  * - El `logo` final no cuenta para la duración máxima del plan
@@ -28,8 +29,6 @@ import { beatSeconds } from "../motion/fit";
 import type { AnyBlockParams, BlockKind, Transition } from "../motion/types";
 
 export type Format = "9:16" | "1:1" | "16:9";
-export type Quality = "standard_720p" | "standard_1080p" | "premium_1080p";
-export type Resolution = "720p" | "1080p";
 export type TextPosition = "top" | "center" | "bottom";
 
 /** Una letra: una familia de la lista del kit y su peso. */
@@ -77,19 +76,13 @@ export interface ComposeImage {
 export interface ComposeShot {
 	id: string;
 	position: number;
-	/** Lo pedido al modelo: lo que ocupa un `clip` mientras no tenga clip y no tenga golpes. */
+	/** Lo que dura un momento sin golpes. */
 	seconds: number;
 	block: BlockKind;
 	params: AnyBlockParams;
-	/** Golpes de música; null = la duración de siempre (recorte o segundos). */
+	/** Golpes de música; null = sus segundos. */
 	beats: number | null;
 	transition: Transition;
-	trimIn: number;
-	trimOut: number | null;
-	/** La versión elegida, si está lista (sólo cuenta en un `clip`). */
-	clip: { src: string; seconds: number } | null;
-	/** Su foto, para ocupar el sitio de un clip que aún no existe. */
-	still: string | null;
 	/** La voz lista del momento. */
 	voice: { src: string } | null;
 	/** Las imágenes del momento, en su orden, con su tamaño en píxeles. */
@@ -112,7 +105,6 @@ export interface ComposeBrand {
 
 export interface ComposeInput {
 	format: Format;
-	quality: Quality;
 	voiceVolume: number;
 	musicVolume: number;
 	musicFadeIn: number;
@@ -125,7 +117,7 @@ export interface ComposeInput {
 	music: { src: string } | null;
 	sfx: { id: string; shotId: string; sfxKey: string; at: number; volume: number }[];
 	brand: ComposeBrand | null;
-	limits: { maxResolution: Resolution; watermark: boolean };
+	limits: { watermark: boolean };
 }
 
 export interface Moment {
@@ -137,9 +129,6 @@ export interface Moment {
 	at: number;
 	seconds: number;
 	transition: Transition;
-	/** El trozo del clip que se usa (sólo en un `clip` con clip). */
-	clip: { src: string; from: number; to: number } | null;
-	still: string | null;
 	images: ComposeImage[];
 }
 
@@ -192,46 +181,24 @@ export interface Composition {
 	total: number;
 }
 
-const SHORT_SIDE: Record<Resolution, number> = { "720p": 720, "1080p": 1080 };
-const LONG_SIDE: Record<Resolution, number> = { "720p": 1280, "1080p": 1920 };
+const SHORT_SIDE = 1080;
+const LONG_SIDE = 1920;
 
-/** El cuadro del archivo: el formato del video a la menor resolución entre su calidad y el máximo del plan. */
-export function frameSize(format: Format, quality: Quality, maxResolution: Resolution): { width: number; height: number } {
-	const res: Resolution = quality === "standard_720p" || maxResolution === "720p" ? "720p" : "1080p";
-	const short = SHORT_SIDE[res];
-	const long = LONG_SIDE[res];
-	if (format === "1:1") return { width: short, height: short };
-	return format === "9:16" ? { width: short, height: long } : { width: long, height: short };
-}
-
-/** La versión que usa el video: la elegida si está lista; si no, la última lista. */
-export function chooseVersion<V extends { id: string; state: string }>(versions: V[], selectedId: string | null): V | null {
-	const ready = versions.filter((v) => v.state === "ready");
-	return ready.find((v) => v.id === selectedId) ?? ready.at(-1) ?? null;
+/** El cuadro del archivo: siempre 1080 en el lado corto. */
+export function frameSize(format: Format): { width: number; height: number } {
+	if (format === "1:1") return { width: SHORT_SIDE, height: SHORT_SIDE };
+	return format === "9:16" ? { width: SHORT_SIDE, height: LONG_SIDE } : { width: LONG_SIDE, height: SHORT_SIDE };
 }
 
 export function composeVideo(input: ComposeInput): Composition {
-	const { width, height } = frameSize(input.format, input.quality, input.limits.maxResolution);
+	const { width, height } = frameSize(input.format);
 	const beat = beatSeconds(input.tempo.bpm);
 	const voiced = input.template?.voice !== false;
 	const moments: Moment[] = [];
 	const voices: VoiceCue[] = [];
 	let at = 0;
 	for (const shot of [...input.shots].sort((a, b) => a.position - b.position)) {
-		const isClip = shot.block === "clip";
-		let clip: Moment["clip"] = null;
-		let length = shot.beats != null ? shot.beats * beat : shot.seconds;
-		if (isClip && shot.clip) {
-			// El recorte se valida contra lo pedido, no contra el clip: una entrada más allá de su final
-			// vuelve dentro de él, y un momento nunca acaba antes de empezar (revisión final, I1).
-			const clipLength = shot.clip.seconds;
-			const from = Math.min(Math.max(0, shot.trimIn), Math.max(0, clipLength - 1 / FPS));
-			let to = shot.trimOut ?? clipLength;
-			if (!(to > from)) to = Math.max(from + 1 / FPS, clipLength);
-			if (shot.beats == null) length = to - from;
-			clip = { src: shot.clip.src, from, to };
-		}
-		length = Math.max(0, length);
+		const length = Math.max(0, shot.beats != null ? shot.beats * beat : shot.seconds);
 		moments.push({
 			shotId: shot.id,
 			block: shot.block,
@@ -239,8 +206,6 @@ export function composeVideo(input: ComposeInput): Composition {
 			at,
 			seconds: length,
 			transition: shot.transition,
-			clip,
-			still: isClip && !shot.clip ? shot.still : null,
 			images: shot.images,
 		});
 		if (voiced && shot.voice) voices.push({ shotId: shot.id, src: shot.voice.src, at, slot: length });
@@ -261,7 +226,7 @@ export function composeVideo(input: ComposeInput): Composition {
 	};
 	if (moments.at(-1)?.block !== "logo" && motionBrand.closingLogo) {
 		const seconds = CLOSING_BEATS * beat;
-		moments.push({ shotId: null, block: "logo", params: { line: input.closingLine.trim().slice(0, MAX_CLOSING_TEXT) }, at, seconds, transition: "cut", clip: null, still: null, images: [] });
+		moments.push({ shotId: null, block: "logo", params: { line: input.closingLine.trim().slice(0, MAX_CLOSING_TEXT) }, at, seconds, transition: "cut", images: [] });
 		at += seconds;
 	}
 	const total = at;
@@ -297,14 +262,14 @@ export function composeVideo(input: ComposeInput): Composition {
 }
 
 /**
- * Los momentos que todavía no se pueden exportar: un `clip` sin clip listo, unos
- * `icons` con menos de 2 imágenes, una `ui` o un `product` sin imagen. El
+ * Los momentos que todavía no se pueden exportar: unos `icons` con menos de 2
+ * imágenes, una `ui` o un `product` sin imagen. El
  * cierre que se añade solo nunca está aquí.
  */
 export function incompleteMoments(c: Composition): string[] {
 	return c.moments.flatMap((m) => {
 		if (!m.shotId) return [];
-		const missing = (m.block === "clip" && !m.clip) || (m.block === "icons" && m.images.length < 2) || ((m.block === "ui" || m.block === "product") && m.images.length === 0);
+		const missing = (m.block === "icons" && m.images.length < 2) || ((m.block === "ui" || m.block === "product") && m.images.length === 0);
 		return missing ? [m.shotId] : [];
 	});
 }

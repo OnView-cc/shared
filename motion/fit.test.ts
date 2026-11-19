@@ -43,7 +43,7 @@ describe("parseBlockParams", () => {
 	});
 
 	it("parseBlockParams survives garbage", () => {
-		expect(parseBlockParams("clip", "nope")).toEqual({ text: "", textPosition: "bottom", textIn: 0, textOut: null, imagesLayout: "grid", imagesEntrance: "stagger" });
+		expect(parseBlockParams("text", "nope")).toEqual({ lines: [], color: null });
 		expect(parseBlockParams("icons", { labels: { a: 3, b: "z".repeat(40) } }).labels).toEqual({ b: "z".repeat(24) });
 		expect(parseBlockParams("text", { color: "red" }).color).toBeNull();
 		expect(parseBlockParams("text", { color: "#1c3b2f" }).color).toBe("#1c3b2f");
