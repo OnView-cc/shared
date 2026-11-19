@@ -100,8 +100,12 @@ export interface TemplateMoment {
 	write: string;
 	/** Lo que lleva al crear el video, por idioma. */
 	sample: Partial<Record<Language, Partial<AnyBlockParams>>>;
-	/** Las imágenes que toma cada vez que aparece, y de qué tipo. */
-	consumes?: { kind: MaterialKind; min: number; max: number };
+	/**
+	 * Las imágenes que toma cada vez que aparece, y de qué tipo. Con `shared`,
+	 * enseña las mismas piezas de ese tipo que ya usó un momento anterior sin
+	 * gastarlas (la lista de iconos repite los de la ráfaga).
+	 */
+	consumes?: { kind: MaterialKind; min: number; max: number; shared?: boolean };
 	/** Aparece una vez por pieza de material, entre `min` y `max` veces; con `group`, junto a los momentos vecinos del mismo grupo. */
 	repeat?: { min: number; max: number; group?: string };
 	/** Si falta su material: cambiarse por una frase o quitarse. Por defecto, «drop» si es opcional, si no «text». */

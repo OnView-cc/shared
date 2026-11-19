@@ -14,7 +14,7 @@ const T: Template = {
 	background: "sky",
 	moments: [
 		{ key: "hook", block: "text", beats: 4, transition: "blur", optional: false, slots: { lines: { max: 3, wordsPerLine: 3 } }, write: "The hook.", sample: {}, expandable: true },
-		{ key: "demo", block: "ui", beats: 8, transition: "blur", optional: false, slots: { images: { min: 1, max: 1 } }, write: "A screenshot.", sample: {}, consumes: { kind: "screenshot", min: 1, max: 1 }, repeat: { min: 1, max: 3 }, onMissing: "text" },
+		{ key: "demo", block: "ui", beats: 8, transition: "blur", optional: false, expandable: true, slots: { images: { min: 1, max: 1 } }, write: "A screenshot.", sample: {}, consumes: { kind: "screenshot", min: 1, max: 1 }, repeat: { min: 1, max: 3 }, onMissing: "text" },
 		{ key: "marks", block: "icons", beats: 8, transition: "push", optional: true, slots: { images: { min: 2, max: 6 } }, write: "The brands.", sample: {}, consumes: { kind: "logo", min: 2, max: 6 } },
 		{ key: "close", block: "logo", beats: 4, transition: "cut", optional: false, slots: {}, write: "The closing.", sample: {} },
 	],
@@ -69,6 +69,17 @@ describe("adaptTemplate", () => {
 		expect(new Set(keys(ms)).size).toBe(ms.length);
 	});
 
+	it("an expandable image moment is reused as an image, never turned into an extra phrase", () => {
+		const ms = adaptTemplate(T, shots(1), { bpm: 120, targetSeconds: 60, maxSeconds: 60 });
+		expect(ms.filter((m) => m.templateKey === "demo" && m.block === "text")).toEqual([]);
+	});
+
+	it("an image moment that is not expandable is never reused to grow", () => {
+		const fixed: Template = { ...T, moments: T.moments.map((m) => (m.key === "demo" ? { ...m, expandable: false } : m)) };
+		const ms = adaptTemplate(fixed, shots(1), { bpm: 120, targetSeconds: 60, maxSeconds: 60 });
+		expect(ms.filter((m) => m.block === "ui").map((m) => m.key)).toEqual(["demo"]);
+	});
+
 	it("an image of unknown kind counts as other and never fills a demo", () => {
 		const ms = adaptTemplate(T, [{ id: "x", kind: parseMaterialKind("banana") }], { bpm: 120, targetSeconds: 15, maxSeconds: 15 });
 		expect(ms.flatMap((m) => m.imageIds)).toEqual([]);
@@ -78,6 +89,22 @@ describe("adaptTemplate", () => {
 		const a = adaptTemplate(T, [...shots(2), ...logos(3)], { bpm: 116, targetSeconds: 30, maxSeconds: 60 });
 		const b = adaptTemplate(T, [...shots(2), ...logos(3)], { bpm: 116, targetSeconds: 30, maxSeconds: 60 });
 		expect(a).toEqual(b);
+	});
+
+	it("a shared moment shows the same pieces as an earlier one without using them up", () => {
+		const both: Template = {
+			...T,
+			moments: [
+				{ key: "burst", block: "icons", beats: 8, transition: "push", optional: false, slots: {}, write: "Icons.", sample: {}, consumes: { kind: "logo", min: 2, max: 6 } },
+				{ key: "list", block: "icons", beats: 8, transition: "blur", optional: true, slots: {}, write: "The same icons as a list.", sample: {}, consumes: { kind: "logo", min: 2, max: 6, shared: true } },
+				{ key: "close", block: "logo", beats: 4, transition: "cut", optional: false, slots: {}, write: "The closing.", sample: {} },
+			],
+		};
+		const ms = adaptTemplate(both, logos(3), { bpm: 120, targetSeconds: 15, maxSeconds: 60 });
+		expect(ms.filter((m) => m.block === "icons").map((m) => m.imageIds)).toEqual([
+			["l0", "l1", "l2"],
+			["l0", "l1", "l2"],
+		]);
 	});
 
 	it("a group repeats together, and a missing piece drops only its own moment", () => {

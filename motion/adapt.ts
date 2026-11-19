@@ -6,7 +6,8 @@
  * En este orden:
  *
  * 1. **Material por tipo**, en el orden recibido; cada pieza se usa una vez
- *    (salvo al reutilizar en el paso 5c).
+ *    (salvo al reutilizar en el paso 5c, y en un momento `consumes.shared`, que
+ *    enseña las mismas piezas que ya enseñó otro: la lista tras la ráfaga).
  * 2. **Instancias:** un momento con `repeat` aparece una vez por pieza (o por
  *    cada `consumes.min` piezas) hasta `repeat.max`, y al menos `repeat.min`
  *    veces; los momentos con el mismo `repeat.group` se repiten juntos. Un
@@ -21,8 +22,9 @@
  *    plan: (a) alargar las frases 2 golpes cada una, por turnos, hasta 8;
  *    (b) añadir una frase tras cada momento ampliable, como mucho 3 en total;
  *    (c) repetir una demo o una foto con la misma imagen (la foto con otro
- *    movimiento de cámara), como mucho 2. Si no queda qué hacer, el video sale
- *    más corto: Lumen lo dice.
+ *    movimiento de cámara), como mucho 2, sólo en los momentos de imagen que el
+ *    template marca `expandable`. Si no queda qué hacer, el video sale más
+ *    corto: Lumen lo dice.
  * 6. El cierre `logo` final no cuenta en ninguna medida.
  *
  * Las claves: la primera vez, la del template; las siguientes (repeticiones y
@@ -69,9 +71,16 @@ const missing = (m: TemplateMoment): "text" | "drop" => m.onMissing ?? (m.option
 
 export function adaptTemplate(t: Template, material: MaterialItem[], o: AdaptOptions): PlannedMoment[] {
 	// 1. El material por tipo.
-	const pool = new Map<MaterialKind, string[]>();
-	for (const item of material) pool.set(item.kind, [...(pool.get(item.kind) ?? []), item.id]);
-	const take = (kind: MaterialKind, n: number): string[] => (pool.get(kind) ?? []).splice(0, n);
+	const all = new Map<MaterialKind, string[]>();
+	for (const item of material) all.set(item.kind, [...(all.get(item.kind) ?? []), item.id]);
+	const pool = new Map([...all].map(([k, ids]) => [k, [...ids]]));
+	// Lo que ya enseñó algún momento, por tipo: lo que repite un momento `shared`.
+	const shown = new Map<MaterialKind, string[]>();
+	const take = (kind: MaterialKind, n: number): string[] => {
+		const ids = (pool.get(kind) ?? []).splice(0, n);
+		shown.set(kind, [...(shown.get(kind) ?? []), ...ids]);
+		return ids;
+	};
 	const has = (kind: MaterialKind) => (pool.get(kind) ?? []).length;
 
 	// Las unidades: un momento suelto o un grupo de momentos vecinos con el mismo `repeat.group`.
@@ -93,7 +102,7 @@ export function adaptTemplate(t: Template, material: MaterialItem[], o: AdaptOpt
 	const items: Item[] = [];
 	units.forEach((unit, u) => {
 		const repeat = unit[0]!.repeat;
-		const consuming = unit.filter((m) => m.consumes);
+		const consuming = unit.filter((m) => m.consumes && !m.consumes.shared);
 		// Cuántas instancias tienen todo su material.
 		let complete = 0;
 		if (repeat) {
@@ -105,7 +114,12 @@ export function adaptTemplate(t: Template, material: MaterialItem[], o: AdaptOpt
 			for (const m of unit) {
 				let imageIds: string[] = [];
 				let ok = true;
-				if (m.consumes) {
+				if (m.consumes?.shared) {
+					const { kind, min, max } = m.consumes;
+					const seen = (shown.get(kind) ?? []).slice(0, max);
+					if (seen.length >= Math.max(1, min)) imageIds = seen;
+					else ok = false;
+				} else if (m.consumes) {
 					const { kind, min, max } = m.consumes;
 					const n = repeat ? min : Math.min(max, has(kind));
 					if ((!repeat || i < complete) && has(kind) >= Math.max(1, min) && n >= min) imageIds = take(kind, n);
@@ -157,7 +171,7 @@ export function adaptTemplate(t: Template, material: MaterialItem[], o: AdaptOpt
 	let added = 0;
 	for (let grew = true; grew && short() && added < MAX_EXPANDED_TEXT; ) {
 		grew = false;
-		for (const source of items.filter((m) => expandable.has(m.templateKey) && !m.expanded)) {
+		for (const source of items.filter((m) => m.block === "text" && !m.fallback && expandable.has(m.templateKey) && !m.expanded)) {
 			if (!short() || added >= MAX_EXPANDED_TEXT) break;
 			const extra: Item = { ...source, key: keyFor(source.templateKey), block: "text", beats: 4, imageIds: [], fallback: false, expanded: true, params: {}, instance: 0, optional: true };
 			const at = items.map((m) => m.templateKey).lastIndexOf(source.templateKey) + 1;
@@ -171,9 +185,10 @@ export function adaptTemplate(t: Template, material: MaterialItem[], o: AdaptOpt
 			}
 		}
 	}
-	// (c) Reutilizar una demo o una foto.
+	// (c) Reutilizar una demo o una foto: sólo los momentos de imagen que el template marca ampliables
+	// (repetir un producto del catálogo o un paso de «Cómo se usa» no tiene sentido).
 	let reused = 0;
-	for (const source of items.filter((m) => (m.block === "ui" || m.block === "product") && m.imageIds.length && !m.expanded)) {
+	for (const source of items.filter((m) => (m.block === "ui" || m.block === "product") && m.imageIds.length && !m.expanded && expandable.has(m.templateKey))) {
 		if (!short() || reused >= MAX_REUSED) break;
 		const params = source.block === "product" ? { move: MOVES[reused % MOVES.length] } : {};
 		const extra: Item = { ...source, key: keyFor(source.templateKey), expanded: true, params, instance: 0, optional: true };

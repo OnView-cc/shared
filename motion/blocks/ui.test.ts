@@ -102,4 +102,22 @@ describe("product block", () => {
 		expect(Number(gsap.getProperty(photo, "scale"))).toBeGreaterThan(early);
 		expect([...root.querySelectorAll(".motion-line")].map((l) => l.textContent)).toEqual(["Taza", "12 h caliente."]);
 	});
+
+	it("with move out, the photo ends further away than it starts", async () => {
+		const m = mount("product", { move: "out" }, [image("p", 900, 900)]);
+		const photo = root.querySelector<HTMLElement>(".motion-product")!;
+		await m.seek(0.1);
+		const early = Number(gsap.getProperty(photo, "scale"));
+		await m.seek(3.9);
+		expect(Number(gsap.getProperty(photo, "scale"))).toBeLessThan(early);
+	});
+
+	it("with move pan, the photo slides sideways", async () => {
+		const m = mount("product", { move: "pan" }, [image("p", 900, 900)]);
+		const photo = root.querySelector<HTMLElement>(".motion-product")!;
+		await m.seek(0.1);
+		const early = Number(gsap.getProperty(photo, "x"));
+		await m.seek(3.9);
+		expect(Math.abs(Number(gsap.getProperty(photo, "x")) - early)).toBeGreaterThan(10);
+	});
 });
