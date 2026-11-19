@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { TEMPLATES, getTemplate } from "./templates";
 
 describe("templates", () => {
-	it("software-launch is the only template and has a voice (2026-11-18)", () => {
+	it("software-launch is the only template; the voice belongs to the video, not to it", () => {
 		expect(Object.keys(TEMPLATES)).toEqual(["software-launch"]);
 		const t = getTemplate("software-launch")!;
-		expect(t.voice).toBe(true);
+		expect("voice" in t).toBe(false);
+		expect(t.name.es).toBe("Lanzamiento de software");
 		expect(t.kinds).toEqual(["platform"]);
 		expect(t.defaultBpm).toBe(116);
 		expect(t.moments.map((m) => [m.key, m.block, m.beats, m.transition, m.optional])).toEqual([

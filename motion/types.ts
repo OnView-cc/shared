@@ -52,6 +52,25 @@ export interface UiParams {
 
 export interface ProductParams {
 	lines: string[];
+	/** Cómo se mueve la cámara sobre la foto: acercarse, alejarse o desplazarse. */
+	move: "in" | "out" | "pan";
+}
+
+/**
+ * El material de un video (spec 2026-11-18-onview-todo-codigo §B6): de qué tipo
+ * es cada imagen. Lo pone Lumen al llegar la imagen (o la persona lo cambia); los
+ * logos del kit son `logo`. Lo desconocido es `other`.
+ */
+export type MaterialKind = "screenshot" | "product_photo" | "logo" | "other";
+export const MATERIAL_KINDS: readonly MaterialKind[] = ["screenshot", "product_photo", "logo", "other"];
+export interface MaterialItem {
+	id: string;
+	kind: MaterialKind;
+}
+export type LocalText = Record<Language, string>;
+
+export function parseMaterialKind(raw: unknown): MaterialKind {
+	return MATERIAL_KINDS.includes(raw as MaterialKind) ? (raw as MaterialKind) : "other";
 }
 
 export interface LogoParams {
@@ -81,14 +100,31 @@ export interface TemplateMoment {
 	write: string;
 	/** Lo que lleva al crear el video, por idioma. */
 	sample: Partial<Record<Language, Partial<AnyBlockParams>>>;
+	/** Las imágenes que toma cada vez que aparece, y de qué tipo. */
+	consumes?: { kind: MaterialKind; min: number; max: number };
+	/** Aparece una vez por pieza de material, entre `min` y `max` veces; con `group`, junto a los momentos vecinos del mismo grupo. */
+	repeat?: { min: number; max: number; group?: string };
+	/** Si falta su material: cambiarse por una frase o quitarse. Por defecto, «drop» si es opcional, si no «text». */
+	onMissing?: "text" | "drop";
+	/** Se puede duplicar como frase para llegar a la duración pedida. */
+	expandable?: boolean;
 }
 
+/**
+ * Un template (spec 2026-11-18-onview-todo-codigo §B6). La voz ya no es del
+ * template: la decide el video (`projects.voice_enabled`).
+ */
 export interface Template {
 	id: string;
+	/** El nombre y la descripción de la galería, en los tres idiomas. */
+	name: LocalText;
+	description: LocalText;
+	/** Cuándo elegirlo, para Lumen (en inglés: es una instrucción para el modelo). */
+	when: string;
+	/** El material que pide: obligatorio u opcional. */
+	materials: { kind: MaterialKind; required: boolean }[];
 	kinds: ("product" | "platform" | "other")[];
 	defaultBpm: number;
-	/** Si sus momentos llevan voz en off. */
-	voice: boolean;
 	background: "sky";
 	moments: TemplateMoment[];
 }
@@ -125,7 +161,7 @@ export function parseBlockParams<K extends BlockKind>(block: K, raw: unknown): B
 			if ((["none", "fade", "stagger"] as const).includes(r.imagesEntrance as ImagesEntrance)) out.imagesEntrance = r.imagesEntrance as ImagesEntrance;
 			return out;
 		},
-		product: () => ({ lines: lines(r.lines) }),
+		product: () => ({ lines: lines(r.lines), move: oneOf(r.move, ["in", "out", "pan"] as const, "in") }),
 		logo: () => ({ line: str(r.line, MAX_LINE) }),
 		icons: () => {
 			const labels: Record<string, string> = {};

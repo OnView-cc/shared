@@ -19,9 +19,19 @@ import type { Template } from "./types";
 
 const SOFTWARE_LAUNCH: Template = {
 	id: "software-launch",
+	name: { en: "Software launch", es: "Lanzamiento de software", pt: "Lançamento de software" },
+	description: {
+		en: "Your app or platform: what it is, its products and a real screen.",
+		es: "Tu app o plataforma: qué es, sus productos y una pantalla real.",
+		pt: "Seu app ou plataforma: o que é, seus produtos e uma tela real.",
+	},
+	when: "A launch or presentation of an app, a platform or a piece of software. Uses the kit's brands as icons and screenshots of the product when there are any.",
+	materials: [
+		{ kind: "screenshot", required: false },
+		{ kind: "logo", required: false },
+	],
 	kinds: ["platform"],
 	defaultBpm: 116,
-	voice: true,
 	background: "sky",
 	moments: [
 		{
