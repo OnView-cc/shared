@@ -45,7 +45,7 @@ const SOFTWARE_LAUNCH: Template = {
 			transition: "push",
 			optional: false,
 			slots: { images: { min: 2, max: 6 } },
-			write: "The brand's logo in the middle lets out the icons of its products or features. No words: the person uploads 2 to 6 icons to this scene's Images.",
+			write: "The brand's logo in the middle lets out the icons of its products or features. No words. The icons (2 to 6) are the logos of the kit's brands that apply_template places (icons) or images the person attaches; never ask for them before writing.",
 			sample: { en: { variant: "burst" }, es: { variant: "burst" }, pt: { variant: "burst" } },
 		},
 		{
@@ -65,7 +65,7 @@ const SOFTWARE_LAUNCH: Template = {
 			transition: "blur",
 			optional: true,
 			slots: { images: { min: 1, max: 2 } },
-			write: "A real screenshot of the product, with the cursor clicking its main action. No words: the person uploads the screenshot and marks the click.",
+			write: "A real screenshot of the product, with the cursor clicking its main action. No words: the person attaches the screenshot (in the chat or in the scene's Images) and marks the click.",
 			sample: {},
 		},
 		{
