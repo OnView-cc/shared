@@ -25,6 +25,12 @@ export const AI_MARK = {
 	viewBox: "0 0 24 24",
 	core: { r: 4.2 },
 	ring: { inner: 6.6, outer: 9.8, segments: 24 },
+	/**
+	 * Opacidad del aro de la versión plana, por tono. Sobre el casi negro 0.4 llega
+	 * a 3.51:1; sobre papel claro el mismo valor se queda en 2.73:1 (un halo casi
+	 * invisible en correos y documentos), así que el papel es más denso (0.5).
+	 */
+	mono: { opacity: { night: 0.4, paper: 0.5 } as Record<MarkTone, number> },
 } as const;
 
 /** Como `MARK_COLORS`; escritos aquí para que el script de marca cargue este archivo solo. */
@@ -62,8 +68,8 @@ const at = (r: number, f: number) => {
  * El símbolo como SVG autónomo. En color: 24 sectores de aro (cada uno un `path`
  * relleno con `spectrumAt` en su centro) y el núcleo. Cada sector lleva un trazo
  * de su propio color de 0.12 de ancho para que los vecinos no dejen una línea
- * fina entre sí. `mono` (correos, documentos): el punto con un aro del color del
- * tono al 40 %, sin ningún color del espectro.
+ * fina entre sí. `mono` (correos, documentos): el punto con un aro del color del tono,
+ * con opacidad por tono (40 % de noche, 50 % sobre papel), sin ningún color del espectro.
  */
 export function aiMarkSvg(tone: MarkTone, opts: { size?: number; mono?: boolean } = {}): string {
 	const { size = 24, mono = false } = opts;
@@ -73,7 +79,7 @@ export function aiMarkSvg(tone: MarkTone, opts: { size?: number; mono?: boolean 
 	if (mono) {
 		return (
 			head +
-			`<circle cx="12" cy="12" r="${(ring.inner + ring.outer) / 2}" fill="none" stroke="${c}" stroke-width="${ring.outer - ring.inner}" opacity="0.4"/>` +
+			`<circle cx="12" cy="12" r="${(ring.inner + ring.outer) / 2}" fill="none" stroke="${c}" stroke-width="${ring.outer - ring.inner}" opacity="${AI_MARK.mono.opacity[tone]}"/>` +
 			`<circle cx="12" cy="12" r="${core.r}" fill="${c}"/>` +
 			`</svg>`
 		);
@@ -90,5 +96,3 @@ export function aiMarkSvg(tone: MarkTone, opts: { size?: number; mono?: boolean 
 	}
 	return head + sectors + `<circle cx="12" cy="12" r="${core.r}" fill="${c}"/>` + `</svg>`;
 }
-
-

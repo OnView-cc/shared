@@ -27,7 +27,8 @@ describe("markSvg «Dos capas»", () => {
 	});
 
 	it("el marco de atrás es más tenue y el de delante macizo, y se solapan sin taparse", () => {
-		expect(MARK.back.opacity).toBeLessThan(1);
+		expect(MARK.back.opacity.night).toBeLessThan(1);
+		expect(MARK.back.opacity.paper).toBeLessThan(1);
 		expect(MARK.front.x).toBeGreaterThan(MARK.back.x);
 		expect(MARK.front.x).toBeLessThan(MARK.back.x + MARK.back.w);
 	});
@@ -75,7 +76,7 @@ describe("Iris «El prisma»", () => {
 			for (const c of AI_SPECTRUM) expect(svg.toLowerCase()).not.toContain(c);
 			expect(svg).not.toMatch(/<path/);
 			expect(svg.match(/<circle/g)).toHaveLength(2);
-			expect(svg).toContain('opacity="0.4"');
+			expect(svg).toMatch(/opacity="0.[45]"/);
 		}
 	});
 
@@ -83,5 +84,39 @@ describe("Iris «El prisma»", () => {
 		const svg = aiMarkSvg("night", { size: 48 });
 		expect(svg).toContain('width="48" height="48"');
 		expect(svg).toContain('viewBox="0 0 24 24"');
+	});
+});
+
+describe("opacidad por tono de las partes translúcidas", () => {
+	const GROUND = { night: "#060607", paper: "#f5f5f7" } as const;
+	const lin = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+	const rgb = (h: string) => [1, 3, 5].map((o) => parseInt(h.slice(o, o + 2), 16));
+	const lum = ([r, g, b]: number[]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+	const blend = (fg: string, bg: string, a: number) => rgb(fg).map((c, i) => c * a + rgb(bg)[i] * (1 - a));
+	const contrast = (x: number[], y: number[]) => {
+		const [hi, lo] = [lum(x), lum(y)].sort((p, q) => q - p);
+		return (hi + 0.05) / (lo + 0.05);
+	};
+
+	it("los cuatro valores exactos", () => {
+		expect(MARK.back.opacity).toEqual({ night: 0.42, paper: 0.5 });
+		expect(AI_MARK.mono.opacity).toEqual({ night: 0.4, paper: 0.5 });
+	});
+
+	it.each([
+		["el marco de atrás", (t: "night" | "paper") => MARK.back.opacity[t]],
+		["el aro plano de Iris", (t: "night" | "paper") => AI_MARK.mono.opacity[t]],
+	] as const)("%s llega a 3:1 contra el suelo para el que se diseñó, en los dos tonos", (_n, opacity) => {
+		for (const tone of ["night", "paper"] as const) {
+			const mixed = blend(MARK_COLORS[tone], GROUND[tone], opacity(tone));
+			expect(contrast(mixed, rgb(GROUND[tone])), tone).toBeGreaterThanOrEqual(3);
+		}
+	});
+
+	it("el svg usa la opacidad de su tono", () => {
+		expect(markSvg("paper")).toContain('opacity="0.5"');
+		expect(markSvg("night")).toContain('opacity="0.42"');
+		expect(aiMarkSvg("paper", { mono: true })).toContain('opacity="0.5"');
+		expect(aiMarkSvg("night", { mono: true })).toContain('opacity="0.4"');
 	});
 });

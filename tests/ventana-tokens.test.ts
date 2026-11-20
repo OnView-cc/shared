@@ -624,7 +624,7 @@ describe("Ventana controles", () => {
 	});
 
 	it("esqueleto, progreso y acordeón no animan nada con movimiento reducido", () => {
-		const reduced = content.slice(content.indexOf("@media (prefers-reduced-motion: reduce)"));
+		const reduced = content.slice(content.lastIndexOf("@media (prefers-reduced-motion: reduce)"));
 		expect(reduced).toMatch(/\.vn-skel__block \{\s*animation: none;/);
 		expect(reduced).toMatch(/\.vn-progress__bar,[\s\S]*transition: none;/);
 		expect(reduced).toMatch(/\.vn-acc__content\[data-state="open"\],[\s\S]*animation: none;/);

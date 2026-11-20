@@ -19,8 +19,13 @@ export const MARK_COLORS: Record<MarkTone, string> = {
 
 export const MARK = {
 	viewBox: "0 0 32 32",
-	/** El marco de atrás, arriba a la izquierda y tenue. Mide 12.95 × 23 (9:16). */
-	back: { x: 5.5, y: 3.5, w: 12.95, h: 23, rx: 4.25, opacity: 0.42 },
+	/**
+	 * El marco de atrás, arriba a la izquierda y tenue. Mide 12.95 × 23 (9:16). Su
+	 * opacidad va por tono: sobre el casi negro basta 0.42 (3.77:1 contra el suelo);
+	 * sobre papel claro el mismo valor se queda en 2.90:1, así que el papel es más
+	 * denso (0.5) para llegar a 3:1 como el resto de iconos.
+	 */
+	back: { x: 5.5, y: 3.5, w: 12.95, h: 23, rx: 4.25, opacity: { night: 0.42, paper: 0.5 } as Record<MarkTone, number> },
 	/** El marco de delante, abajo a la derecha y macizo. Mismo tamaño que el de atrás. */
 	front: { x: 13.5, y: 5.5, w: 12.95, h: 23, rx: 4.25 },
 } as const;
@@ -31,7 +36,7 @@ export function markSvg(tone: MarkTone, size = 32): string {
 	const { back: b, front: f } = MARK;
 	return (
 		`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${MARK.viewBox}">` +
-		`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="${b.rx}" fill="${c}" opacity="${b.opacity}"/>` +
+		`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="${b.rx}" fill="${c}" opacity="${b.opacity[tone]}"/>` +
 		`<rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="${f.rx}" fill="${c}"/>` +
 		`</svg>`
 	);

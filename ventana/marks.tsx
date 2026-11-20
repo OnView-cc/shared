@@ -17,7 +17,7 @@ export function Mark({ className, tone = "night" }: { className?: string; tone?:
 	const { back: b, front: f } = MARK;
 	return (
 		<svg viewBox={MARK.viewBox} className={className ?? "vn-mark"} aria-hidden="true">
-			<rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} fill={c} opacity={b.opacity} />
+			<rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} fill={c} opacity={b.opacity[tone]} />
 			<rect x={f.x} y={f.y} width={f.w} height={f.h} rx={f.rx} fill={c} />
 		</svg>
 	);
@@ -48,7 +48,7 @@ export function AiMark({
 		const { core, ring } = AI_MARK;
 		return (
 			<svg viewBox={AI_MARK.viewBox} className={className || "vn-ai-mono"} aria-hidden="true">
-				<circle cx={12} cy={12} r={(ring.inner + ring.outer) / 2} fill="none" stroke={c} strokeWidth={ring.outer - ring.inner} opacity={0.4} />
+				<circle cx={12} cy={12} r={(ring.inner + ring.outer) / 2} fill="none" stroke={c} strokeWidth={ring.outer - ring.inner} opacity={AI_MARK.mono.opacity[tone]} />
 				<circle cx={12} cy={12} r={core.r} fill={c} />
 			</svg>
 		);
@@ -71,4 +71,3 @@ export function Wordmark({ href, className = "", tone = "night" }: { href: strin
 		</a>
 	);
 }
-
