@@ -10,7 +10,8 @@ import { describe, expect, it } from "vitest";
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8");
 const tokens = read("../styles/ventana/tokens.css");
 const glass = read("../styles/ventana/glass.css");
-const all = tokens + glass + read("../styles/ventana.css");
+const type = read("../styles/ventana/type.css");
+const all = tokens + glass + type + read("../styles/ventana.css");
 const allVentanaCss = [
 	...readdirSync(new URL("../styles/ventana/", import.meta.url))
 		.filter((f) => f.endsWith(".css"))
@@ -101,5 +102,61 @@ describe("Ventana tokens", () => {
 			expect(file).not.toMatch(/--sk-/);
 			expect(file).not.toMatch(/\.sk[\s.{,]/);
 		}
+	});
+});
+
+/** Cuerpo de la regla `selector { ... }`; con `media`, la que va dentro de ese bloque. */
+const esc = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function rule(selector: string, media?: string): string {
+	let scope = type;
+	if (media) {
+		const start = type.indexOf(`@media ${media} {`);
+		scope = start < 0 ? "" : type.slice(start, type.indexOf("\n}", start));
+	}
+	return scope.match(new RegExp(`(?:^|\\n)\\t*${esc(selector)} \\{([^}]*)\\}`))?.[1] ?? "";
+}
+
+describe("Ventana letra y página", () => {
+	it.each([
+		[".vn .vn-display", 650, "clamp(2.75rem, 6vw, 5rem)", "1", "-0.04em"],
+		[".vn .vn-title-1", 650, "2rem", "1.08", "-0.03em"],
+		[".vn .vn-title-2", 600, "1.375rem", "1.2", "-0.02em"],
+		[".vn .vn-title-3", 600, "1.0625rem", "1.3", "-0.01em"],
+		[".vn .vn-body", 400, "0.9375rem", "1.55", ""],
+		[".vn .vn-small", 400, "0.8125rem", "1.45", ""],
+		[".vn .vn-label", 600, "0.75rem", "1", ""],
+	])("%s trae su peso, tamaño, interlínea y tracking", (sel, weight, size, leading, tracking) => {
+		const body = rule(sel);
+		expect(body).toMatch(new RegExp(`font-weight: ${weight};`));
+		expect(body).toMatch(new RegExp(`font-size: ${esc(size)};`));
+		expect(body).toMatch(new RegExp(`line-height: ${esc(leading)};`));
+		if (tracking) expect(body).toMatch(new RegExp(`letter-spacing: ${esc(tracking)};`));
+	});
+	it("title-1 sube a 2.5rem desde 48rem", () => {
+		expect(rule(".vn .vn-title-1", "(min-width: 48rem)")).toMatch(/font-size: 2\.5rem/);
+	});
+
+	it("ningún font-weight de type.css pasa de 650", () => {
+		const weights = [...type.matchAll(/font-weight:\s*(\d+)/g)].map((m) => Number(m[1]));
+		expect(weights.length).toBeGreaterThan(0);
+		expect(Math.max(...weights)).toBeLessThanOrEqual(650);
+	});
+
+	it(".vn-small usa la tinta 2 y .vn-num usa cifras tabulares", () => {
+		expect(rule(".vn .vn-small")).toMatch(/color: var\(--vn-ink-2\)/);
+		expect(rule(".vn .vn-num")).toMatch(/font-variant-numeric: tabular-nums/);
+	});
+
+	it("la columna de página mide 1240px con márgenes 16, 24 y 32", () => {
+		expect(rule(".vn .vn-wrap")).toMatch(/max-width: 1240px/);
+		expect(rule(".vn .vn-wrap")).toMatch(/padding-inline: 16px/);
+		expect(rule(".vn .vn-wrap", "(min-width: 40rem)")).toMatch(/padding-inline: 24px/);
+		expect(rule(".vn .vn-wrap", "(min-width: 64rem)")).toMatch(/padding-inline: 32px/);
+	});
+
+	it("el enlace subraya al pasar y con foco, y la prosa corta a 70ch", () => {
+		expect(type).toMatch(/\.vn \.vn-link:hover/);
+		expect(type).toMatch(/\.vn \.vn-link:focus-visible/);
+		expect(rule(".vn .vn-prose")).toMatch(/max-width: 70ch/);
 	});
 });

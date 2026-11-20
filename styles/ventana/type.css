@@ -1,0 +1,114 @@
+/* Ventana: escala de letra y clases de página. Un peso máximo de 650; el tracking se aprieta al crecer. */
+
+.vn .vn-display {
+	font-weight: 650;
+	font-size: clamp(2.75rem, 6vw, 5rem);
+	line-height: 1;
+	letter-spacing: -0.04em;
+	text-wrap: balance;
+	font-optical-sizing: auto;
+}
+
+.vn .vn-title-1 {
+	font-weight: 650;
+	font-size: 2rem;
+	line-height: 1.08;
+	letter-spacing: -0.03em;
+	text-wrap: balance;
+}
+
+.vn .vn-title-2 {
+	font-weight: 600;
+	font-size: 1.375rem;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	text-wrap: balance;
+}
+
+.vn .vn-title-3 {
+	font-weight: 600;
+	font-size: 1.0625rem;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+	text-wrap: balance;
+}
+
+.vn .vn-body {
+	font-weight: 400;
+	font-size: 0.9375rem;
+	line-height: 1.55;
+	text-wrap: pretty;
+}
+
+.vn .vn-small {
+	font-weight: 400;
+	font-size: 0.8125rem;
+	line-height: 1.45;
+	color: var(--vn-ink-2);
+	text-wrap: pretty;
+}
+
+/* Etiqueta: letra chica con tracking positivo para que se lea */
+.vn .vn-label {
+	font-weight: 600;
+	font-size: 0.75rem;
+	line-height: 1;
+	letter-spacing: 0.01em;
+}
+
+/* Cifras de ancho fijo: las columnas de números no bailan */
+.vn .vn-num {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Columna de página */
+.vn .vn-wrap {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 1240px;
+	margin-inline: auto;
+	padding-inline: 16px;
+}
+
+.vn .vn-link {
+	color: var(--vn-ink);
+	text-decoration: none;
+	text-underline-offset: 0.2em;
+	text-decoration-thickness: 1px;
+	border-radius: 2px;
+}
+
+.vn .vn-prose {
+	max-width: 70ch;
+}
+
+@media (min-width: 40rem) {
+	.vn .vn-wrap {
+		padding-inline: 24px;
+	}
+}
+
+@media (min-width: 48rem) {
+	.vn .vn-title-1 {
+		font-size: 2.5rem;
+	}
+}
+
+@media (min-width: 64rem) {
+	.vn .vn-wrap {
+		padding-inline: 32px;
+	}
+}
+
+/* El subrayado sólo con puntero fino: en táctil el hover se queda pegado */
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-link:hover {
+		text-decoration-line: underline;
+	}
+}
+
+.vn .vn-link:focus-visible {
+	text-decoration-line: underline;
+	outline: none;
+	box-shadow: var(--vn-focus);
+}

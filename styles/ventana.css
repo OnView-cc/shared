@@ -1,4 +1,5 @@
 /* Ventana: punto de entrada. Vive junto a Feed vertical (`sky.css`), no lo sustituye aquí. */
 @import "./ventana/tokens.css";
+@import "./ventana/type.css";
 @import "./ventana/glass.css";
 @import "./ventana/motion.css";
