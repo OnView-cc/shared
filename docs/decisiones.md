@@ -107,3 +107,9 @@ Spec `../docs/superpowers/specs/2026-11-19-onview-estilos-y-referencias-design.m
 - **La letra** (`type.ts`): `phraseWeight` fija el peso del estilo con el más cercano que tenga la letra (`Face.weights`), `SCALE`, mayúsculas y espaciado; el motor carga la letra a ese peso antes de medir. Entradas `groups` (Arcade), `slam`, `rise`, `fade` y `type`; sitio `center`, `corner` o `lower`.
 - **Producto**: marcos `shadow`, `plinth` (base y reflejo) y `bleed`; `wide` dobla el movimiento. **Cierre**: sobre fondo claro con el logo para fondos claros; sobre oscuro, con el de cierre si el color de cierre es casi el del fondo; si no, la tarjeta de siempre.
 - Lo que enseñaron las muestras (tarea 8) y Bloques (tarea 9) está en el registro del plan.
+
+## v2.6.0: el video de referencia (OnView, 2026-11-19)
+
+Spec `../docs/superpowers/specs/2026-11-19-onview-estilos-y-referencias-design.md` §7 (tareas 19–24 del plan).
+
+- `video/reference.ts`: los topes (90 s, 100 MB, 12 cuadros, 30 días), los tipos (`ReferenceAnalysis`, estado y motivo) y `referenceLine`, la línea con las medidas que lee Lumen junto a los cuadros. La medición vive en el Container del estudio (`render/src/analyze.ts`), que no importa shared y repite los topes.
