@@ -6,7 +6,7 @@
  */
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { installRadixDom } from "../tests/helpers/radix-dom";
 import { Segmented } from "./segmented";
 
@@ -68,10 +68,13 @@ function Harness({ start = "v" }: { start?: string }) {
 }
 
 const radios = () => Array.from(document.querySelectorAll<HTMLElement>('[role="radio"]'));
-const key = (el: Element, k: string) =>
+const key = (el: Element, k: string, mods: KeyboardEventInit = {}) => {
+	const event = new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true, ...mods });
 	act(() => {
-		el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+		el.dispatchEvent(event);
 	});
+	return event;
+};
 
 describe("Segmented", () => {
 	it("es un radiogroup con nombre y radios; sólo la elegida entra por tabulador", () => {
@@ -109,6 +112,34 @@ describe("Segmented", () => {
 		key(radios()[2], "Home");
 		expect(radios()[0].getAttribute("aria-checked")).toBe("true");
 		expect(document.activeElement).toBe(radios()[0]);
+	});
+
+	it("en un extremo no avisa de una elección que no cambia", () => {
+		setReducedMotion(false);
+		const onChange = vi.fn();
+		const view = (v: string) => <Segmented value={v} options={OPTIONS} onChange={onChange} label="Formato" />;
+		mount(view("v"));
+		key(radios()[0], "ArrowLeft");
+		key(radios()[0], "Home");
+		expect(onChange).not.toHaveBeenCalled();
+		act(() => root!.render(view("s")));
+		key(radios()[2], "ArrowRight");
+		key(radios()[2], "End");
+		expect(onChange).not.toHaveBeenCalled();
+		key(radios()[2], "ArrowLeft");
+		expect(onChange).toHaveBeenCalledWith("h");
+	});
+
+	it("las flechas con Alt, Ctrl o Meta no se tragan ni cambian nada", () => {
+		setReducedMotion(false);
+		const onChange = vi.fn();
+		mount(<Segmented value="h" options={OPTIONS} onChange={onChange} label="Formato" />);
+		for (const mod of [{ altKey: true }, { ctrlKey: true }, { metaKey: true }]) {
+			const event = key(radios()[1], "ArrowLeft", mod);
+			expect(event.defaultPrevented).toBe(false);
+		}
+		expect(onChange).not.toHaveBeenCalled();
+		expect(key(radios()[1], "ArrowLeft").defaultPrevented).toBe(true);
 	});
 
 	it("un clic elige la opción", () => {

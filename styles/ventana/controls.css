@@ -512,6 +512,7 @@
 	position: absolute;
 	z-index: 0;
 	inset-block: 2px;
+	/* Supone izquierda a derecha (el producto sale en en, es y pt): el desplazamiento mide offsetLeft. */
 	inset-inline-start: 0;
 	inline-size: calc(var(--vn-seg-w, 0px) - 4px);
 	translate: calc(var(--vn-seg-x, 0px) + 2px) 0;

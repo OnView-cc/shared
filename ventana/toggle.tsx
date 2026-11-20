@@ -4,13 +4,13 @@
  * `--vn-action-ink`. Sin color de acento.
  *
  * `Switch`: un `<button role="switch">` con `label` como nombre accesible, de
- * 51 x 31px a la vista y 44px de alto de toque. Espacio alterna (se resuelve en
- * keyup, como un botón nativo, y se cancela el clic para no alternar dos veces).
+ * 51 x 31px a la vista y 44px de alto de toque. Espacio y Enter alternan por el
+ * clic nativo del botón: no hay manejo de teclado propio.
  * `Check`: misma estructura que `Check` de `sky/console.tsx` (casilla nativa
  * escondida bajo un cuadro, los hijos como su etiqueta); sky usa clases de
  * Tailwind y aquí van clases `vn-*`.
  */
-import { useId, type KeyboardEvent, type ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Check as CheckIcon } from "lucide-react";
 
 export function Switch({
@@ -26,15 +26,6 @@ export function Switch({
 	disabled?: boolean;
 	label: string;
 }) {
-	function onKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
-		// Espacio no desplaza la página; la acción llega en keyup.
-		if (event.key === " ") event.preventDefault();
-	}
-	function onKeyUp(event: KeyboardEvent<HTMLButtonElement>) {
-		if (event.key !== " ") return;
-		event.preventDefault();
-		if (!disabled) onChange(!checked);
-	}
 	return (
 		<button
 			id={id}
@@ -44,9 +35,7 @@ export function Switch({
 			aria-label={label}
 			disabled={disabled}
 			className="vn-switch vn-press"
-			onClick={() => onChange(!checked)}
-			onKeyDown={onKeyDown}
-			onKeyUp={onKeyUp}>
+			onClick={() => onChange(!checked)}>
 			<span aria-hidden="true" className="vn-switch__track">
 				<span className="vn-switch__knob" />
 			</span>

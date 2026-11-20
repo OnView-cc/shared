@@ -11,7 +11,7 @@
  * (`data-ready`) cuando ya hubo una medida pintada; con movimiento reducido
  * lleva `data-still` y no se desliza.
  */
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../sky/hooks";
 
 export function Segmented<T extends string>({
@@ -32,17 +32,17 @@ export function Segmented<T extends string>({
 	const still = useReducedMotion();
 	const selected = options.findIndex((o) => o.value === value);
 
-	function measure() {
+	const measure = useCallback(() => {
 		const el = selected >= 0 ? refs.current[selected] : null;
 		setBox((prev) => {
 			if (!el) return prev === null ? prev : null;
 			const next = { x: el.offsetLeft, w: el.offsetWidth };
 			return prev && prev.x === next.x && prev.w === next.w ? prev : next;
 		});
-	}
+	}, [selected]);
 
 	// Medir antes de pintar: la primera posición ya sale colocada, sin deslizarse desde 0.
-	useLayoutEffect(measure);
+	useLayoutEffect(measure, [measure, options.length]);
 
 	// Habilitar la transición sólo después de que la primera medida se pintó.
 	useEffect(() => {
@@ -51,22 +51,26 @@ export function Segmented<T extends string>({
 		return () => cancelAnimationFrame(id);
 	}, [box, ready]);
 
-	// Se vuelve a medir si cambia el ancho del riel (fuente, idioma, ventana).
+	// Se vuelve a medir si cambia el tamaño del riel o de un botón (fuente, idioma, etiqueta, ventana).
 	useEffect(() => {
 		if (typeof ResizeObserver === "undefined" || !track.current) return;
 		const ro = new ResizeObserver(() => measure());
 		ro.observe(track.current);
+		for (const el of refs.current) if (el) ro.observe(el);
 		return () => ro.disconnect();
-	});
+	}, [measure, options.length]);
 
 	function go(index: number) {
 		const option = options[index];
 		if (!option) return;
-		onChange(option.value);
+		// En un extremo no hay cambio: no se avisa de una elección que no cambia.
+		if (index !== selected) onChange(option.value);
 		refs.current[index]?.focus();
 	}
 
 	function onKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+		// Alt, Ctrl y Meta son del navegador (Alt+Flecha es atrás/adelante): no se tragan.
+		if (event.altKey || event.ctrlKey || event.metaKey) return;
 		const last = options.length - 1;
 		let to: number | null = null;
 		if (event.key === "ArrowRight" || event.key === "ArrowDown") to = Math.min(last, index + 1);
