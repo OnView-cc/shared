@@ -21,7 +21,8 @@ export interface MomentRow {
 	block: BlockKind;
 	blockParams: unknown;
 	beats: number | null;
-	transition: Transition;
+	/** null = la del estilo (spec 2026-11-19). */
+	transition: Transition | null;
 	imagesLayout: ImagesLayout;
 	imagesEntrance: ImagesEntrance;
 	voice: { src: string } | null;
