@@ -1,24 +1,50 @@
 /*
  * Ventana: vidrio ahumado. Sólo para lo que flota (barras, menús, hojas, avisos,
  * controles sobre video). Listas, tablas y formularios van sólidos.
+ *
+ * Dos capas de fondo: el brillo (una luz que cae desde arriba y se apaga al 40 %)
+ * sobre el humo (lo que garantiza el contraste, ver tokens.css). Las dos se
+ * recortan a la caja de relleno: bajo el filete de 1px el fondo desenfocado y
+ * saturado pasa SIN humo, así que el canto recoge el color de lo que hay detrás,
+ * como el canto de un vidrio, y encima lleva la luz del borde (`--vn-rim-light`:
+ * clara arriba, casi nada a los lados, un reflejo abajo). Con `--vn-glass-rim`
+ * una pieza pinta el filete entero de un color (más claro al pasar el puntero,
+ * tinta si está elegida). Nada más aclara el relleno: ni la luz del borde ni la
+ * línea de luz de dentro (1px) caen bajo el texto.
+ *
+ * El contraste del texto sale sólo del humo y del brillo: no depende del
+ * `backdrop-filter` (un vidrio dentro de otro, o un navegador que no lo aplique,
+ * se lee igual). El filtro sólo desenfoca y satura.
  */
 .vn-glass {
 	--vn-glass-smoke: var(--vn-smoke-thin);
 	--vn-glass-blur: var(--vn-blur-thin);
 	--vn-glass-solid: var(--vn-solid-thin);
-	background: linear-gradient(var(--vn-sheen), transparent 40%), var(--vn-glass-smoke);
+	background:
+		linear-gradient(var(--vn-sheen), transparent 40%) padding-box,
+		linear-gradient(var(--vn-glass-smoke), var(--vn-glass-smoke)) padding-box;
 	-webkit-backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));
 	backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));
-	border: 1px solid var(--vn-glass-rim, var(--vn-rim));
+	border: 1px solid;
+	border-color: var(--vn-glass-rim, var(--vn-rim-light));
 	border-radius: var(--vn-glass-r, var(--vn-r-panel));
-	--vn-glass-elevation: inset 0 1px 0 var(--vn-rim-top), var(--vn-glass-shadow, 0 12px 40px rgba(0, 0, 0, 0.35));
+	--vn-glass-elevation: inset 0 1px 0 var(--vn-glint), var(--vn-glass-shadow, 0 1px 2px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.35));
 	box-shadow: var(--vn-glass-elevation);
 	color: var(--vn-ink);
 }
 
-@supports (corner-shape: squircle) {
+/*
+ * Esquinas continuas donde el navegador las tiene. `squircle` a secas come la
+ * esquina (un radio de 22px se ve como uno de 13) y vuelve cuadrada una cápsula;
+ * una superelipse suave con el radio un 35 % mayor corta la esquina a la misma
+ * profundidad que el círculo del radio nominal y entra en el lado con suavidad.
+ * Las piezas en cápsula o redondas (botones, chips, barra, pulgar) declaran
+ * `corner-shape: round`: una cápsula es una cápsula.
+ */
+@supports (corner-shape: superellipse(1.5)) {
 	.vn-glass {
-		corner-shape: squircle;
+		corner-shape: superellipse(1.5);
+		border-radius: calc(var(--vn-glass-r, var(--vn-r-panel)) * 1.35);
 	}
 }
 
@@ -36,7 +62,11 @@
 	--vn-glass-solid: var(--vn-solid-thick);
 }
 
-/* Respaldos: sólido y sin desenfoque. Cuatro caminos, el mismo resultado */
+/*
+ * Respaldos: sólido y sin desenfoque. Cuatro caminos, el mismo resultado. El
+ * sólido pinta toda la caja (también bajo el filete, que conserva su luz) y lleva
+ * el contraste él solo.
+ */
 .vn-glass--solid {
 	background: var(--vn-glass-solid);
 	-webkit-backdrop-filter: none;
@@ -63,13 +93,20 @@
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
 	.vn-glass {
 		background: var(--vn-glass-solid);
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
 	}
 }
 
 /*
- * Scrim: oscurece el borde de un video o imagen para que el titular se lea.
- * Llega a rgba(6,6,7,0.72); la tinta sobre eso pasa 4.5:1 incluso sobre blanco puro.
- * La curva usa paradas intermedias para que no se vea la costura del degradado.
+ * Scrim: oscurece el borde de un video o imagen para que el texto de encima se lea.
+ * Tiene una meseta: el 40 % pegado al borde lleva rgba(6,6,7,0.72) entero, y ahí
+ * la tinta pasa 4.5:1 incluso sobre blanco puro. Es la zona del texto corriente.
+ * De ahí al 60 % baja a 0.5, donde un titular grande (3:1) aún se lee sobre blanco;
+ * más arriba ya no hay garantía y no va texto. Con el tamaño por defecto (55 % del
+ * contenedor) la meseta es el 22 % del alto: si el texto ocupa más, el scrim se
+ * agranda con `className`. La curva usa paradas intermedias para que no se vea la
+ * costura del degradado.
  */
 .vn-scrim {
 	position: absolute;
@@ -78,15 +115,17 @@
 	--vn-scrim-bottom: linear-gradient(
 		to top,
 		rgba(6, 6, 7, 0.72) 0%,
-		rgba(6, 6, 7, 0.5) 35%,
-		rgba(6, 6, 7, 0.18) 70%,
+		rgba(6, 6, 7, 0.72) 40%,
+		rgba(6, 6, 7, 0.5) 60%,
+		rgba(6, 6, 7, 0.18) 82%,
 		rgba(6, 6, 7, 0) 100%
 	);
 	--vn-scrim-top: linear-gradient(
 		to bottom,
 		rgba(6, 6, 7, 0.72) 0%,
-		rgba(6, 6, 7, 0.5) 35%,
-		rgba(6, 6, 7, 0.18) 70%,
+		rgba(6, 6, 7, 0.72) 40%,
+		rgba(6, 6, 7, 0.5) 60%,
+		rgba(6, 6, 7, 0.18) 82%,
 		rgba(6, 6, 7, 0) 100%
 	);
 }
@@ -106,9 +145,12 @@
 }
 
 /*
- * Glow: la luz de Iris tras una pieza. Quieto a propósito: sin animación, sin
- * movimiento que cuidar bajo prefers-reduced-motion. Con colores usa hasta tres;
- * sin colores, una luz gris fría muy tenue.
+ * Glow: la luz del fondo donde no hay video. Quieto a propósito: sin animación, sin
+ * movimiento que cuidar bajo prefers-reduced-motion. Con colores usa hasta tres
+ * (los del contenido: la marca de demostración, el kit de la persona); sin colores,
+ * una luz gris fría muy tenue. Va detrás de todo con `z-index: -1`: su padre tiene
+ * que crear un contexto de apilado (`isolation: isolate` o `position` con
+ * `z-index`), o la luz se iría detrás del fondo de la página.
  */
 .vn-glow {
 	position: absolute;

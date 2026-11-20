@@ -7,6 +7,7 @@
 /* Etiqueta de estado. La base no declara material; cada estado pinta lo suyo. */
 .vn .vn-state {
 	--vn-glass-r: var(--vn-r-pill);
+	corner-shape: round;
 	display: inline-flex;
 	align-items: center;
 	box-sizing: border-box;
@@ -53,9 +54,11 @@
 	border-radius: var(--vn-r-panel);
 	background: var(--vn-surface);
 }
-@supports (corner-shape: squircle) {
+/* Esquinas continuas como las del vidrio (ver glass.css): superelipse suave con el radio un 35 % mayor */
+@supports (corner-shape: superellipse(1.5)) {
 	.vn .vn-frame {
-		corner-shape: squircle;
+		corner-shape: superellipse(1.5);
+		border-radius: calc(var(--vn-r-panel) * 1.35);
 	}
 }
 .vn .vn-frame--9x16 {

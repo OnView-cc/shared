@@ -25,13 +25,31 @@
 	--vn-hair: rgba(255, 255, 255, 0.08);
 	--vn-line: rgba(255, 255, 255, 0.16);
 
-	/* Vidrio: la capa oscura va bajo el brillo, así la tinta se lee sobre cualquier fondo */
-	--vn-smoke-clear: rgba(18, 18, 22, 0.54);
-	--vn-smoke-thin: rgba(18, 18, 22, 0.66);
-	--vn-smoke-thick: rgba(18, 18, 22, 0.78);
+	/*
+	 * Vidrio: el humo va bajo el brillo, así la tinta se lee sobre cualquier fondo.
+	 * El humo es un gris frío, no negro: lo que hay detrás sale como
+	 * alfa × humo + (1 − alfa) × fondo, de modo que el blanco puro baja al tope que
+	 * deja leer la tinta (4.5:1 en fino y grueso, 3:1 en claro; lo prueba
+	 * tests/ventana-tokens.test.ts) y el negro puro SUBE a un gris (37, 33 y 27 de
+	 * 255): sobre una escena oscura la lámina se sigue viendo como lámina y no como
+	 * una tarjeta negra. Más humo (más alfa) es más grueso: menos fondo y más texto.
+	 */
+	--vn-smoke-clear: rgba(58, 58, 64, 0.64);
+	--vn-smoke-thin: rgba(44, 44, 50, 0.74);
+	--vn-smoke-thick: rgba(32, 32, 37, 0.84);
 	--vn-sheen: rgba(255, 255, 255, 0.06);
+	/*
+	 * Filete. `--vn-rim-light` son los tres colores del borde del vidrio (arriba,
+	 * lados, abajo): la luz cae desde arriba, así que el canto de arriba brilla, los
+	 * lados casi no y el de abajo recoge un reflejo. `--vn-rim-top` es el filete
+	 * entero cuando una pieza lo sube (al pasar el puntero) y `--vn-rim` el filete
+	 * parejo de lo que no es vidrio.
+	 */
 	--vn-rim: rgba(255, 255, 255, 0.22);
 	--vn-rim-top: rgba(255, 255, 255, 0.45);
+	--vn-rim-light: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.14) rgba(255, 255, 255, 0.22);
+	/* La línea de luz por dentro del borde de arriba (1px: nunca queda bajo el texto) */
+	--vn-glint: rgba(255, 255, 255, 0.14);
 
 	/* Sólidos de respaldo de cada vidrio */
 	--vn-solid-clear: #2a2a2e;

@@ -3,6 +3,13 @@
  * suelo casi negro, tinta blanco roto, acción blanca sin acento, y un vidrio
  * oscuro cuya tinta se lee incluso con blanco puro detrás. Cada vidrio trae su
  * sólido de respaldo.
+ *
+ * La garantía de contraste del vidrio es aritmética sobre los tokens. Lo que hay
+ * detrás llega desenfocado y saturado, y ninguna de las dos cosas saca un canal
+ * por encima de blanco puro; encima van el humo y, arriba, el brillo. El peor
+ * caso es `brillo sobre (humo sobre #ffffff)`. Las pruebas de «la receta»
+ * sostienen que eso es de verdad lo que pinta glass.css (dos capas y un filtro
+ * que no aclara): si la receta cambia, cambia el modelo, nunca el umbral.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -68,6 +75,102 @@ describe("Ventana tokens", () => {
 		expect(contrast(token(ink)!, behind)).toBeGreaterThanOrEqual(min);
 	});
 
+	const glassRule = glass.match(/\n\.vn-glass \{([^}]*)\}/)?.[1] ?? "";
+
+	it("la receta del vidrio es la que modela la aritmética: brillo sobre humo, las dos en la caja de relleno", () => {
+		expect(glassRule).toMatch(
+			/background:\s*linear-gradient\(var\(--vn-sheen\), transparent 40%\) padding-box,\s*linear-gradient\(var\(--vn-glass-smoke\), var\(--vn-glass-smoke\)\) padding-box;/,
+		);
+		// Ni una capa más: nada aclara el relleno aparte del brillo
+		expect(glassRule.match(/-gradient\(/g)).toHaveLength(2);
+		expect(token("sheen")).toBe("rgba(255, 255, 255, 0.06)");
+		// La línea de luz de dentro mide 1px y va pegada al borde de arriba: no queda bajo el texto
+		expect(glassRule).toMatch(/--vn-glass-elevation: inset 0 1px 0 var\(--vn-glint\),/);
+		expect(glassRule.match(/inset/g)).toHaveLength(1);
+	});
+
+	it("el filtro del vidrio sólo desenfoca y satura: no hay brightness ni contrast que modelar", () => {
+		for (const prop of ["-webkit-backdrop-filter", "backdrop-filter"]) {
+			expect(glassRule).toContain(`\t${prop}: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));`);
+		}
+		expect(glass).not.toMatch(/brightness\(|contrast\(|invert\(|opacity\(/);
+	});
+
+	it("fija el humo de cada grado: un gris frío, más opaco cuanto más grueso", () => {
+		expect(token("smoke-clear")).toBe("rgba(58, 58, 64, 0.64)");
+		expect(token("smoke-thin")).toBe("rgba(44, 44, 50, 0.74)");
+		expect(token("smoke-thick")).toBe("rgba(32, 32, 37, 0.84)");
+	});
+
+	it.each(["clear", "thin", "thick"])("sobre negro puro, %s no es una tarjeta negra: el humo levanta el negro", (grade) => {
+		const pane = over(token(`smoke-${grade}`)!, "#000000");
+		expect(contrast(pane, "#000000")).toBeGreaterThanOrEqual(1.2);
+		expect(luminance(pane)).toBeGreaterThan(luminance(token("ground")!) * 3);
+	});
+
+	it("cuanto más grueso el vidrio, más oscuro queda con blanco detrás y menos deja pasar", () => {
+		const white = (grade: string) => luminance(over(token("sheen")!, over(token(`smoke-${grade}`)!, "#ffffff")));
+		expect(white("clear")).toBeGreaterThan(white("thin"));
+		expect(white("thin")).toBeGreaterThan(white("thick"));
+		const alpha = (grade: string) => channels(token(`smoke-${grade}`)!)[3];
+		expect(alpha("clear")).toBeLessThan(alpha("thin"));
+		expect(alpha("thin")).toBeLessThan(alpha("thick"));
+	});
+
+	it.each([
+		["thick", "thin", "ink", 4.5],
+		["thick", "clear", "ink", 3],
+		["thin", "thin", "ink", 4.5],
+		["thin", "clear", "ink", 3],
+		["thick", "thick", "ink-2-glass", 4.5],
+	])("un vidrio dentro de otro no aclara: dentro de %s, %s deja leer %s", (outer, inner, ink, min) => {
+		// Donde el navegador no deja a un vidrio anidado ver el video, lo que tiene detrás es el vidrio de fuera
+		const outerWorst = over(token("sheen")!, over(token(`smoke-${outer}`)!, "#ffffff"));
+		const nested = over(token("sheen")!, over(token(`smoke-${inner}`)!, outerWorst));
+		const alone = over(token("sheen")!, over(token(`smoke-${inner}`)!, "#ffffff"));
+		expect(contrast(token(ink)!, nested)).toBeGreaterThanOrEqual(min);
+		expect(contrast(token(ink)!, nested)).toBeGreaterThanOrEqual(contrast(token(ink)!, alone));
+	});
+
+	it("sin vidrio, el sólido de respaldo lleva el contraste él solo", () => {
+		expect(contrast(token("ink")!, token("solid-clear")!)).toBeGreaterThanOrEqual(3);
+		expect(contrast(token("ink")!, token("solid-thin")!)).toBeGreaterThanOrEqual(4.5);
+		for (const t of ["ink", "ink-2-glass", "danger-glass"]) expect(contrast(token(t)!, token("solid-thick")!), t).toBeGreaterThanOrEqual(4.5);
+		// Una fila resaltada dentro de un panel en su versión sólida
+		expect(contrast(token("ink")!, over(token("hair")!, token("solid-thick")!))).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("los cuatro respaldos ponen el sólido y quitan el desenfoque", () => {
+		const bodyAfter = (marker: string) => {
+			const from = glass.indexOf(marker);
+			expect(from, marker).toBeGreaterThan(-1);
+			return glass.slice(from).match(/\.vn-glass(?:--solid)? \{([^}]*)\}/)?.[1] ?? "";
+		};
+		for (const marker of [
+			"\n.vn-glass--solid {",
+			"@media (prefers-reduced-transparency: reduce)",
+			"@media (prefers-contrast: more)",
+			"@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)))",
+		]) {
+			const body = bodyAfter(marker);
+			expect(body, marker).toMatch(/background: var\(--vn-glass-solid\);/);
+			expect(body, marker).toMatch(/(^|\s)backdrop-filter: none;/);
+			expect(body, marker).toMatch(/-webkit-backdrop-filter: none;/);
+		}
+		expect(bodyAfter("@media (prefers-contrast: more)")).toMatch(/border-color: var\(--vn-ink\);/);
+	});
+
+	it("las esquinas continuas no tocan las cápsulas: superelipse suave en las láminas, round en lo que es cápsula", () => {
+		expect(glass).toMatch(/@supports \(corner-shape: superellipse\(1\.5\)\) \{\s*\.vn-glass \{\s*corner-shape: superellipse\(1\.5\);\s*border-radius: calc\(var\(--vn-glass-r, var\(--vn-r-panel\)\) \* 1\.35\);/);
+		for (const css of allVentanaCss) expect(css).not.toMatch(/corner-shape: squircle/);
+		const bodyOf = (css: string, selector: string) => css.split(`\n${selector} {`)[1]?.split("}")[0] ?? "";
+		expect(bodyOf(controls, ".vn .vn-btn")).toMatch(/corner-shape: round;/);
+		expect(bodyOf(controls, ".vn .vn-chip")).toMatch(/corner-shape: round;/);
+		expect(bodyOf(controls, ".vn .vn-seg-thumb")).toMatch(/corner-shape: round;/);
+		expect(bodyOf(content, ".vn .vn-state")).toMatch(/corner-shape: round;/);
+		expect(bodyOf(overlays, ".vn.vn-nav__bar")).toMatch(/corner-shape: round;/);
+	});
+
 	it.each([
 		["ink", "ground"],
 		["ink", "surface"],
@@ -89,6 +192,8 @@ describe("Ventana tokens", () => {
 	it("la fuente empieza por la del sistema de Apple y no sirve SF ni pasa por system-ui", () => {
 		expect(token("font")).toMatch(/^-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter Tight Variable", sans-serif$/);
 		expect(all).not.toMatch(/@font-face/);
+		// En ninguna hoja, no sólo en el token: en Windows system-ui es Segoe UI y se colaría delante de la de respaldo
+		for (const css of allVentanaCss) expect(css).not.toMatch(/system-ui/);
 	});
 
 	it("cada vidrio tiene su sólido con transparencia reducida, contraste alto y sin backdrop-filter", () => {
@@ -174,6 +279,16 @@ describe("Ventana scrim y brillo", () => {
 		expect(glass).toMatch(/\.vn-scrim[\s\S]*rgba\(6, 6, 7, 0\.72\)/);
 	});
 
+	it("el scrim tiene una meseta: el 40 % pegado al borde garantiza el texto corriente y hasta el 60 % un titular grande", () => {
+		const start = glass.indexOf(".vn-scrim {");
+		const body = glass.slice(start, glass.indexOf("\n}", start));
+		// Las dos direcciones, la misma curva
+		expect(body.match(/rgba\(6, 6, 7, 0\.72\) 0%,\s*rgba\(6, 6, 7, 0\.72\) 40%,\s*rgba\(6, 6, 7, 0\.5\) 60%,/g)).toHaveLength(2);
+		expect(contrast(token("ink")!, over("rgba(6,6,7,0.72)", "#ffffff"))).toBeGreaterThanOrEqual(4.5);
+		// Texto grande (24px o más, o 19px en negrita): 3:1
+		expect(contrast(token("ink")!, over("rgba(6,6,7,0.5)", "#ffffff"))).toBeGreaterThanOrEqual(3);
+	});
+
 	it("el brillo está quieto: su CSS no tiene animation", () => {
 		const start = glass.indexOf(".vn-glow {");
 		expect(start).toBeGreaterThan(-1);
@@ -210,6 +325,10 @@ describe("Ventana controles", () => {
 			return ref ? resolve(token(ref[1])!) : value;
 		};
 		expect(contrast(token("action-ink")!, resolve(token("action")!))).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("la primaria lleva sombra propia: sobre un cuadro claro la cápsula blanca conserva su canto", () => {
+		expect(ctl(".vn .vn-btn--primary")).toMatch(/box-shadow:\s*0 1px 2px rgba\(0, 0, 0, 0\.2\),\s*0 4px 14px rgba\(0, 0, 0, 0\.16\);/);
 	});
 
 	it("el hover sólo existe con puntero fino y el área de toque llega a 44px", () => {
@@ -343,9 +462,11 @@ describe("Ventana controles", () => {
 
 	it("el vidrio toma sombra y filete de variables con los tokens de siempre como valor por defecto", () => {
 		const body = glass.match(/\n\.vn-glass \{([^}]*)\}/)?.[1] ?? "";
-		expect(body).toMatch(/border: 1px solid var\(--vn-glass-rim, var\(--vn-rim\)\);/);
-		// La expresión se escribe una sola vez, en una variable que el aviso reutiliza al enfocarse
-		expect(body).toMatch(/--vn-glass-elevation: inset 0 1px 0 var\(--vn-rim-top\), var\(--vn-glass-shadow, 0 12px 40px rgba\(0, 0, 0, 0\.35\)\);/);
+		// El filete: la luz del borde (arriba, lados, abajo) salvo que la pieza lo pinte entero con su variable
+		expect(body).toMatch(/border: 1px solid;\s*border-color: var\(--vn-glass-rim, var\(--vn-rim-light\)\);/);
+		expect(token("rim-light")).toBe("rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.14) rgba(255, 255, 255, 0.22)");
+		// La expresión se escribe una sola vez, en una variable que las piezas reutilizan al enfocarse
+		expect(body).toMatch(/--vn-glass-elevation: inset 0 1px 0 var\(--vn-glint\), var\(--vn-glass-shadow, 0 1px 2px rgba\(0, 0, 0, 0\.2\), 0 12px 40px rgba\(0, 0, 0, 0\.35\)\);/);
 		expect(body).toMatch(/box-shadow: var\(--vn-glass-elevation\);/);
 		expect(body).not.toMatch(/--vn-glass-(fill|smoke-alpha)/);
 	});
@@ -356,6 +477,45 @@ describe("Ventana controles", () => {
 		const hover = rules.find((r) => r.selectors.includes(".vn .vn-btn.vn-glass:hover"));
 		expect(hover?.body).toMatch(/--vn-glass-rim: var\(--vn-rim-top\);/);
 		expect(controls.indexOf(".vn .vn-btn.vn-glass:hover")).toBeGreaterThan(controls.indexOf("@media (hover: hover) and (pointer: fine)"));
+	});
+
+	it("sobre vidrio el foco va en outline y la sombra del material se queda, con un aro oscuro para los fondos claros", () => {
+		const glassFocus = rules.filter((r) => r.selectors.some((sel) => /vn-glass.*:focus-visible|vn-chip--glass.*:focus-visible/.test(sel)));
+		expect(glassFocus.length).toBeGreaterThanOrEqual(2);
+		expect(glassFocus.flatMap((r) => r.selectors)).toEqual(
+			expect.arrayContaining([".vn .vn-btn.vn-glass:focus-visible", ".vn button.vn-chip--action.vn-glass:focus-visible", ".vn .vn-chip--glass.vn-chip--split:has(.vn-chip__main:focus-visible)"]),
+		);
+		for (const r of glassFocus) {
+			expect(r.body, r.selectors.join(", ")).toMatch(/outline: 2px solid var\(--vn-ink\);/);
+			expect(r.body, r.selectors.join(", ")).toMatch(/outline-offset: 2px;/);
+			expect(r.body, r.selectors.join(", ")).toMatch(/box-shadow: var\(--vn-glass-elevation\), 0 0 0 2px var\(--vn-ground\);/);
+			expect(r.body, r.selectors.join(", ")).not.toMatch(/var\(--vn-focus\)/);
+		}
+		// El aro oscuro se ve contra blanco puro y el de tinta contra negro puro
+		expect(contrast(token("ground")!, "#ffffff")).toBeGreaterThanOrEqual(3);
+		expect(contrast(token("ink")!, "#000000")).toBeGreaterThanOrEqual(3);
+	});
+
+	it("la cuenta del campo ocupa la caja de la etiqueta: al aparecer no mueve la cabecera", () => {
+		const count = ctl(".vn .vn-field__count");
+		expect(count).toMatch(/font-size: 0\.75rem;/);
+		expect(count).toMatch(/line-height: 1;/);
+		expect(count).toMatch(/font-variant-numeric: tabular-nums;/);
+		expect(rule(".vn .vn-label")).toMatch(/font-size: 0\.75rem;[\s\S]*line-height: 1;/);
+	});
+
+	it("en la fila resaltada del desplegable la pista pasa a tinta, y la tinta se lee ahí con blanco puro detrás", () => {
+		expect(ctl(".vn .vn-select-item[data-highlighted] .vn-select-hint")).toMatch(/color: var\(--vn-ink\);/);
+		const highlighted = over(token("hair")!, over(token("sheen")!, over(token("smoke-thick")!, "#ffffff")));
+		expect(contrast(token("ink")!, highlighted)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("las filas del desplegable y del menú llevan el radio concéntrico: el del panel menos su margen", () => {
+		expect(ctl(".vn .vn-select-viewport")).toMatch(/padding: 6px;/);
+		expect(ctl(".vn .vn-select-item")).toMatch(/border-radius: calc\(var\(--vn-r-panel\) - 6px\);/);
+		const bodyOf = (selector: string) => overlays.split(`\n${selector} {`)[1]?.split("}")[0] ?? "";
+		expect(bodyOf(".vn .vn-menu")).toMatch(/padding: 6px;/);
+		expect(bodyOf(".vn .vn-menu-item")).toMatch(/border-radius: calc\(var\(--vn-r-panel\) - 6px\);/);
 	});
 
 	it("la base no pinta fondo y son plain y danger quienes lo reinician", () => {
@@ -430,6 +590,10 @@ describe("Ventana controles", () => {
 		expect(ctl(".vn .vn-switch")).toMatch(/block-size: 44px;/);
 		expect(ctl(".vn .vn-check__input:checked + .vn-check__box")).toMatch(/background: var\(--vn-ink\);/);
 		expect(ctl(".vn .vn-check")).toMatch(/min-block-size: 44px;/);
+	});
+
+	it("la etiqueta de la casilla va en tinta primaria", () => {
+		expect(ctl(".vn .vn-check__text")).toMatch(/color: var\(--vn-ink\);/);
 	});
 
 	it("la perilla apagada y la marca se ven contra su fondo", () => {
@@ -698,6 +862,13 @@ describe("Ventana flotantes: menú, popover y tooltip", () => {
 		expect(ovl(".vn .vn-menu-item[data-highlighted] .vn-menu-icon")).toMatch(/color: var\(--vn-ink\);/);
 	});
 
+	it("en un menú con iconos la fila sin icono guarda su hueco: las etiquetas empiezan en la misma vertical", () => {
+		// 12px de relleno + 18px de icono + 10px de separación
+		expect(ovl(".vn .vn-menu-item")).toMatch(/gap: 10px;[\s\S]*padding: 10px 12px;/);
+		expect(ovl(".vn .vn-menu-icon > svg")).toMatch(/inline-size: 18px;/);
+		expect(ovl(".vn .vn-menu:has(.vn-menu-icon) .vn-menu-item:not(:has(.vn-menu-icon))")).toMatch(/padding-inline-start: 40px;/);
+	});
+
 	it("la tinta sobre una fila resaltada del vidrio grueso, con blanco puro detrás, pasa AA", () => {
 		expect(contrast(token("ink")!, highlighted())).toBeGreaterThanOrEqual(4.5);
 	});
@@ -750,7 +921,7 @@ describe("Ventana hoja y avisos", () => {
 		const mine = all.filter((r) => r.selectors.some((s) => /vn-(sheet|toast)/.test(s) && !/vn-sheet-scrim/.test(s)));
 		expect(mine.length).toBeGreaterThan(8);
 		// Única excepción: la sombra de foco del aviso devuelve la del material por su variable compartida
-		for (const r of mine) expect(r.body.replace(/box-shadow: var\(--vn-glass-elevation\);/, ""), r.selectors.join(", ")).not.toMatch(ownedByGlass);
+		for (const r of mine) expect(r.body.replace(/box-shadow: var\(--vn-glass-elevation\), 0 0 0 2px var\(--vn-ground\);/, ""), r.selectors.join(", ")).not.toMatch(ownedByGlass);
 	});
 
 	it("vn-sheet-scrim sólo sale en reglas de ::backdrop y la cortina es un literal rgba(0, 0, 0, 0.5)", () => {
@@ -776,6 +947,16 @@ describe("Ventana hoja y avisos", () => {
 		const wide = overlays.slice(overlays.indexOf("@media (min-width: 40rem)"));
 		expect(wide).toMatch(/max-inline-size: 32rem/);
 		expect(wide).toMatch(/scale: 0\.96;/);
+	});
+
+	it("el pie de la hoja pone las acciones en fila con aire: repartidas en el teléfono, a la derecha desde 40rem", () => {
+		const foot = rule(".vn .vn-sheet__foot");
+		expect(foot).toMatch(/display: flex;/);
+		expect(foot).toMatch(/gap: 8px;/);
+		expect(rule(".vn .vn-sheet__foot > .vn-btn")).toMatch(/flex: 1 1 auto;/);
+		const wide = overlays.slice(overlays.indexOf("@media (min-width: 40rem)"));
+		expect(wide).toMatch(/\.vn-sheet__foot \{\s*justify-content: flex-end;/);
+		expect(wide).toMatch(/\.vn-sheet__foot > \.vn-btn \{\s*flex: none;/);
 	});
 
 	it("entra y sale sin JavaScript: @starting-style y transition-behavior allow-discrete en display y overlay", () => {
@@ -823,7 +1004,7 @@ describe("Ventana hoja y avisos", () => {
 		const reduced = overlays.slice(overlays.indexOf("@media (prefers-reduced-motion: reduce)", overlays.indexOf("Hoja (`Sheet`)")));
 		expect(reduced.slice(0, reduced.indexOf(".vn.vn-sheet"))).toMatch(/\.vn-toast__spin \{\s*animation: none;/);
 		expect(rule('.vn-toast[data-expanded="false"][data-front="false"] > *')).toMatch(/opacity: 0;/);
-		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/box-shadow: var\(--vn-glass-elevation\);/);
+		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/box-shadow: var\(--vn-glass-elevation\), 0 0 0 2px var\(--vn-ground\);/);
 	});
 });
 

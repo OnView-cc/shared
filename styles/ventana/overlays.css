@@ -43,7 +43,8 @@
 	box-sizing: border-box;
 	min-block-size: 44px;
 	padding: 10px 12px;
-	border-radius: var(--vn-r-field);
+	/* Concéntrico: el radio del panel menos su margen de 6px */
+	border-radius: calc(var(--vn-r-panel) - 6px);
 	color: var(--vn-ink);
 	font-size: 0.9375rem;
 	line-height: 1.25rem;
@@ -51,6 +52,10 @@
 	outline: none;
 	user-select: none;
 	-webkit-tap-highlight-color: transparent;
+}
+/* En un menú con iconos, la fila sin icono guarda su hueco (18px más el espacio): todas las etiquetas empiezan en la misma vertical */
+.vn .vn-menu:has(.vn-menu-icon) .vn-menu-item:not(:has(.vn-menu-icon)) {
+	padding-inline-start: 40px;
 }
 .vn .vn-menu-icon {
 	display: inline-flex;
@@ -281,10 +286,17 @@
 .vn .vn-sheet__body:last-child {
 	padding-block-end: calc(24px + env(safe-area-inset-bottom, 0px));
 }
+/* El pie: las acciones en fila, con aire entre ellas. En el teléfono se reparten el ancho (el pulgar llega a cualquiera); desde 40rem van a la derecha con su ancho */
 .vn .vn-sheet__foot {
+	display: flex;
 	flex: none;
+	flex-wrap: wrap;
+	gap: 8px;
 	padding: 16px 24px calc(16px + env(safe-area-inset-bottom, 0px));
 	border-block-start: 1px solid var(--vn-hair);
+}
+.vn .vn-sheet__foot > .vn-btn {
+	flex: 1 1 auto;
 }
 
 @media (min-width: 40rem) {
@@ -313,7 +325,11 @@
 		padding-block-end: 24px;
 	}
 	.vn .vn-sheet__foot {
+		justify-content: flex-end;
 		padding-block-end: 16px;
+	}
+	.vn .vn-sheet__foot > .vn-btn {
+		flex: none;
 	}
 }
 
@@ -344,8 +360,8 @@
 .vn.vn-toast:focus-visible {
 	outline: 2px solid var(--vn-ink);
 	outline-offset: 2px;
-	/* La sombra de foco de sonner (0,2,0) pisaria el vidrio: se devuelve la del material por su variable compartida, sin repetir sus valores */
-	box-shadow: var(--vn-glass-elevation);
+	/* La sombra de foco de sonner (0,2,0) pisaría el vidrio: se devuelve la del material por su variable compartida, con el aro oscuro del foco sobre vidrio */
+	box-shadow: var(--vn-glass-elevation), 0 0 0 2px var(--vn-ground);
 }
 .vn-toast .vn-toast__icon {
 	position: relative;
@@ -478,6 +494,7 @@
 .vn.vn-nav__bar {
 	--vn-nav-h: 52px;
 	--vn-glass-r: var(--vn-r-pill);
+	corner-shape: round;
 	box-sizing: border-box;
 	display: flex;
 	align-items: center;
