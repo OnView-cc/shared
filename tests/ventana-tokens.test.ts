@@ -727,3 +727,69 @@ describe("Ventana hoja y avisos", () => {
 		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/box-shadow: var\(--vn-glass-elevation\);/);
 	});
 });
+
+describe("Ventana barra de navegación", () => {
+	const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+	const rulesOf = (css: string) => [...strip(css).matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((x) => x.trim()), body: m[2] }));
+	const all = rulesOf(overlays);
+	const ownedByGlass = /(^|[;\s])(background(-color|-image)?|backdrop-filter|-webkit-backdrop-filter|border|border-color|box-shadow)\s*:/;
+	const rule = (selector: string) => all.find((r) => r.selectors.includes(selector))?.body ?? "";
+	const thinBehind = () => over(token("sheen")!, over(token("smoke-thin")!, "#ffffff"));
+	const thickBehind = () => over(token("sheen")!, over(token("smoke-thick")!, "#ffffff"));
+
+	it("las reglas de la barra y de su hoja no declaran lo que posee el vidrio", () => {
+		const mine = all.filter((r) => r.selectors.some((s) => /vn-nav/.test(s)));
+		expect(mine.length).toBeGreaterThan(10);
+		for (const r of mine) expect(r.body, r.selectors.join(", ")).not.toMatch(ownedByGlass);
+	});
+
+	it("el enlace en reposo usa un color fijo que llega a 4.5:1 sobre vidrio fino con blanco detrás, y la tinta entera también sobre el grueso del modo compacto", () => {
+		expect(rule(".vn .vn-nav-link")).toMatch(/color: var\(--vn-ink-nav\);/);
+		expect(rule(".vn .vn-nav-link")).not.toMatch(/opacity/);
+		// El «78 %» del brief no pasa: se deja constancia de por qué hay un color fijo
+		const ink78 = over(token("ink")!.replace(/^#(..)(..)(..)$/, (_, r, g, b) => `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.78)`), thinBehind());
+		expect(contrast(ink78, thinBehind())).toBeLessThan(4.5);
+		expect(contrast(token("ink-nav")!, thinBehind())).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink-nav")!, thickBehind())).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink")!, thinBehind())).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("hover sólo con puntero fino; foco, hover y página actual dan tinta entera, y la actual además pesa 600", () => {
+		expect(overlays).toMatch(/@media \(hover: hover\) and \(pointer: fine\) \{\s*\.vn \.vn-nav-link:hover \{\s*color: var\(--vn-ink\);/);
+		expect(rule(".vn .vn-nav-link:focus-visible")).toMatch(/color: var\(--vn-ink\);/);
+		expect(rule(".vn .vn-nav-link:focus-visible")).toMatch(/outline: 2px solid var\(--vn-ink\);/);
+		expect(rule('.vn .vn-nav-link[aria-current="page"]')).toMatch(/color: var\(--vn-ink\);/);
+		expect(rule('.vn .vn-nav-link[aria-current="page"]')).toMatch(/font-weight: 600;/);
+		expect(rule(".vn .vn-nav-link")).toMatch(/min-block-size: 44px;/);
+	});
+
+	it("la cápsula: radio de píldora por variable, 52px y 44px compacta con el resorte rápido, sin transicionar el material", () => {
+		const bar = rule(".vn.vn-nav__bar");
+		expect(bar).toMatch(/--vn-glass-r: var\(--vn-r-pill\);/);
+		expect(bar).toMatch(/--vn-nav-h: 52px;/);
+		expect(bar).toMatch(/block-size: var\(--vn-nav-h\);/);
+		expect(bar).toMatch(/transition: block-size var\(--vn-spring-snap-ms\) var\(--vn-spring-snap\);/);
+		expect(rule(".vn.vn-nav__bar[data-compact]")).toMatch(/--vn-nav-h: 44px;/);
+		// El header no se posiciona: eso es del consumidor
+		expect(rule(".vn-nav")).not.toMatch(/position:/);
+	});
+
+	it("la hoja del menú: vidrio por variable, pegada arriba con 12px de margen y el resorte suave; la cortina es la de la hoja", () => {
+		const body = rule(".vn.vn-nav-sheet");
+		expect(body).toMatch(/--vn-glass-r: var\(--vn-r-sheet\);/);
+		expect(body).toMatch(/inset-block: 0 auto;/);
+		expect(body).toMatch(/12px/);
+		expect(rule(".vn.vn-nav-sheet[open]")).toMatch(/translate var\(--vn-spring-soft-ms\) var\(--vn-spring-soft\)/);
+		expect(overlays).toMatch(/@starting-style \{\s*\.vn\.vn-nav-sheet\[open\]/);
+		expect(rule(".vn-sheet-scrim::backdrop")).toMatch(/background: rgba\(0, 0, 0, 0\.5\);/);
+		expect(overlays).not.toMatch(/vn-nav-scrim/);
+	});
+
+	it("con movimiento reducido la barra y la hoja sólo cambian de opacidad", () => {
+		const start = overlays.indexOf(".vn.vn-nav__bar {\n\t\ttransition: none;");
+		expect(start).toBeGreaterThan(0);
+		const reduced = overlays.slice(start, start + 700);
+		expect(reduced).toMatch(/\.vn\.vn-nav-sheet\[open\] \{\s*translate: none;/);
+		expect(reduced).toMatch(/opacity 150ms linear/);
+	});
+});

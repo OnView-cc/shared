@@ -453,3 +453,205 @@
 		outline-offset: -2px;
 	}
 }
+
+/*
+ * Barra de navegación (`NavBar`): la cápsula de vidrio fino que flota. El `<header>`
+ * (`.vn-nav`) no se posiciona, sólo centra la cápsula: dónde flota lo decide quien
+ * la monta. El material lo ponen `vn-glass vn-glass--thin` (o `--thick` con `compact`:
+ * se cambia de clase, no se declaran propiedades del vidrio) en el propio `<nav>`;
+ * aquí sólo van el radio por variable, la altura y la maqueta. El alto cambia con
+ * el resorte rápido; el material no transiciona.
+ *
+ * Texto: sólo tinta primaria (el vidrio fino no lleva secundaria). El enlace en reposo
+ * no usa opacidad: el 78 % de la tinta queda en 3.6:1 con blanco detrás, así que usa
+ * el color fijo `--vn-ink-nav` (4.6:1). La página actual se distingue además por el
+ * peso, no sólo por el color.
+ */
+.vn-nav {
+	display: flex;
+	justify-content: center;
+	box-sizing: border-box;
+	inline-size: 100%;
+}
+.vn.vn-nav__bar {
+	--vn-nav-h: 52px;
+	--vn-glass-r: var(--vn-r-pill);
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	inline-size: min(100%, 60rem);
+	block-size: var(--vn-nav-h);
+	padding-inline: 8px;
+	font-family: var(--vn-font);
+	transition: block-size var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn.vn-nav__bar[data-compact] {
+	--vn-nav-h: 44px;
+}
+.vn .vn-nav__brand {
+	display: flex;
+	flex: none;
+	align-items: center;
+	min-block-size: 44px;
+	padding-inline: 12px;
+	color: var(--vn-ink);
+	font-size: 1rem;
+	font-weight: 650;
+	letter-spacing: -0.01em;
+}
+.vn .vn-nav__links {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	gap: 4px;
+	min-inline-size: 0;
+}
+.vn .vn-nav__end {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+	margin-inline-start: auto;
+}
+.vn .vn-nav__menu {
+	margin-inline-start: auto;
+	flex: none;
+}
+
+.vn .vn-nav-link {
+	display: inline-flex;
+	align-items: center;
+	min-block-size: 44px;
+	padding-inline: 14px;
+	border-radius: var(--vn-r-pill);
+	color: var(--vn-ink-nav);
+	font-size: 0.9375rem;
+	font-weight: 500;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	-webkit-tap-highlight-color: transparent;
+	transition: color 140ms ease-out;
+}
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-nav-link:hover {
+		color: var(--vn-ink);
+	}
+}
+.vn .vn-nav-link:focus-visible {
+	color: var(--vn-ink);
+	outline: 2px solid var(--vn-ink);
+	outline-offset: 2px;
+}
+.vn .vn-nav-link[aria-current="page"] {
+	color: var(--vn-ink);
+	font-weight: 600;
+}
+
+/*
+ * La hoja del menú (estrecho): el `<dialog>` es el vidrio grueso, pegada al borde de
+ * ARRIBA con 12px de margen (más el área segura). Baja con el resorte suave y sube más
+ * corta; `@starting-style` y `allow-discrete` hacen la entrada y la salida sin
+ * JavaScript. La cortina es la de la hoja (`vn-sheet-scrim`). Con movimiento
+ * reducido, sólo opacidad.
+ */
+.vn.vn-nav-sheet {
+	--vn-glass-r: var(--vn-r-sheet);
+	--vn-glass-shadow: 0 12px 64px rgba(0, 0, 0, 0.55);
+	box-sizing: border-box;
+	inset-block: 0 auto;
+	inset-inline: 0;
+	margin-block: calc(12px + env(safe-area-inset-top, 0px)) auto;
+	margin-inline: auto;
+	padding: 0;
+	inline-size: calc(100% - 24px);
+	max-inline-size: none;
+	max-block-size: calc(100dvh - 24px);
+	overflow: hidden;
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	opacity: 0;
+	translate: 0 calc(-100% - 24px);
+	transition:
+		opacity 200ms var(--vn-ease-out),
+		translate 240ms var(--vn-ease-out),
+		overlay 240ms allow-discrete,
+		display 240ms allow-discrete;
+	transition-behavior: allow-discrete;
+}
+.vn.vn-nav-sheet[open] {
+	display: block;
+	opacity: 1;
+	translate: 0 0;
+	transition:
+		opacity 240ms var(--vn-ease-out),
+		translate var(--vn-spring-soft-ms) var(--vn-spring-soft),
+		overlay 240ms allow-discrete,
+		display 240ms allow-discrete;
+	transition-behavior: allow-discrete;
+}
+@starting-style {
+	.vn.vn-nav-sheet[open] {
+		opacity: 0;
+		translate: 0 calc(-100% - 24px);
+	}
+}
+.vn.vn-nav-sheet:focus-visible {
+	outline: none;
+}
+.vn .vn-nav-sheet__inner {
+	box-sizing: border-box;
+	max-block-size: calc(100dvh - 24px);
+	overflow-y: auto;
+	padding: 8px 12px 20px;
+}
+.vn .vn-nav-sheet__head {
+	display: flex;
+	justify-content: flex-end;
+}
+.vn .vn-nav__stack {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding-inline: 8px;
+}
+.vn .vn-nav__links--stack {
+	flex: none;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 2px;
+}
+.vn .vn-nav__links--stack .vn-nav-link {
+	padding-inline: 12px;
+	font-size: 1.125rem;
+}
+.vn .vn-nav__end--stack {
+	flex-wrap: wrap;
+	margin-inline-start: 0;
+	padding-block-start: 16px;
+	border-block-start: 1px solid var(--vn-hair);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.vn.vn-nav__bar {
+		transition: none;
+	}
+	.vn .vn-nav-link {
+		transition: none;
+	}
+	.vn.vn-nav-sheet,
+	.vn.vn-nav-sheet[open] {
+		translate: none;
+		transition:
+			opacity 150ms linear,
+			overlay 150ms allow-discrete,
+			display 150ms allow-discrete;
+		transition-behavior: allow-discrete;
+	}
+	@starting-style {
+		.vn.vn-nav-sheet[open] {
+			translate: none;
+		}
+	}
+}

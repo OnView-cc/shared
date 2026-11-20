@@ -13,6 +13,8 @@
 	--vn-ink-2: #a1a1a6;
 	--vn-ink-2-glass: #c7c7cc;
 	--vn-ink-3: #6e6e73;
+	/* Enlace de la barra en reposo: el «78 %» de la tinta no llega a 4.5:1 sobre vidrio fino con blanco detrás (3.6), así que es un color fijo que sí llega */
+	--vn-ink-nav: #f0f0f2;
 
 	/* Acción */
 	--vn-action: var(--vn-ink);
