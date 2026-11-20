@@ -5,6 +5,7 @@
  */
 import type { Moment } from "../video/compose";
 import type { BlockKind } from "./types";
+import type { BackgroundKind, Style } from "./styles";
 import type { MotionDoc } from "./doc";
 
 export interface BlockCtx {
@@ -22,8 +23,12 @@ export interface BlockCtx {
 	beat(n: number): number;
 	/** Lo que dura un golpe. */
 	beatSeconds: number;
-	/** El color de las letras sobre el fondo del template. */
+	/** El color de las letras sobre el fondo del estilo. */
 	ink: string;
+	/** El estilo del video, ya resuelto (spec 2026-11-19-onview-estilos-y-referencias). */
+	style: Style;
+	/** El fondo que se dibujó: su tipo y su color de base. */
+	background: { kind: Exclude<BackgroundKind, "auto">; color: string };
 	/** La familia CSS de una letra del kit. */
 	font(family: string): string;
 	/** Lo que necesita las fuentes ya cargadas (medir y encoger un texto que no cabe): se llama una vez, antes de `ready`. */

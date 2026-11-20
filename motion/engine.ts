@@ -18,7 +18,8 @@
 import { gsap } from "gsap";
 import { WATERMARK } from "../video/compose";
 import { beatSeconds as beatOf } from "./fit";
-import { drawSky, skyInk } from "./background";
+import { drawBackground, inkOn } from "./background";
+import { STYLES } from "./styles";
 import { blockFor } from "./registry";
 import { injectMotionCss } from "./style";
 import { wireTransitions } from "./transitions";
@@ -58,8 +59,12 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	stage.style.fontFamily = font(doc.brand.face.family);
 	stage.style.fontWeight = String(doc.brand.face.weight);
 	root.appendChild(stage);
-	drawSky(stage, doc.brand, u);
-	const ink = skyInk(doc.brand);
+	// Un plan de antes de los estilos no trae `style`: es Arcade, el aspecto de entonces.
+	const style = doc.style ?? STYLES.arcade;
+	const photo = doc.moments.find((m) => m.block === "product" && m.images[0])?.images[0]?.src ?? null;
+	const drawn = drawBackground(stage, style.background, doc.brand, u, photo);
+	const background = { kind: drawn.kind, color: drawn.color };
+	const ink = inkOn(background, doc.brand);
 
 	const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
 	const fitters: (() => void)[] = [];
@@ -84,6 +89,8 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 			beat: (n) => moment.at + n * beat,
 			beatSeconds: beat,
 			ink,
+			style,
+			background,
 			font,
 			onReady: (fn) => fitters.push(fn),
 		});
