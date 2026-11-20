@@ -160,3 +160,22 @@ describe("Ventana letra y página", () => {
 		expect(rule(".vn .vn-prose")).toMatch(/max-width: 70ch/);
 	});
 });
+
+describe("Ventana scrim y brillo", () => {
+	it("el titular sobre el scrim llega a 4.5:1 incluso sobre blanco puro", () => {
+		expect(contrast(token("ink")!, over("rgba(6,6,7,0.72)", "#ffffff"))).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("el scrim usa ese mismo degradado en su borde", () => {
+		expect(glass).toMatch(/\.vn-scrim[\s\S]*rgba\(6, 6, 7, 0\.72\)/);
+	});
+
+	it("el brillo está quieto: su CSS no tiene animation", () => {
+		const start = glass.indexOf(".vn-glow {");
+		expect(start).toBeGreaterThan(-1);
+		const body = glass.slice(start, glass.indexOf("\n}", start));
+		expect(body).toMatch(/filter: blur\(60px\)/);
+		expect(body).not.toMatch(/animation/);
+		expect(glass.slice(start)).not.toMatch(/animation|@keyframes/);
+	});
+});

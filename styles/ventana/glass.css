@@ -64,3 +64,64 @@
 		background: var(--vn-glass-solid);
 	}
 }
+
+/*
+ * Scrim: oscurece el borde de un video o imagen para que el titular se lea.
+ * Llega a rgba(6,6,7,0.72); la tinta sobre eso pasa 4.5:1 incluso sobre blanco puro.
+ * La curva usa paradas intermedias para que no se vea la costura del degradado.
+ */
+.vn-scrim {
+	position: absolute;
+	inset-inline: 0;
+	pointer-events: none;
+	--vn-scrim-bottom: linear-gradient(
+		to top,
+		rgba(6, 6, 7, 0.72) 0%,
+		rgba(6, 6, 7, 0.5) 35%,
+		rgba(6, 6, 7, 0.18) 70%,
+		rgba(6, 6, 7, 0) 100%
+	);
+	--vn-scrim-top: linear-gradient(
+		to bottom,
+		rgba(6, 6, 7, 0.72) 0%,
+		rgba(6, 6, 7, 0.5) 35%,
+		rgba(6, 6, 7, 0.18) 70%,
+		rgba(6, 6, 7, 0) 100%
+	);
+}
+.vn-scrim--bottom {
+	bottom: 0;
+	height: 55%;
+	background: var(--vn-scrim-bottom);
+}
+.vn-scrim--top {
+	top: 0;
+	height: 55%;
+	background: var(--vn-scrim-top);
+}
+.vn-scrim--both {
+	inset-block: 0;
+	background: var(--vn-scrim-top) top / 100% 45% no-repeat, var(--vn-scrim-bottom) bottom / 100% 55% no-repeat;
+}
+
+/*
+ * Glow: la luz de Iris tras una pieza. Quieto a propósito: sin animación, sin
+ * movimiento que cuidar bajo prefers-reduced-motion. Con colores usa hasta tres;
+ * sin colores, una luz gris fría muy tenue.
+ */
+.vn-glow {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: -1;
+	opacity: 0.55;
+	background:
+		radial-gradient(60% 70% at 18% 20%, var(--vn-glow-1, transparent), transparent 70%),
+		radial-gradient(55% 65% at 85% 30%, var(--vn-glow-2, transparent), transparent 70%),
+		radial-gradient(70% 60% at 50% 100%, var(--vn-glow-3, transparent), transparent 70%);
+	filter: blur(60px);
+}
+.vn-glow[data-neutral] {
+	--vn-glow-1: #8a94a6;
+	opacity: 0.14;
+}
