@@ -205,7 +205,6 @@
 }
 .vn .vn-input::placeholder {
 	color: var(--vn-ink-2);
-	opacity: 0.8;
 }
 .vn .vn-input--area {
 	resize: none;

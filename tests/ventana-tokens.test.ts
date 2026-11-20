@@ -234,11 +234,50 @@ describe("Ventana controles", () => {
 		body: m[2],
 	}));
 	const owned = /(^|[;\s])(background(-color|-image)?|backdrop-filter|-webkit-backdrop-filter|border|border-color|box-shadow)\s*:/;
-	// Los campos (`vn-input`) son sólidos y nunca llevan `vn-glass`: pintan su propio fondo y borde
-	const noMaterial = /--(plain|danger|primary)\b|\.vn-input\b/;
+	/**
+	 * Clases de las piezas sólidas por diseño: pintan su propio fondo y borde porque
+	 * nunca llevan `vn-glass` (lo comprueba la prueba de marcado de cada pieza). Una
+	 * pieza sólida nueva añade aquí una línea; olvidarla hace fallar el análisis,
+	 * que es el lado seguro.
+	 */
+	const SOLID_PIECES = ["vn-input", "vn-input--area"];
+	/** Variantes de botón que poseen su fondo: no llevan material. */
+	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
+
+	/** Clases del sujeto del selector (su último compuesto), sin lo que va dentro de paréntesis o corchetes. */
+	function subjectClasses(selector: string): string[] {
+		let depth = 0;
+		let compound = "";
+		let bare = "";
+		for (const ch of selector.trim()) {
+			if (depth === 0 && /[\s>+~]/.test(ch)) {
+				compound = "";
+				bare = "";
+				continue;
+			}
+			compound += ch;
+			if (ch === "(" || ch === "[") depth++;
+			else if (ch === ")" || ch === "]") depth--;
+			else if (depth === 0) bare += ch;
+		}
+		return [...bare.matchAll(/\.([\w-]+)/g)].map((m) => m[1]);
+	}
+	const targets = (selector: string, classes: string[]) => subjectClasses(selector).some((c) => classes.includes(c));
+	const exemptFromScan = (sel: string) => targets(sel, [...SOLID_PIECES, ...OWN_BACKGROUND_BUTTONS]);
+
+	it("subjectClasses mira sólo el sujeto, con nombre exacto", () => {
+		expect(subjectClasses(".vn .vn-input:focus-visible")).toEqual(["vn-input"]);
+		expect(subjectClasses(".vn-glass .vn-input")).toEqual(["vn-input"]);
+		expect(subjectClasses(".vn-input .vn-btn")).toEqual(["vn-btn"]);
+		expect(subjectClasses(".vn .vn-btn:not(.vn-input)")).toEqual(["vn-btn"]);
+		expect(subjectClasses('.vn .vn-input[aria-invalid="true"]')).toEqual(["vn-input"]);
+		expect(targets(".vn .vn-input-foo", SOLID_PIECES)).toBe(false);
+		expect(targets(".vn .vn-btn:has(.vn-input)", SOLID_PIECES)).toBe(false);
+		expect(targets(".vn .vn-input .vn-btn", SOLID_PIECES)).toBe(false);
+	});
 
 	it("ninguna regla que alcance un botón de vidrio declara lo que el material posee", () => {
-		const reaching = rules.filter((r) => r.selectors.some((sel) => !noMaterial.test(sel)));
+		const reaching = rules.filter((r) => r.selectors.some((sel) => !exemptFromScan(sel)));
 		expect(reaching.length).toBeGreaterThan(3);
 		for (const r of reaching) {
 			let body = r.body;
@@ -268,7 +307,7 @@ describe("Ventana controles", () => {
 		const resets = rules.filter((r) => /background:\s*transparent/.test(r.body)).flatMap((r) => r.selectors);
 		expect(resets.some((sel) => sel.includes("--plain"))).toBe(true);
 		expect(resets.some((sel) => sel.includes("--danger"))).toBe(true);
-		expect(resets.every((sel) => noMaterial.test(sel))).toBe(true);
+		expect(resets.every((sel) => targets(sel, OWN_BACKGROUND_BUTTONS))).toBe(true);
 	});
 
 	it("los campos son sólidos: suelo, filete, radio de campo, 44px y sin desenfoque", () => {

@@ -90,6 +90,23 @@ describe("TextField", () => {
 		expect(corto.querySelector(".vn-field__count")).toBeNull();
 	});
 
+	it("la cuenta se pone en el color de error en el techo", () => {
+		const h = mount(<TextField id="t" label="Título" value={"a".repeat(20)} onChange={() => {}} max={20} />);
+		const count = h.querySelector(".vn-field__count")!;
+		expect(count.textContent).toBe("20/20");
+		expect(count.classList.contains("vn-field__count--full")).toBe(true);
+		act(() => root!.render(<TextField id="t" label="Título" value={"a".repeat(19)} onChange={() => {}} max={20} />));
+		expect(h.querySelector(".vn-field__count")!.classList.contains("vn-field__count--full")).toBe(false);
+	});
+
+	it("className va en el input, no en el envoltorio, y no hay vidrio", () => {
+		const h = mount(<TextField id="c" label="Código" value="" onChange={() => {}} className="ancho" hint="a" error="b" max={40} />);
+		const input = h.querySelector("input")!;
+		expect(input.className).toBe("vn-input ancho");
+		expect(h.firstElementChild!.classList.contains("ancho")).toBe(false);
+		expect(h.innerHTML).not.toContain("vn-glass");
+	});
+
 	it("cond pone cifras tabulares y escribir llama a onChange con el texto", () => {
 		const onChange = vi.fn();
 		const h = mount(<TextField id="c" label="Código" value="" onChange={onChange} cond />);
@@ -143,6 +160,13 @@ describe("TextArea", () => {
 		type(area, "a\nb\nc");
 		expect(area.style.height).toBe("60px");
 		expect(area.style.overflowY).toBe("hidden");
+	});
+
+	it("className va en el textarea, no en el envoltorio, y no hay vidrio", () => {
+		const h = mount(<TextArea id="n" label="Notas" value="" onChange={() => {}} className="ancho" hint="a" error="b" />);
+		expect(h.querySelector("textarea")!.className).toBe("vn-input vn-input--area ancho");
+		expect(h.firstElementChild!.classList.contains("ancho")).toBe(false);
+		expect(h.innerHTML).not.toContain("vn-glass");
 	});
 
 	it("maxRows vale 10 por defecto", () => {

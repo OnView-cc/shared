@@ -4,11 +4,15 @@
  * texto visible (etiqueta, ayuda, error) llega por props.
  * Misma firma y mismo cableado de accesibilidad que `TextField` de `sky/console.tsx`
  * (etiqueta con `for`, `aria-invalid`, `aria-describedby`), con clases `vn-*`.
+ * `className` va en el propio campo, como en sky, no en el envoltorio.
  */
 import { useLayoutEffect, useRef } from "react";
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "id" | "value" | "onChange">;
+
+/** ¿Hay algo que mostrar? Ni vacío, ni nulo, ni false. */
+const present = (node: ReactNode) => node !== undefined && node !== null && node !== false && node !== "";
 
 const join = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(" ");
 
@@ -34,7 +38,6 @@ function Shell({
 	error,
 	counter,
 	reserve,
-	className,
 	children,
 }: {
 	id: string;
@@ -44,13 +47,12 @@ function Shell({
 	counter?: ReactNode;
 	/** La línea de aviso guarda su sitio aunque esté vacía, para que el error no empuje lo de abajo. */
 	reserve: boolean;
-	className?: string;
 	children: ReactNode;
 }) {
-	const hasError = error !== undefined && error !== null && error !== false && error !== "";
-	const hasHint = !hasError && hint !== undefined && hint !== null && hint !== false && hint !== "";
+	const hasError = present(error);
+	const hasHint = !hasError && present(hint);
 	return (
-		<div className={join("vn-field", hasError && "vn-field--error", className)}>
+		<div className={join("vn-field", hasError && "vn-field--error")}>
 			<div className="vn-field__head">
 				<label htmlFor={id} className="vn-label vn-field__label">
 					{label}
@@ -75,8 +77,8 @@ function Shell({
 
 /** Qué id de aviso le toca al campo: el error manda sobre la ayuda. */
 function describedBy(id: string, hint: ReactNode, error: ReactNode): string | undefined {
-	if (error !== undefined && error !== null && error !== false && error !== "") return `${id}-error`;
-	if (hint !== undefined && hint !== null && hint !== false && hint !== "") return `${id}-hint`;
+	if (present(error)) return `${id}-error`;
+	if (present(hint)) return `${id}-hint`;
 	return undefined;
 }
 
@@ -101,6 +103,7 @@ export function TextField({
 	hint?: ReactNode;
 	error?: ReactNode;
 	cond?: boolean;
+	/** Clases del propio `<input>` (no del envoltorio), después de las de la pieza. */
 	className?: string;
 }) {
 	const invalid = describedBy(id, undefined, error) !== undefined;
@@ -111,7 +114,6 @@ export function TextField({
 			hint={hint}
 			error={error}
 			reserve
-			className={className}
 			// Sin cuenta en un campo de dos letras: «2/2» en rojo en un código de país
 			// lleno es una alarma por hacer bien el campo.
 			counter={max && max >= 20 ? <Count value={value} max={max} /> : undefined}
@@ -124,7 +126,7 @@ export function TextField({
 				aria-invalid={invalid ? true : undefined}
 				aria-describedby={describedBy(id, hint, error)}
 				onChange={(e) => onChange(e.target.value)}
-				className={join("vn-input", cond && "vn-num")}
+				className={join("vn-input", cond && "vn-num", className)}
 			/>
 		</Shell>
 	);
@@ -154,6 +156,7 @@ export function TextArea({
 	hint?: ReactNode;
 	error?: ReactNode;
 	maxRows?: number;
+	/** Clases del propio `<textarea>` (no del envoltorio), después de las de la pieza. */
 	className?: string;
 } & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange" | "id">) {
 	const ref = useRef<HTMLTextAreaElement>(null);
@@ -175,7 +178,7 @@ export function TextArea({
 	}, [value, maxRows]);
 
 	return (
-		<Shell id={id} label={label} hint={hint} error={error} reserve={hint !== undefined || error !== undefined} className={className}>
+		<Shell id={id} label={label} hint={hint} error={error} reserve={hint !== undefined || error !== undefined}>
 			<textarea
 				rows={1}
 				{...rest}
@@ -185,7 +188,7 @@ export function TextArea({
 				aria-invalid={invalid ? true : undefined}
 				aria-describedby={describedBy(id, hint, error)}
 				onChange={(e) => onChange(e.target.value)}
-				className="vn-input vn-input--area"
+				className={join("vn-input", "vn-input--area", className)}
 			/>
 		</Shell>
 	);
