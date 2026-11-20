@@ -1,6 +1,6 @@
 # Pendiente — @onview/shared
 
-_Última revisión: 2026-11-19._
+_Última revisión: 2026-11-20._
 
 | Qué | Estado |
 |---|---|
@@ -12,3 +12,8 @@ _Última revisión: 2026-11-19._
 | **v2.5.0** (estilos: template = estructura + estilo, spec 2026-11-19): tag local en la rama `estilos`; se empuja al desplegar (tarea 27 del plan) | tag local; falta empujar |
 | **v2.6.0** (el video de referencia, spec 2026-11-19 §7): tag local en la rama `estilos`; onview usa `file:../shared` mientras se construye y vuelve a `github:OnView-cc/shared#v2.6.0` al desplegar | tag local; falta empujar |
 | **Golpes fuertes medidos**: la cámara pulsa en el golpe 0 de cada 4 desde el desfase; con el paso 2 del motor, en los golpes fuertes de verdad de la música | aplazado (paso 2 del motor) |
+| **Ventana, lo que la pasada de diseño (tarea 16) dejó para una persona**: lo que no enseña una captura. El movimiento en un navegador de verdad (llegada, presión, pulgar del segmentado, menú desde su botón, hoja en teléfono y escritorio, Iris pensando), los estados con puntero (encima, pulsado), el vidrio en Safari y en un equipo de Apple (con SF en vez de Inter Tight), y `prefers-reduced-transparency` y `prefers-contrast: more` de verdad (en la muestra sólo se ve su resultado con `?glass=solid`). | falta el visto bueno del usuario (puerta de la parte 2) |
+| **Ventana, la letra de respaldo**: Inter Tight se ve apretada en cuerpo (15 y 13 px) al lado de lo que sería SF Text, y el `-0.04em` del titular la deja casi tocándose. No se tocó: la pila y la escala las fijan el plan y `tests/ventana-tokens.test.ts`, y la maqueta aprobada usaba lo mismo. Si al verla en Windows o Android molesta, la salida es dar a cuerpo y pequeño un espaciado de `+0.01em` (en SF apenas se nota) o cambiar el respaldo de cuerpo a Inter | decidir al ver la muestra |
+| **Ventana, la entrada de los flotantes**: un vidrio que entra subiendo la opacidad deja ver un instante lo de detrás sin desenfocar. Apple lo resuelve «materializando» (el desenfoque crece con la entrada). Dura 140 a 180 ms y no se ha visto en un navegador de verdad: si se nota, animar el radio del desenfoque en `vn-overlay-in` | mirar en la revisión del movimiento |
+| **Ventana, menores aplazados de las revisiones por pieza**: el alto del `TextArea` no se recalcula al cambiar el ancho (falta un `ResizeObserver`); la prueba «opción bloqueada no se elige» del desplegable no intenta elegirla; `closeButton` de sonner no se admite en el `Toaster`; el `ref` de `Button` está tipado como `HTMLButtonElement` aunque con `href` llega un `<a>`; la píldora oscura de la página actual de la barra es un literal y no un token; muchos `Skeleton` en una página son muchos grupos con nombre (valorar un envoltorio por región); el `blur(60px)` del resplandor puede costar en táctil (medir en un teléfono) | partes 2 a 5, cuando cada una toque su pieza |
+| **Ventana, el titular de la portada sobre el video** (parte 2): en la escena «En uso» de la muestra el titular pisa el rótulo del propio video de demostración. En la portada el video se elige o se compone dejando libre la zona del titular; y el texto corriente va en la meseta del `Scrim` (el 40 % pegado al borde), el titular grande puede subir hasta el 60 % | parte 2 |
