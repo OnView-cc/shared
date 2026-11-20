@@ -96,8 +96,9 @@
  *
  * Quedan ahumados dentro de la zona (lo re-declara tokens.css): lo que es raíz
  * `.vn` (hojas, avisos y todo lo que Radix monta en un portal, que además vive
- * fuera de la página), un vidrio dentro de otro vidrio y lo que flota sobre un
- * marco de video. La barra de navegación también es raíz `.vn`, pero es justo lo
+ * fuera de la página), un vidrio dentro de otro vidrio, lo que flota sobre un
+ * marco de video y el pulgar del segmentado (va sobre su riel sólido). La barra
+ * de navegación también es raíz `.vn`, pero es justo lo
  * que flota sobre el fondo de la página: el ámbito la nombra para alcanzarla.
  */
 .vn-lit,

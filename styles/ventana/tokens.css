@@ -106,17 +106,19 @@
  * lo templa) y su atenuación vale 1: en el ahumado ni oscurece ni aclara.
  *
  * Un ámbito `vn-lit` (glass.css) redefine justo estos valores para sus
- * descendientes. Por eso van en regla aparte y con tres selectores: quien los
+ * descendientes. Por eso van en regla aparte y con varios selectores: quien los
  * vuelve a declarar vuelve al ahumado, y eso son las islas ahumadas de una zona
  * luminosa. Toda raíz `.vn` (las hojas, los avisos y lo que se monta en un portal
  * la llevan: caen sobre lo que sea y llevan más texto); un vidrio dentro de otro
  * (en Chrome no ve el fondo, sólo a su padre, así que el filtro no lo protegería);
- * y lo que flota sobre un marco de video (el video es de la persona: no lo
- * controlamos).
+ * lo que flota sobre un marco de video (el video es de la persona: no lo
+ * controlamos); y el pulgar del segmentado, que va sobre su riel sólido y no
+ * sobre el fondo de la zona.
  */
 .vn,
 .vn-lit .vn-glass .vn-glass,
-.vn-lit .vn-frame {
+.vn-lit .vn-frame,
+.vn-lit .vn-seg {
 	--vn-smoke-clear: rgba(58, 58, 64, 0.64);
 	--vn-smoke-thin: rgba(44, 44, 50, 0.74);
 	--vn-smoke-thick: rgba(32, 32, 37, 0.84);

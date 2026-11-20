@@ -46,9 +46,9 @@ type LitProps<T extends ElementType> = {
  * `passesOnGlass` (`glass-contrast.ts`).
  *
  * Siguen ahumados aunque estén dentro: las hojas, los avisos y los paneles que se
- * montan en un portal (son su propia raíz `.vn`), un vidrio dentro de otro y lo
- * que flota sobre un `VideoFrame`. Para dejar ahumada otra parte de la zona
- * basta envolverla en un elemento con la clase `vn`.
+ * montan en un portal (son su propia raíz `.vn`), un vidrio dentro de otro, el
+ * pulgar del segmentado y lo que flota sobre un `VideoFrame`. Para dejar
+ * ahumada otra parte de la zona basta envolverla en un elemento con la clase `vn`.
  */
 export function Lit<T extends ElementType = "div">({ as, className, ...rest }: LitProps<T>): ReactElement {
 	const Tag: ElementType = as ?? "div";

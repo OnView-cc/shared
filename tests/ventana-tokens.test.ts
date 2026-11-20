@@ -364,10 +364,13 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		expect(classCount(".vn-lit .vn-nav__bar")).toBeGreaterThan(classCount(".vn"));
 	});
 
-	it("hay islas ahumadas dentro de la zona: toda raíz `.vn`, un vidrio dentro de otro y lo que flota sobre un marco de video", () => {
+	it("hay islas ahumadas dentro de la zona: toda raíz `.vn`, un vidrio dentro de otro, lo que flota sobre un marco de video y el pulgar del segmentado", () => {
 		// Hojas, avisos y paneles en portal llevan la raíz `.vn`; el vidrio anidado no ve el fondo en Chrome (sólo a su
-		// padre) y el filtro no lo protegería; el marco enseña el video de una persona, que no controlamos.
-		expect(liveSelectors).toEqual([".vn", ".vn-lit .vn-glass .vn-glass", ".vn-lit .vn-frame"]);
+		// padre) y el filtro no lo protegería; el marco enseña el video de una persona, que no controlamos; y el pulgar
+		// del segmentado va sobre su riel sólido, no sobre el fondo de la zona: marca la opción elegida igual en todas partes.
+		expect(liveSelectors).toEqual([".vn", ".vn-lit .vn-glass .vn-glass", ".vn-lit .vn-frame", ".vn-lit .vn-seg"]);
+		// El riel es una pieza sólida (pinta su fondo): la isla sólo le cambia variables
+		expect(controls).toMatch(/\n\.vn \.vn-seg \{[^}]*background: var\(--vn-surface\);/);
 		// El vidrio anidado gana al ámbito aunque sea la propia barra de navegación
 		expect(classCount(".vn-lit .vn-glass .vn-glass")).toBeGreaterThan(Math.max(...scope!.selectors.map(classCount)));
 		// Y en una isla el vidrio vuelve a llevar su garantía sobre blanco puro, lo vea o no el filtro
