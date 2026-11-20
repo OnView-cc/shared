@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * VideoFrame de Ventana: el formato como clase (el aspect-ratio vive en el CSS y
- * lo comprueba tests/ventana-tokens.test.ts), rótulo sobre un Scrim, atenuado y
+ * lo comprueba tests/ventana-tokens.test.ts), rótulo con su propio scrim dentro del envoltorio, atenuado y
  * nombre accesible, con la misma firma que el de Feed vertical.
  */
 import { act } from "react";
@@ -43,20 +43,20 @@ describe("VideoFrame", () => {
 		expect(el.classList.contains(cls)).toBe(true);
 	});
 
-	it("sin rótulo no pinta scrim", () => {
+	it("sin rótulo no pinta ni envoltorio ni scrim", () => {
 		mount(<VideoFrame format="9:16" />);
 		expect(host!.querySelector(".vn-scrim")).toBeNull();
 		expect(host!.querySelector(".vn-frame__caption")).toBeNull();
+		expect(host!.querySelector(".vn-frame__text")).toBeNull();
 	});
 
-	it("con rótulo pinta un Scrim de borde inferior y el texto", () => {
+	it("con rótulo, el texto va dentro del envoltorio, visible a los lectores, y no hay un Scrim aparte", () => {
 		const el = mount(<VideoFrame format="9:16" caption="Caliente doce horas." />);
-		const scrim = el.querySelector(".vn-scrim.vn-scrim--bottom")!;
-		expect(scrim).not.toBeNull();
-		expect(scrim.getAttribute("aria-hidden")).toBe("true");
-		expect(el.querySelector(".vn-frame__caption")?.textContent).toBe("Caliente doce horas.");
-		// El scrim va antes que el rótulo: queda debajo
-		expect(scrim.compareDocumentPosition(el.querySelector(".vn-frame__caption")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+		const wrap = el.querySelector(".vn-frame__caption")!;
+		expect(wrap.querySelector(".vn-frame__text")?.textContent).toBe("Caliente doce horas.");
+		expect(wrap.hasAttribute("aria-hidden")).toBe(false);
+		expect(el.querySelector(".vn-scrim")).toBeNull();
+		expect(el.querySelector("[aria-hidden=true]")).toBeNull();
 	});
 
 	it("un rótulo vacío ('') sigue contando como rótulo; null no", () => {
@@ -66,7 +66,7 @@ describe("VideoFrame", () => {
 		expect(host!.querySelector(".vn-frame__caption")).toBeNull();
 	});
 
-	it("los hijos van dentro del marco, antes del scrim", () => {
+	it("los hijos van dentro del marco, antes del rótulo", () => {
 		const el = mount(
 			<VideoFrame format="16:9" caption="x">
 				<img alt="" src="data:," />

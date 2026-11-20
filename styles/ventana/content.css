@@ -27,8 +27,8 @@
 }
 /* Generando: tinta maciza con letra de acción */
 .vn .vn-state--generating {
-	background: var(--vn-action);
-	border: 1px solid var(--vn-action);
+	background: var(--vn-ink);
+	border: 1px solid var(--vn-ink);
 	border-radius: var(--vn-r-pill);
 	color: var(--vn-action-ink);
 }
@@ -49,6 +49,7 @@
 	position: relative;
 	overflow: hidden;
 	isolation: isolate;
+	container-type: inline-size;
 	border-radius: var(--vn-r-panel);
 	background: var(--vn-surface);
 }
@@ -82,42 +83,49 @@
 }
 
 /*
- * El rótulo vive en el 20% inferior del marco. El scrim del marco mide 40% y
- * mantiene su máximo (0.72, el que pasa 4.5:1 sobre blanco puro) hasta la mitad,
- * es decir hasta el 20% del marco; más arriba se desvanece.
+ * Rótulo: el marco trae su propio scrim dentro del envoltorio, medido por el texto
+ * y no por el marco. El envoltorio va abajo (izquierda, derecha, abajo en 0), con
+ * el degradado en rgba(6, 6, 7, 0.72) bajo todo el bloque de texto y su relleno
+ * inferior, y se desvanece sólo sobre el relleno superior (`--vn-cap-fade`). La
+ * meseta empieza donde empieza el texto, así que cualquier línea, en cualquier
+ * tamaño de marco, tiene el contraste que pasa 4.5:1 sobre blanco puro.
+ * El tamaño escala con el ancho del marco (contenedor de ancho en línea: con
+ * `size` el marco sin ancho propio perdería su altura intrínseca; por eso cqi y no cqmin).
  */
-.vn .vn-frame > .vn-frame__scrim {
-	height: 40%;
-	--vn-scrim-bottom: linear-gradient(
-		to top,
-		rgba(6, 6, 7, 0.72) 0%,
-		rgba(6, 6, 7, 0.72) 50%,
-		rgba(6, 6, 7, 0.4) 70%,
-		rgba(6, 6, 7, 0.12) 88%,
-		rgba(6, 6, 7, 0) 100%
-	);
-}
 .vn .vn-frame__caption {
+	--vn-cap-fade: 2.5em;
+	--vn-cap-pad: clamp(10px, 4cqi, 16px);
 	position: absolute;
 	inset-inline: 0;
 	inset-block-end: 0;
 	box-sizing: border-box;
-	max-block-size: 20%;
 	margin: 0;
-	padding: 0 14px 12px;
+	padding: var(--vn-cap-fade) var(--vn-cap-pad) var(--vn-cap-pad);
+	background: linear-gradient(
+		to top,
+		rgba(6, 6, 7, 0.72) 0%,
+		rgba(6, 6, 7, 0.72) calc(100% - var(--vn-cap-fade)),
+		rgba(6, 6, 7, 0.4) calc(100% - var(--vn-cap-fade) * 0.55),
+		rgba(6, 6, 7, 0.12) calc(100% - var(--vn-cap-fade) * 0.2),
+		rgba(6, 6, 7, 0) 100%
+	);
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	font-size: clamp(0.75rem, 4.5cqi, 1.125rem);
+	pointer-events: none;
+}
+.vn .vn-frame__text {
+	margin: 0;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	overflow: hidden;
 	overflow-wrap: anywhere;
-	color: var(--vn-ink);
-	font-family: var(--vn-font);
-	font-size: 0.875rem;
 	font-weight: 650;
 	line-height: 1.25;
 	letter-spacing: -0.01em;
 	text-wrap: balance;
-	pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

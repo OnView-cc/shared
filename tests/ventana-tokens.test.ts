@@ -264,6 +264,8 @@ describe("Ventana controles", () => {
 		"vn-state--generating",
 		"vn-state--failed",
 		"vn-frame",
+		// El envoltorio del rótulo pinta su propio scrim; nunca lleva vn-glass (hay prueba de marcado)
+		"vn-frame__caption",
 	];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
 	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
@@ -328,10 +330,11 @@ describe("Ventana controles", () => {
 
 	it("la base no pinta fondo y son plain y danger quienes lo reinician", () => {
 		expect(ctl(".vn .vn-btn")).not.toMatch(owned);
-		const resets = rules.filter((r) => /background:\s*transparent/.test(r.body)).flatMap((r) => r.selectors).filter((sel) => sel.includes("vn-btn"));
+		const resets = rules.filter((r) => /background:\s*transparent/.test(r.body)).flatMap((r) => r.selectors);
 		expect(resets.some((sel) => sel.includes("--plain"))).toBe(true);
 		expect(resets.some((sel) => sel.includes("--danger"))).toBe(true);
-		expect(resets.every((sel) => targets(sel, OWN_BACKGROUND_BUTTONS))).toBe(true);
+		// Salvo las piezas sólidas por diseño, sólo las variantes de botón con fondo propio reinician el fondo
+		expect(resets.filter((sel) => !targets(sel, SOLID_PIECES)).every((sel) => targets(sel, OWN_BACKGROUND_BUTTONS))).toBe(true);
 	});
 
 	it("los campos son sólidos: suelo, filete, radio de campo, 44px y sin desenfoque", () => {
@@ -476,7 +479,7 @@ describe("Ventana controles", () => {
 	it("las etiquetas de estado: borrador con filete, generando en tinta, falló en danger, lista en vidrio fino", () => {
 		expect(cnt(".vn .vn-state--draft")).toMatch(/background: transparent;[\s\S]*border: 1px solid var\(--vn-line\);/);
 		const generating = cnt(".vn .vn-state--generating");
-		expect(generating).toMatch(/background: var\(--vn-action\);/);
+		expect(generating).toMatch(/background: var\(--vn-ink\);/);
 		expect(generating).toMatch(/color: var\(--vn-action-ink\);/);
 		const failed = cnt(".vn .vn-state--failed");
 		expect(failed).toMatch(/background: transparent;[\s\S]*border: 1px solid var\(--vn-danger\);/);
@@ -496,24 +499,37 @@ describe("Ventana controles", () => {
 		expect(cnt(".vn .vn-frame")).toMatch(/overflow: hidden;/);
 	});
 
-	it("el rótulo se queda en el 20% inferior, en dos líneas, y su scrim mantiene el máximo hasta ahí", () => {
+	it("el rótulo lleva su propio scrim, medido por el texto: meseta 0.72 bajo todo el bloque, sin tope de altura", () => {
 		const cap = cnt(".vn .vn-frame__caption");
-		expect(cap).toMatch(/max-block-size: 20%;/);
-		expect(cap).toMatch(/-webkit-line-clamp: 2;/);
-		expect(cap).toMatch(/overflow: hidden;/);
-		const scrim = cnt(".vn .vn-frame > .vn-frame__scrim");
-		const height = Number(scrim.match(/height: (\d+)%;/)?.[1]);
-		const stops = [...scrim.matchAll(/rgba\(6, 6, 7, ([\d.]+)\) (\d+)%/g)].map((m) => ({ alpha: Number(m[1]), at: Number(m[2]) }));
-		// Los puntos del degradado son % del scrim; el rótulo llega al 20% del marco = 20/height del scrim
-		const captionTop = (20 / height) * 100;
-		const solidUntil = Math.max(...stops.filter((s) => s.alpha === 0.72).map((s) => s.at));
-		expect(solidUntil).toBeGreaterThanOrEqual(captionTop);
+		expect(cap).not.toMatch(/max-block-size|max-height|(^|[^-])block-size:|(^|[^-])height:/);
+		expect(content).not.toMatch(/vn-frame__scrim/);
+		expect(cap).toMatch(/pointer-events: none;/);
+		// Un solo valor decide el relleno superior y dónde acaba la meseta: la meseta cubre el texto y su relleno inferior
+		const fade = cap.match(/--vn-cap-fade: ([^;]+);/)?.[1];
+		expect(fade).toBeTruthy();
+		expect(cap).toMatch(/padding: var\(--vn-cap-fade\) /);
+		expect(cap).toMatch(/rgba\(6, 6, 7, 0\.72\) 0%,\s*rgba\(6, 6, 7, 0\.72\) calc\(100% - var\(--vn-cap-fade\)\)/);
+		// Nada por encima de la meseta cubre texto: los demás puntos están más arriba y bajan de 0.72
+		const alphas = [...cap.matchAll(/rgba\(6, 6, 7, ([\d.]+)\)/g)].map((m) => Number(m[1]));
+		expect(alphas[0]).toBe(0.72);
+		expect(Math.max(...alphas)).toBe(0.72);
 		expect(contrast(token("ink")!, over("rgba(6,6,7,0.72)", "#ffffff"))).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("el texto del rótulo se corta a dos líneas con puntos suspensivos y el tamaño escala con el marco sin bajar de 0.75rem", () => {
+		const text = cnt(".vn .vn-frame__text");
+		expect(text).toMatch(/display: -webkit-box;/);
+		expect(text).toMatch(/-webkit-box-orient: vertical;/);
+		expect(text).toMatch(/-webkit-line-clamp: 2;/);
+		expect(text).toMatch(/(^|[^-])line-clamp: 2;/);
+		expect(text).toMatch(/overflow: hidden;/);
+		expect(cnt(".vn .vn-frame__caption")).toMatch(/font-size: clamp\(0\.75rem, [^,]*cqi, [\d.]+rem\);/);
+		expect(cnt(".vn .vn-frame")).toMatch(/container-type: inline-size;/);
 	});
 
 	it("ningún texto nuevo baja de 0.75rem", () => {
 		for (const css of [chipCss, content]) {
-			const sizes = [...css.matchAll(/font-size: ([\d.]+)rem;/g)].map((m) => Number(m[1]));
+			const sizes = [...css.matchAll(/font-size: (?:clamp\()?([\d.]+)rem/g)].map((m) => Number(m[1]));
 			expect(sizes.length).toBeGreaterThan(0);
 			for (const size of sizes) expect(size).toBeGreaterThanOrEqual(0.75);
 		}
