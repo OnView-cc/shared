@@ -12,11 +12,19 @@
  * que no aclara): si la receta cambia, cambia el modelo, nunca el umbral.
  *
  * Dentro de un ámbito `vn-lit` el vidrio es luminoso: sin humo, y es el filtro
- * quien atenúa lo de detrás (`brightness`). Ahí la garantía es sobre un techo
- * declarado por grado, y el modelo es `brillo sobre (atenuación × fondo)`. La
- * misma cuenta vive en `ventana/glass-contrast.ts` para quien use el vidrio; aquí
- * se comprueba que sus números son los de los tokens y que el ámbito sólo cambia
- * variables, nunca el material ni sus respaldos.
+ * quien atenúa lo de detrás (`brightness`, tras saturar al 140 %); la capa plana
+ * es una escarcha (un 6 % de blanco) y encima va el brillo. Ahí la garantía es
+ * sobre un techo declarado por grado, y el modelo es
+ * `brillo sobre (escarcha sobre (atenuación × fondo saturado))`. Es una cota, no
+ * una simulación: cada capa redondea HACIA ARRIBA, el filtro sólo recorta a
+ * 0..255 al final (nunca entre saturar y atenuar, que daría un resultado más
+ * oscuro que el de un motor que no recorte ahí) y el techo lleva una holgura de
+ * 2 niveles (pasa aun con el fondo 2 niveles más claro: lo que Chrome midió de
+ * más sobre la cuenta). La misma cuenta vive en `ventana/glass-contrast.ts` para
+ * quien use el vidrio; aquí se rehace con los tokens, se comprueba que sus
+ * números son los mismos y que el ámbito sólo cambia variables, nunca el
+ * material ni sus respaldos. Las pruebas del ahumado siguen redondeando al más
+ * cercano, como siempre: su garantía es sobre blanco puro y tiene margen.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -76,8 +84,18 @@ function over(top: string, bottom: string): string {
 const GRADES: GlassGrade[] = ["clear", "thin", "thick"];
 /** Un gris neutro de 0 a 255 como hex. */
 const grey = (v: number) => "#" + v.toString(16).padStart(2, "0").repeat(3);
-/** `brightness(dim)` sobre un hex: cada canal por el factor. */
-const dimmed = (hex: string, dim: number) => "#" + channels(hex).slice(0, 3).map((c) => Math.round(c * dim).toString(16).padStart(2, "0")).join("");
+/** Redondeo hacia arriba (el del modelo del luminoso), sin que el ruido de la coma flotante suba un valor exacto. */
+const up = (c: number) => Math.min(255, Math.ceil(c - 1e-9));
+/** `brightness(dim)` sobre un hex, hacia arriba: cada canal por el factor. */
+const dimmedUp = (hex: string, dim: number) => "#" + channels(hex).slice(0, 3).map((c) => up(c * dim).toString(16).padStart(2, "0")).join("");
+/** Como `over`, pero redondeando hacia arriba. */
+function overUp(top: string, bottom: string): string {
+	const [tr, tg, tb, ta] = channels(top);
+	const [br, bg, bb] = channels(bottom);
+	return "#" + [tr * ta + br * (1 - ta), tg * ta + bg * (1 - ta), tb * ta + bb * (1 - ta)].map((c) => up(c).toString(16).padStart(2, "0")).join("");
+}
+/** La holgura del techo del luminoso, en niveles de fondo. */
+const MARGIN = 2;
 /** Todas las reglas de las hojas de Ventana (sin comentarios), con sus selectores y su cuerpo. */
 const everyRule = [...allVentanaCss.join("\n").replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
 	selectors: m[1].split(",").map((x) => x.trim()),
@@ -261,9 +279,9 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 	 * El modelo del vidrio luminoso con los tokens, de abajo arriba: el gris atenuado
 	 * por el filtro (`brightness`; a un gris, saturar no le hace nada), la escarcha
 	 * (la capa plana, que aquí es un blanco muy tenue en vez de humo) y el brillo
-	 * en su punto más fuerte.
+	 * en su punto más fuerte. Cada capa redondea hacia arriba: es una cota.
 	 */
-	const litUnder = (v: number, grade: string) => over(token("lit-sheen")!, over(token("lit-frost")!, dimmed(grey(v), Number(token(`lit-dim-${grade}`)))));
+	const litUnder = (v: number, grade: string) => overUp(token("lit-sheen")!, overUp(token("lit-frost")!, dimmedUp(grey(Math.min(255, v)), Number(token(`lit-dim-${grade}`)))));
 
 	it("GLASS (glass-contrast.ts) lleva los números de los tokens, uno a uno", () => {
 		for (const grade of GRADES) {
@@ -279,12 +297,20 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		expect(token("ink")).toBe(GLASS.ink);
 		// Los umbrales son los de esta prueba: el claro sólo lleva íconos (3:1), fino y grueso llevan texto (4.5:1)
 		expect(GLASS.threshold).toEqual({ clear: 3, thin: 4.5, thick: 4.5 });
+		expect(GLASS.margin).toBe(MARGIN);
 	});
 
 	it("la función hace la misma cuenta que esta prueba: sobre un gris, saturar no cambia nada", () => {
 		for (const v of [0, 37, 128, 200, 255]) {
 			for (const grade of GRADES) {
-				expect(underGlass(grey(v), grade, "smoked"), `${grade} ahumado ${v}`).toBe(over(token("sheen")!, over(token(`smoke-${grade}`)!, grey(v))));
+				// Ahumado: la función redondea hacia arriba y las pruebas de siempre al más cercano; con dos capas, como mucho dos niveles
+				const fn = channels(underGlass(grey(v), grade, "smoked"));
+				const nearest = channels(over(token("sheen")!, over(token(`smoke-${grade}`)!, grey(v))));
+				for (const i of [0, 1, 2]) {
+					expect(fn[i], `${grade} ahumado ${v}`).toBeGreaterThanOrEqual(nearest[i]);
+					expect(fn[i] - nearest[i], `${grade} ahumado ${v}`).toBeLessThanOrEqual(2);
+				}
+				expect(underGlass(grey(v), grade, "smoked"), `${grade} ahumado ${v}`).toBe(overUp(token("sheen")!, overUp(token(`smoke-${grade}`)!, grey(v))));
 				expect(underGlass(grey(v), grade, "lit"), `${grade} luminoso ${v}`).toBe(litUnder(v, grade));
 				expect(glassContrast(grey(v), grade, "lit")).toBeCloseTo(contrast(token("ink")!, underGlass(grey(v), grade, "lit")), 10);
 			}
@@ -295,20 +321,26 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		["clear", 3],
 		["thin", 4.5],
 		["thick", 4.5],
-	] as const)("el techo de %s es la frontera: con ese gris detrás la tinta llega a %s:1 y con el siguiente ya no", (grade, min) => {
+	] as const)("el techo de %s es la frontera con su holgura: con el fondo 2 niveles más claro que ese gris la tinta aún llega a %s:1, y con el gris siguiente ya no", (grade, min) => {
 		const ceiling = channels(token(`lit-ceiling-${grade}`)!)[0];
 		expect(token(`lit-ceiling-${grade}`)).toBe(grey(ceiling));
-		expect(contrast(token("ink")!, litUnder(ceiling, grade))).toBeGreaterThanOrEqual(min);
-		expect(contrast(token("ink")!, litUnder(ceiling + 1, grade))).toBeLessThan(min);
+		// La holgura puesta: el techo se cumple aunque lo que hay detrás salga 2 niveles más claro de lo declarado
+		expect(contrast(token("ink")!, litUnder(ceiling + MARGIN, grade))).toBeGreaterThanOrEqual(min);
+		expect(contrast(token("ink")!, litUnder(ceiling + 1 + MARGIN, grade))).toBeLessThan(min);
+		// Así el techo ya no depende de un redondeo: con el gris declarado, lo que queda bajo el texto está al menos un nivel por debajo del límite de la tinta
+		const limit = Math.max(...Array.from({ length: 256 }, (_, v) => v).filter((v) => contrast(token("ink")!, grey(v)) >= min));
+		expect(limit - channels(litUnder(ceiling, grade))[0]).toBeGreaterThanOrEqual(1);
 		// Y es el único salto: por debajo del techo todo pasa, por encima nada
 		for (let v = 0; v <= 255; v++) expect(passesOnGlass(grey(v), grade, "lit"), `${grade} ${v}`).toBe(v <= ceiling);
 	});
 
-	it("el techo no es un adorno: deja sitio a un video con color y deja fuera el blanco", () => {
+	it("el techo no es un adorno: el vidrio deja pasar fondos más claros que los que aguantaría la tinta sin él, y deja fuera el blanco", () => {
 		for (const grade of GRADES) {
 			const ceiling = channels(token(`lit-ceiling-${grade}`)!)[0];
-			// Más claro que un gris medio oscuro, y lejos del blanco puro que sí aguanta el ahumado
-			expect(ceiling, grade).toBeGreaterThanOrEqual(120);
+			const min = GLASS.threshold[grade];
+			// El gris más claro sobre el que la tinta, sin vidrio, llega al umbral (112 para 4.5:1, 142 para 3:1)
+			const naked = Math.max(...Array.from({ length: 256 }, (_, v) => v).filter((v) => contrast(token("ink")!, grey(v)) >= min));
+			expect(ceiling, grade).toBeGreaterThan(naked);
 			expect(ceiling, grade).toBeLessThan(255);
 		}
 	});

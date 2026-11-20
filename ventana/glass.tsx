@@ -47,8 +47,11 @@ type LitProps<T extends ElementType> = {
  *
  * Siguen ahumados aunque estén dentro: las hojas, los avisos y los paneles que se
  * montan en un portal (son su propia raíz `.vn`), un vidrio dentro de otro, el
- * pulgar del segmentado y lo que flota sobre un `VideoFrame`. Para dejar
- * ahumada otra parte de la zona basta envolverla en un elemento con la clase `vn`.
+ * pulgar del segmentado y lo que va dentro de un `VideoFrame`. El sistema sólo
+ * sabe que algo es contenido de una persona cuando va dentro de un `VideoFrame`:
+ * cualquier otra imagen o video de una persona dentro de una zona luminosa
+ * necesita un envoltorio con la clase `vn`, que devuelve al ahumado todo lo que
+ * lleva dentro.
  */
 export function Lit<T extends ElementType = "div">({ as, className, ...rest }: LitProps<T>): ReactElement {
 	const Tag: ElementType = as ?? "div";
