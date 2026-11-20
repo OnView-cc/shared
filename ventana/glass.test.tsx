@@ -6,7 +6,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it } from "vitest";
-import { Glass, Glow, Scrim } from "./glass";
+import { Glass, Glow, Lit, Scrim } from "./glass";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -48,6 +48,34 @@ describe("Glass", () => {
 		const el = host.firstElementChild!;
 		expect(el.classList.contains("vn-glass--thick")).toBe(true);
 		expect(el.classList.contains("vn-glass--solid")).toBe(true);
+		expect(el.classList.contains("mia")).toBe(true);
+	});
+});
+
+describe("Lit", () => {
+	it("es un div con la clase del ámbito y nada más", () => {
+		mount(
+			<Lit>
+				<Glass>hola</Glass>
+			</Lit>,
+		);
+		const el = host.firstElementChild!;
+		expect(el.tagName).toBe("DIV");
+		expect(el.className).toBe("vn-lit");
+		// Las piezas de dentro no cambian: el vidrio lleva sus clases de siempre
+		expect(el.firstElementChild!.className).toBe("vn-glass vn-glass--thin");
+	});
+
+	it("as pinta otra etiqueta, pasa sus atributos y suma la clase del consumidor", () => {
+		mount(
+			<Lit as="main" id="portada" className="mia">
+				x
+			</Lit>,
+		);
+		const el = host.firstElementChild!;
+		expect(el.tagName).toBe("MAIN");
+		expect(el.id).toBe("portada");
+		expect(el.classList.contains("vn-lit")).toBe(true);
 		expect(el.classList.contains("mia")).toBe(true);
 	});
 });

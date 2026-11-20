@@ -10,10 +10,18 @@
  * caso es `brillo sobre (humo sobre #ffffff)`. Las pruebas de «la receta»
  * sostienen que eso es de verdad lo que pinta glass.css (dos capas y un filtro
  * que no aclara): si la receta cambia, cambia el modelo, nunca el umbral.
+ *
+ * Dentro de un ámbito `vn-lit` el vidrio es luminoso: sin humo, y es el filtro
+ * quien atenúa lo de detrás (`brightness`). Ahí la garantía es sobre un techo
+ * declarado por grado, y el modelo es `brillo sobre (atenuación × fondo)`. La
+ * misma cuenta vive en `ventana/glass-contrast.ts` para quien use el vidrio; aquí
+ * se comprueba que sus números son los de los tokens y que el ámbito sólo cambia
+ * variables, nunca el material ni sus respaldos.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { AI_SPECTRUM } from "../ventana/ai-mark";
+import { GLASS, glassContrast, passesOnGlass, underGlass, type GlassGrade } from "../ventana/glass-contrast";
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8");
 const tokens = read("../styles/ventana/tokens.css");
@@ -30,7 +38,14 @@ const allVentanaCss = [
 	read("../styles/ventana.css"),
 ];
 
-const block = tokens.match(/\n\.vn \{([\s\S]*?)\n\}/)?.[1] ?? "";
+/**
+ * Los tokens viven en dos reglas: la raíz `.vn` y, aparte, los valores vivos del
+ * vidrio en su densidad ahumada, que la raíz comparte con las islas ahumadas de
+ * una zona luminosa (un vidrio dentro de otro, lo que flota sobre un marco de video).
+ */
+const liveRule = tokens.match(/\n(\.vn,\n[^{]*) \{([\s\S]*?)\n\}/);
+const liveSelectors = (liveRule?.[1] ?? "").split(",").map((x) => x.trim());
+const block = (tokens.match(/\n\.vn \{([\s\S]*?)\n\}/)?.[1] ?? "") + (liveRule?.[2] ?? "");
 const token = (name: string) => block.match(new RegExp(`--vn-${name}:\\s*([^;]+);`))?.[1].trim();
 
 function channels(color: string): [number, number, number, number] {
@@ -57,6 +72,21 @@ function over(top: string, bottom: string): string {
 	const [br, bg, bb] = channels(bottom);
 	return "#" + [tr * ta + br * (1 - ta), tg * ta + bg * (1 - ta), tb * ta + bb * (1 - ta)].map((c) => Math.round(c).toString(16).padStart(2, "0")).join("");
 }
+
+const GRADES: GlassGrade[] = ["clear", "thin", "thick"];
+/** Un gris neutro de 0 a 255 como hex. */
+const grey = (v: number) => "#" + v.toString(16).padStart(2, "0").repeat(3);
+/** `brightness(dim)` sobre un hex: cada canal por el factor. */
+const dimmed = (hex: string, dim: number) => "#" + channels(hex).slice(0, 3).map((c) => Math.round(c * dim).toString(16).padStart(2, "0")).join("");
+/** Todas las reglas de las hojas de Ventana (sin comentarios), con sus selectores y su cuerpo. */
+const everyRule = [...allVentanaCss.join("\n").replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+	selectors: m[1].split(",").map((x) => x.trim()),
+	body: m[2],
+}));
+/** Las declaraciones de un cuerpo de regla: nombre de la propiedad y valor. */
+const declarations = (body: string) => body.split(";").map((d) => d.trim()).filter(Boolean).map((d) => [d.slice(0, d.indexOf(":")).trim(), d.slice(d.indexOf(":") + 1).trim()] as const);
+/** La especificidad de un selector hecho sólo de clases: cuántas lleva. */
+const classCount = (selector: string) => selector.match(/\./g)?.length ?? 0;
 
 describe("Ventana tokens", () => {
 	it("fija el suelo, las tintas y una acción blanca sin acento", () => {
@@ -89,11 +119,20 @@ describe("Ventana tokens", () => {
 		expect(glassRule.match(/inset/g)).toHaveLength(1);
 	});
 
-	it("el filtro del vidrio sólo desenfoca y satura: no hay brightness ni contrast que modelar", () => {
+	it("el filtro del vidrio desenfoca, satura y atenúa por variable; fuera de una zona luminosa la atenuación es 1", () => {
 		for (const prop of ["-webkit-backdrop-filter", "backdrop-filter"]) {
-			expect(glassRule).toContain(`\t${prop}: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));`);
+			expect(glassRule).toContain(`\t${prop}: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate)) brightness(var(--vn-glass-dim, 1));`);
 		}
-		expect(glass).not.toMatch(/brightness\(|contrast\(|invert\(|opacity\(/);
+		// Ese `brightness` (una vez por propiedad) es el único de la hoja, y no hay otra función que modelar
+		expect(glass.match(/brightness\(/g)).toHaveLength(2);
+		expect(glass.match(/brightness\(var\(--vn-glass-dim, 1\)\)/g)).toHaveLength(2);
+		expect(glass).not.toMatch(/contrast\(|invert\(|opacity\(/);
+		// Cada grado toma su atenuación del token vivo, que en el ahumado vale 1: ahí el filtro ni oscurece ni aclara
+		expect(glassRule).toMatch(/--vn-glass-dim: var\(--vn-dim-thin\);/);
+		for (const grade of GRADES) {
+			expect(glass).toMatch(new RegExp(`\\.vn-glass--${grade} \\{[^}]*--vn-glass-dim: var\\(--vn-dim-${grade}\\);`));
+			expect(token(`dim-${grade}`)).toBe("1");
+		}
 	});
 
 	it("fija el humo de cada grado: un gris frío, más opaco cuanto más grueso", () => {
@@ -211,6 +250,131 @@ describe("Ventana tokens", () => {
 			expect(file).not.toMatch(/--sk-/);
 			expect(file).not.toMatch(/\.sk[\s.{,]/);
 		}
+	});
+});
+
+describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
+	const litRules = everyRule.filter((r) => r.selectors.some((sel) => sel.includes("vn-lit")));
+	const scope = litRules.find((r) => r.selectors.includes(".vn-lit"));
+	const scopeSets = Object.fromEntries(declarations(scope?.body ?? ""));
+
+	it("GLASS (glass-contrast.ts) lleva los números de los tokens, uno a uno", () => {
+		for (const grade of GRADES) {
+			expect(channels(token(`smoke-${grade}`)!), grade).toEqual(GLASS.smoked[grade].smoke);
+			expect(Number(token(`lit-dim-${grade}`)), grade).toBe(GLASS.lit[grade].dim);
+			expect(token(`lit-ceiling-${grade}`), grade).toBe(GLASS.lit[grade].ceiling);
+		}
+		expect(channels(token("sheen")!)).toEqual([255, 255, 255, GLASS.sheen.smoked]);
+		expect(channels(token("lit-sheen")!)).toEqual([255, 255, 255, GLASS.sheen.lit]);
+		expect(token("saturate")).toBe(`${GLASS.saturate * 100}%`);
+		expect(token("ink")).toBe(GLASS.ink);
+		// Los umbrales son los de esta prueba: el claro sólo lleva íconos (3:1), fino y grueso llevan texto (4.5:1)
+		expect(GLASS.threshold).toEqual({ clear: 3, thin: 4.5, thick: 4.5 });
+	});
+
+	it("la función hace la misma cuenta que esta prueba: sobre un gris, saturar no cambia nada", () => {
+		for (const v of [0, 37, 128, 200, 255]) {
+			for (const grade of GRADES) {
+				expect(underGlass(grey(v), grade, "smoked"), `${grade} ahumado ${v}`).toBe(over(token("sheen")!, over(token(`smoke-${grade}`)!, grey(v))));
+				expect(underGlass(grey(v), grade, "lit"), `${grade} luminoso ${v}`).toBe(over(token("lit-sheen")!, dimmed(grey(v), Number(token(`lit-dim-${grade}`)))));
+				expect(glassContrast(grey(v), grade, "lit")).toBeCloseTo(contrast(token("ink")!, underGlass(grey(v), grade, "lit")), 10);
+			}
+		}
+	});
+
+	it.each([
+		["clear", 3],
+		["thin", 4.5],
+		["thick", 4.5],
+	] as const)("el techo de %s es la frontera: con ese gris detrás la tinta llega a %s:1 y con el siguiente ya no", (grade, min) => {
+		const under = (v: number) => over(token("lit-sheen")!, dimmed(grey(v), Number(token(`lit-dim-${grade}`))));
+		const ceiling = channels(token(`lit-ceiling-${grade}`)!)[0];
+		expect(token(`lit-ceiling-${grade}`)).toBe(grey(ceiling));
+		expect(contrast(token("ink")!, under(ceiling))).toBeGreaterThanOrEqual(min);
+		expect(contrast(token("ink")!, under(ceiling + 1))).toBeLessThan(min);
+		// Y es el único salto: por debajo del techo todo pasa, por encima nada
+		for (let v = 0; v <= 255; v++) expect(passesOnGlass(grey(v), grade, "lit"), `${grade} ${v}`).toBe(v <= ceiling);
+	});
+
+	it("el techo no es un adorno: deja sitio a un video con color y deja fuera el blanco", () => {
+		for (const grade of GRADES) {
+			const ceiling = channels(token(`lit-ceiling-${grade}`)!)[0];
+			// Más claro que un gris medio oscuro, y lejos del blanco puro que sí aguanta el ahumado
+			expect(ceiling, grade).toBeGreaterThanOrEqual(120);
+			expect(ceiling, grade).toBeLessThan(255);
+		}
+	});
+
+	it("en zona luminosa el vidrio sigue siendo una lámina sobre negro puro: el brillo la levanta", () => {
+		for (const grade of GRADES) expect(contrast(underGlass("#000000", grade, "lit"), "#000000"), grade).toBeGreaterThanOrEqual(1.1);
+	});
+
+	it("el ámbito sólo redefine variables: ninguna regla con vn-lit declara una propiedad", () => {
+		expect(litRules.length).toBeGreaterThanOrEqual(2);
+		const owned = /(^|[;\s])(background(-color|-image)?|backdrop-filter|-webkit-backdrop-filter|border|border-color|box-shadow)\s*:/;
+		for (const r of litRules) {
+			expect(r.body, r.selectors.join(", ")).not.toMatch(owned);
+			for (const [prop] of declarations(r.body)) expect(prop, r.selectors.join(", ")).toMatch(/^--vn-/);
+		}
+	});
+
+	it("el ámbito quita el humo, pone la atenuación de cada grado y sube el brillo, y nada más", () => {
+		expect(scopeSets).toEqual({
+			"--vn-smoke-clear": "transparent",
+			"--vn-smoke-thin": "transparent",
+			"--vn-smoke-thick": "transparent",
+			"--vn-dim-clear": "var(--vn-lit-dim-clear)",
+			"--vn-dim-thin": "var(--vn-lit-dim-thin)",
+			"--vn-dim-thick": "var(--vn-lit-dim-thick)",
+			"--vn-sheen": "var(--vn-lit-sheen)",
+		});
+		// Lo que redefine es justo lo que la raíz declara como «valores vivos»: una raíz `.vn` dentro de la zona lo devuelve todo al ahumado
+		expect(Object.keys(scopeSets).sort()).toEqual(declarations(liveRule?.[2] ?? "").map(([prop]) => prop).sort());
+	});
+
+	it("el ámbito gana a la raíz en el mismo elemento porque glass.css se importa después de tokens.css", () => {
+		const entry = read("../styles/ventana.css");
+		expect(entry.indexOf("./ventana/tokens.css")).toBeGreaterThan(-1);
+		expect(entry.indexOf("./ventana/glass.css")).toBeGreaterThan(entry.indexOf("./ventana/tokens.css"));
+		expect(glass).toContain("\n.vn-lit,\n");
+		// En tokens.css `vn-lit` sólo aparece en las islas ahumadas, nunca como ámbito
+		expect(tokens).not.toMatch(/\n\.vn-lit(,| \{)/);
+	});
+
+	it("la barra de navegación es raíz `.vn` ella misma: el ámbito la nombra para alcanzarla, y sólo a ella", () => {
+		// `.vn` (una clase) re-declara los valores vivos en la barra; `.vn-lit .vn-nav__bar` (dos) los vuelve a poner luminosos
+		expect(scope?.selectors).toEqual([".vn-lit", ".vn-lit .vn-nav__bar"]);
+		expect(classCount(".vn-lit .vn-nav__bar")).toBeGreaterThan(classCount(".vn"));
+	});
+
+	it("hay islas ahumadas dentro de la zona: toda raíz `.vn`, un vidrio dentro de otro y lo que flota sobre un marco de video", () => {
+		// Hojas, avisos y paneles en portal llevan la raíz `.vn`; el vidrio anidado no ve el fondo en Chrome (sólo a su
+		// padre) y el filtro no lo protegería; el marco enseña el video de una persona, que no controlamos.
+		expect(liveSelectors).toEqual([".vn", ".vn-lit .vn-glass .vn-glass", ".vn-lit .vn-frame"]);
+		// El vidrio anidado gana al ámbito aunque sea la propia barra de navegación
+		expect(classCount(".vn-lit .vn-glass .vn-glass")).toBeGreaterThan(Math.max(...scope!.selectors.map(classCount)));
+		// Y en una isla el vidrio vuelve a llevar su garantía sobre blanco puro, lo vea o no el filtro
+		for (const grade of GRADES) expect(passesOnGlass("#ffffff", grade, "smoked"), grade).toBe(true);
+	});
+
+	it("los respaldos ganan dentro de la zona: el mismo sólido, sin filtro", () => {
+		const base = glass.indexOf("\n.vn-glass {");
+		expect(base).toBeGreaterThan(-1);
+		// Misma especificidad que el material (una clase) y más abajo en la hoja: gana el respaldo
+		const fallbacks = [...glass.matchAll(/\n\t?(\.vn-glass(?:--solid)?) \{([^}]*)\}/g)].filter((m) => /background: var\(--vn-glass-solid\);/.test(m[2]));
+		expect(fallbacks).toHaveLength(4);
+		for (const m of fallbacks) {
+			expect(m.index!).toBeGreaterThan(base);
+			expect(classCount(m[1])).toBe(classCount(".vn-glass"));
+			expect(m[2]).toMatch(/(^|\s)backdrop-filter: none;/);
+		}
+		// El sólido sale de `--vn-glass-solid`, que sólo declaran el material y sus grados y sólo lee los tokens sólidos
+		const solidSetters = everyRule.filter((r) => /--vn-glass-solid:/.test(r.body));
+		expect(solidSetters.map((r) => r.selectors.join(", ")).sort()).toEqual([".vn-glass", ".vn-glass--clear", ".vn-glass--thick", ".vn-glass--thin"]);
+		for (const r of solidSetters) expect(r.body).toMatch(/--vn-glass-solid: var\(--vn-solid-(clear|thin|thick)\);/);
+		for (const grade of GRADES) expect(token(`solid-${grade}`)).toMatch(/^#[0-9a-f]{6}$/);
+		// Ninguna regla de la zona toca el sólido, el desenfoque, el filete ni la luz del borde: el respaldo es idéntico dentro y fuera
+		for (const r of litRules) expect(r.body, r.selectors.join(", ")).not.toMatch(/--vn-(glass-solid|solid-|glass-blur|blur-|rim|glint|glass-rim|glass-shadow|glass-elevation)/);
 	});
 });
 

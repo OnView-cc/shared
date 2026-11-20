@@ -1,10 +1,16 @@
 /**
  * Vidrio, scrim y brillo de Ventana. El vidrio sólo va en lo que flota; el
  * scrim y el brillo son decorativos y se esconden a los lectores de pantalla.
+ *
+ * El vidrio tiene dos densidades y cuál toca lo decide lo que hay detrás:
+ * ahumado (el de por defecto, sobre el video o las imágenes de una persona) y
+ * luminoso (sobre fondos que controlamos, dentro de un `Lit`). La cuenta del
+ * contraste de las dos está en `glass-contrast.ts`.
  */
 import type { ComponentPropsWithoutRef, CSSProperties, ElementType, ReactElement } from "react";
+import type { GlassGrade } from "./glass-contrast";
 
-export type GlassGrade = "clear" | "thin" | "thick";
+export type { GlassGrade };
 
 type GlassProps<T extends ElementType> = {
 	as?: T;
@@ -24,6 +30,29 @@ export function Glass<T extends ElementType = "div">({
 }: GlassProps<T>): ReactElement {
 	const Tag: ElementType = as ?? "div";
 	return <Tag {...rest} className={join("vn-glass", `vn-glass--${grade}`, solid && "vn-glass--solid", className)} />;
+}
+
+type LitProps<T extends ElementType> = {
+	as?: T;
+	className?: string;
+} & Omit<ComponentPropsWithoutRef<T>, "as" | "className">;
+
+/**
+ * Una zona luminosa: todo vidrio de dentro deja pasar el color de lo que tiene
+ * detrás en vez de ahumarlo. Sólo añade la clase `vn-lit` (también se puede poner
+ * a mano en un elemento propio); las piezas no cambian. Va dentro de la raíz
+ * `.vn` o en ella, y sólo sobre fondos que controlamos: antes de envolver una
+ * zona, los colores más claros que su fondo enseña bajo el vidrio se prueban con
+ * `passesOnGlass` (`glass-contrast.ts`).
+ *
+ * Siguen ahumados aunque estén dentro: las hojas, los avisos y los paneles que se
+ * montan en un portal (son su propia raíz `.vn`), un vidrio dentro de otro y lo
+ * que flota sobre un `VideoFrame`. Para dejar ahumada otra parte de la zona
+ * basta envolverla en un elemento con la clase `vn`.
+ */
+export function Lit<T extends ElementType = "div">({ as, className, ...rest }: LitProps<T>): ReactElement {
+	const Tag: ElementType = as ?? "div";
+	return <Tag {...rest} className={join("vn-lit", className)} />;
 }
 
 export function Scrim({

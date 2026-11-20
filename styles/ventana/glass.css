@@ -14,17 +14,19 @@
  *
  * El contraste del texto sale sólo del humo y del brillo: no depende del
  * `backdrop-filter` (un vidrio dentro de otro, o un navegador que no lo aplique,
- * se lee igual). El filtro sólo desenfoca y satura.
+ * se lee igual). El filtro desenfoca y satura; su último paso, `brightness`, vale
+ * 1 (no hace nada) salvo en una zona luminosa (más abajo, `.vn-lit`).
  */
 .vn-glass {
 	--vn-glass-smoke: var(--vn-smoke-thin);
+	--vn-glass-dim: var(--vn-dim-thin);
 	--vn-glass-blur: var(--vn-blur-thin);
 	--vn-glass-solid: var(--vn-solid-thin);
 	background:
 		linear-gradient(var(--vn-sheen), transparent 40%) padding-box,
 		linear-gradient(var(--vn-glass-smoke), var(--vn-glass-smoke)) padding-box;
-	-webkit-backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));
-	backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));
+	-webkit-backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate)) brightness(var(--vn-glass-dim, 1));
+	backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate)) brightness(var(--vn-glass-dim, 1));
 	border: 1px solid;
 	border-color: var(--vn-glass-rim, var(--vn-rim-light));
 	border-radius: var(--vn-glass-r, var(--vn-r-panel));
@@ -50,16 +52,60 @@
 
 .vn-glass--clear {
 	--vn-glass-smoke: var(--vn-smoke-clear);
+	--vn-glass-dim: var(--vn-dim-clear);
 	--vn-glass-solid: var(--vn-solid-clear);
 }
 .vn-glass--thin {
 	--vn-glass-smoke: var(--vn-smoke-thin);
+	--vn-glass-dim: var(--vn-dim-thin);
 	--vn-glass-solid: var(--vn-solid-thin);
 }
 .vn-glass--thick {
 	--vn-glass-smoke: var(--vn-smoke-thick);
+	--vn-glass-dim: var(--vn-dim-thick);
 	--vn-glass-blur: var(--vn-blur-thick);
 	--vn-glass-solid: var(--vn-solid-thick);
+}
+
+/*
+ * Vidrio luminoso: la segunda densidad. `vn-lit` es un ámbito, no una pieza: se
+ * pone en la página o en una zona (`Lit` en glass.tsx) y todo vidrio de dentro
+ * deja pasar el color de lo que tiene detrás. No lleva humo: es el filtro quien
+ * atenúa el fondo (`brightness`, que oscurece sin quitar color: la lámina queda
+ * luminosa y no gris), con un brillo algo más fuerte arriba.
+ *
+ * Cuál toca lo decide lo que hay detrás. Luminoso sólo sobre fondos que
+ * controlamos (el video de demostración, el resplandor de `Glow`): su garantía no
+ * es sobre blanco puro sino sobre un techo declarado por grado
+ * (`--vn-lit-ceiling-*`), y quien lo usa prueba con `passesOnGlass`
+ * (`ventana/glass-contrast.ts`) los colores más claros que su fondo enseña bajo
+ * el vidrio. Donde un fondo pueda pasar del techo, va el ahumado. Sobre vidrio
+ * luminoso, sólo tinta primaria: la secundaria y el peligro de vidrio son del
+ * grueso ahumado.
+ *
+ * Cómo funciona: el ámbito sólo redefine variables (los valores vivos de
+ * tokens.css); no declara fondo, filtro, borde ni sombra, así que no puede pisar
+ * el material ni sus respaldos, que no leen ninguna de estas variables: con
+ * transparencia reducida, contraste alto, sin `backdrop-filter` o con
+ * `vn-glass--solid`, un vidrio de dentro es el mismo sólido que fuera. Depender
+ * del filtro vale aquí, y no en el ahumado, justo por eso: sin filtro no hay
+ * vidrio luminoso, hay sólido.
+ *
+ * Quedan ahumados dentro de la zona (lo re-declara tokens.css): lo que es raíz
+ * `.vn` (hojas, avisos y todo lo que Radix monta en un portal, que además vive
+ * fuera de la página), un vidrio dentro de otro vidrio y lo que flota sobre un
+ * marco de video. La barra de navegación también es raíz `.vn`, pero es justo lo
+ * que flota sobre el fondo de la página: el ámbito la nombra para alcanzarla.
+ */
+.vn-lit,
+.vn-lit .vn-nav__bar {
+	--vn-smoke-clear: transparent;
+	--vn-smoke-thin: transparent;
+	--vn-smoke-thick: transparent;
+	--vn-dim-clear: var(--vn-lit-dim-clear);
+	--vn-dim-thin: var(--vn-lit-dim-thin);
+	--vn-dim-thick: var(--vn-lit-dim-thick);
+	--vn-sheen: var(--vn-lit-sheen);
 }
 
 /*
