@@ -321,7 +321,9 @@ describe("Ventana controles", () => {
 	it("el vidrio toma sombra y filete de variables con los tokens de siempre como valor por defecto", () => {
 		const body = glass.match(/\n\.vn-glass \{([^}]*)\}/)?.[1] ?? "";
 		expect(body).toMatch(/border: 1px solid var\(--vn-glass-rim, var\(--vn-rim\)\);/);
-		expect(body).toMatch(/box-shadow: inset 0 1px 0 var\(--vn-rim-top\), var\(--vn-glass-shadow, 0 12px 40px rgba\(0, 0, 0, 0\.35\)\);/);
+		// La expresión se escribe una sola vez, en una variable que el aviso reutiliza al enfocarse
+		expect(body).toMatch(/--vn-glass-elevation: inset 0 1px 0 var\(--vn-rim-top\), var\(--vn-glass-shadow, 0 12px 40px rgba\(0, 0, 0, 0\.35\)\);/);
+		expect(body).toMatch(/box-shadow: var\(--vn-glass-elevation\);/);
 		expect(body).not.toMatch(/--vn-glass-(fill|smoke-alpha)/);
 	});
 
@@ -648,11 +650,13 @@ describe("Ventana hoja y avisos", () => {
 	it("las reglas de la hoja y del aviso no declaran lo que posee el vidrio", () => {
 		const mine = all.filter((r) => r.selectors.some((s) => /vn-(sheet|toast)/.test(s) && !/vn-sheet-scrim/.test(s)));
 		expect(mine.length).toBeGreaterThan(8);
-		for (const r of mine) expect(r.body, r.selectors.join(", ")).not.toMatch(ownedByGlass);
+		// Única excepción: la sombra de foco del aviso devuelve la del material por su variable compartida
+		for (const r of mine) expect(r.body.replace(/box-shadow: var\(--vn-glass-elevation\);/, ""), r.selectors.join(", ")).not.toMatch(ownedByGlass);
 	});
 
 	it("vn-sheet-scrim sólo sale en reglas de ::backdrop y la cortina es un literal rgba(0, 0, 0, 0.5)", () => {
-		const scrim = all.filter((r) => r.selectors.some((s) => s.includes("vn-sheet-scrim")));
+		// En todas las hojas de Ventana, no sólo en overlays.css
+		const scrim = allVentanaCss.flatMap(rulesOf).filter((r) => r.selectors.some((s) => s.includes("vn-sheet-scrim")));
 		expect(scrim.length).toBeGreaterThan(0);
 		for (const r of scrim) for (const s of r.selectors) expect(s, s).toMatch(/::backdrop$/);
 		expect(rule(".vn-sheet-scrim::backdrop")).toMatch(/background: rgba\(0, 0, 0, 0\.5\);/);
@@ -710,5 +714,16 @@ describe("Ventana hoja y avisos", () => {
 		expect(rule(".vn.vn-toast")).toMatch(/--vn-glass-r: var\(--vn-r-panel\);/);
 		expect(rule(".vn.vn-toast")).toMatch(/--vn-glass-shadow:/);
 		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/outline: 2px solid var\(--vn-ink\);/);
+	});
+
+	it("el aviso bajo unstyled: icono relative con el svg de 1rem, cargador con sus fotogramas, atrás de la pila sin texto y foco con la sombra del material", () => {
+		expect(rule(".vn-toast .vn-toast__icon")).toMatch(/position: relative;/);
+		expect(rule(".vn-toast .vn-toast__icon svg")).toMatch(/inline-size: 1rem;/);
+		expect(rule(".vn-toast .vn-toast__icon .vn-toast__spin")).toMatch(/animation: vn-toast-spin /);
+		expect(overlays).toMatch(/@keyframes vn-toast-spin/);
+		const reduced = overlays.slice(overlays.indexOf("@media (prefers-reduced-motion: reduce)", overlays.indexOf("Hoja (`Sheet`)")));
+		expect(reduced.slice(0, reduced.indexOf(".vn.vn-sheet"))).toMatch(/\.vn-toast__spin \{\s*animation: none;/);
+		expect(rule('.vn-toast[data-expanded="false"][data-front="false"] > *')).toMatch(/opacity: 0;/);
+		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/box-shadow: var\(--vn-glass-elevation\);/);
 	});
 });

@@ -14,12 +14,20 @@
  * pegada abajo; desde 40rem, un diálogo centrado. El movimiento y el fondo son CSS
  * puro (`styles/ventana/overlays.css`).
  *
+ * El contenido y el pie se montan junto con `open` (sus efectos corren después de `showModal`)
+ * y siguen montados mientras la hoja sale: se desmontan cuando acaba la transición de salida
+ * del propio `<dialog>` (opacidad) o, si el navegador no la emite (jsdom, sin movimiento),
+ * a los `EXIT_FALLBACK_MS`. Reabrir durante la salida los conserva.
+ *
  * `[data-autofocus]` lleva el foco a donde el consumidor diga (un diálogo que
  * confirma lleva el foco a «Cancelar», el lado que no hace nada).
  */
-import { useId, useLayoutEffect, useRef, type ReactElement, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { IconButton } from "./button";
+
+/** Algo más que la salida más larga (240ms) de `overlays.css`. */
+const EXIT_FALLBACK_MS = 400;
 
 export function Sheet({
 	open,
@@ -44,6 +52,21 @@ export function Sheet({
 	const ref = useRef<HTMLDialogElement>(null);
 	const titleId = useId();
 	const descId = useId();
+	// Saliendo: `open` acaba de pasar a falso y la hoja aún se desvanece. Se deduce al renderizar
+	// (no en un efecto) para que el contenido no se desmonte ni un instante.
+	const [exiting, setExiting] = useState(false);
+	const [prevOpen, setPrevOpen] = useState(open);
+	if (open !== prevOpen) {
+		setPrevOpen(open);
+		setExiting(!open);
+	}
+	const mounted = open || exiting;
+
+	useEffect(() => {
+		if (!exiting) return;
+		const timer = setTimeout(() => setExiting(false), EXIT_FALLBACK_MS);
+		return () => clearTimeout(timer);
+	}, [exiting]);
 
 	// Un efecto de maquetado: abre el diálogo antes de que corran los efectos de su
 	// contenido, que así pueden llevar el foco a donde quieran.
@@ -68,6 +91,10 @@ export function Sheet({
 				e.preventDefault();
 				if (dismissable) onClose();
 			}}
+			onTransitionEnd={(e) => {
+				// Sólo la opacidad del propio diálogo: la transición de un hijo no acaba la salida
+				if (exiting && e.target === e.currentTarget && e.propertyName === "opacity") setExiting(false);
+			}}
 			onClick={(e) => {
 				if (dismissable && e.target === e.currentTarget) onClose();
 			}}>
@@ -88,8 +115,8 @@ export function Sheet({
 					</IconButton>
 				)}
 			</div>
-			{children && <div className="vn-sheet__body">{open && children}</div>}
-			{footer && open && <div className="vn-sheet__foot">{footer}</div>}
+			{children && <div className="vn-sheet__body">{mounted && children}</div>}
+			{footer && mounted && <div className="vn-sheet__foot">{footer}</div>}
 		</dialog>
 	);
 }

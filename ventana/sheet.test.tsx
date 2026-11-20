@@ -137,21 +137,76 @@ describe("Sheet de Ventana", () => {
 		expect(document.activeElement?.textContent).toBe("Cancelar");
 	});
 
-	it("el contenido y el pie sólo existen mientras está abierta", () => {
-		mount(
-			<Sheet open={false} onClose={() => {}} title="Borrar" closeLabel="Cerrar" footer={<span data-test="pie">pie</span>}>
-				<span data-test="cuerpo">cuerpo</span>
-			</Sheet>,
-		);
-		expect(document.querySelector("[data-test=cuerpo]")).toBeNull();
-		expect(document.querySelector("[data-test=pie]")).toBeNull();
-		render(
-			<Sheet open onClose={() => {}} title="Borrar" closeLabel="Cerrar" footer={<span data-test="pie">pie</span>}>
-				<span data-test="cuerpo">cuerpo</span>
-			</Sheet>,
-		);
-		expect(document.querySelector("[data-test=cuerpo]")).toBeTruthy();
-		expect(document.querySelector("[data-test=pie]")).toBeTruthy();
+	const withBody = (open: boolean) => (
+		<Sheet open={open} onClose={() => {}} title="Borrar" closeLabel="Cerrar" footer={<span data-test="pie">pie</span>}>
+			<span data-test="cuerpo">cuerpo</span>
+		</Sheet>
+	);
+	const body = () => document.querySelector("[data-test=cuerpo]");
+	const foot = () => document.querySelector("[data-test=pie]");
+	const advance = (ms: number) => act(() => void vi.advanceTimersByTime(ms));
+	const transitionEnd = (el: Element, propertyName: string) =>
+		act(() => {
+			const ev = new Event("transitionend", { bubbles: true });
+			Object.defineProperty(ev, "propertyName", { value: propertyName });
+			el.dispatchEvent(ev);
+		});
+
+	it("el contenido y el pie se montan con open y siguen montados hasta que acaba la salida", () => {
+		vi.useFakeTimers();
+		try {
+			mount(withBody(false));
+			expect(body()).toBeNull();
+			expect(foot()).toBeNull();
+			render(withBody(true));
+			expect(body()).toBeTruthy();
+			expect(foot()).toBeTruthy();
+			render(withBody(false));
+			// Recién cerrada: sigue todo, para que la hoja no se encoja mientras se desvanece
+			expect(body()).toBeTruthy();
+			expect(foot()).toBeTruthy();
+			advance(300);
+			expect(body()).toBeTruthy();
+			advance(200);
+			expect(body()).toBeNull();
+			expect(foot()).toBeNull();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("la salida acaba con la transición de opacidad del propio diálogo, no con la de un hijo ni con otra propiedad", () => {
+		vi.useFakeTimers();
+		try {
+			mount(withBody(true));
+			render(withBody(false));
+			transitionEnd(body()!, "opacity");
+			expect(body()).toBeTruthy();
+			transitionEnd(dialog(), "translate");
+			expect(body()).toBeTruthy();
+			transitionEnd(dialog(), "opacity");
+			expect(body()).toBeNull();
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("reabrir durante la salida conserva el contenido, el mismo nodo, y no lo desmonta después", () => {
+		vi.useFakeTimers();
+		try {
+			mount(withBody(true));
+			const first = body();
+			render(withBody(false));
+			advance(100);
+			render(withBody(true));
+			expect(body()).toBe(first);
+			advance(1000);
+			transitionEnd(dialog(), "opacity");
+			expect(body()).toBe(first);
+			expect(foot()).toBeTruthy();
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });
 
@@ -181,5 +236,20 @@ describe("Toaster de Ventana", () => {
 		expect(el.querySelector("[data-description]")?.className).toContain("vn-toast__desc");
 		expect(el.querySelector("[data-icon]")?.className).toContain("vn-toast__icon");
 		expect(el.querySelector("[data-icon] svg")).toBeTruthy();
+	});
+
+	it("un aviso de carga lleva el cargador dentro del cuadro del icono, con el icono girado por el CSS de Ventana", async () => {
+		mount(<Toaster />);
+		await act(async () => {
+			toast.loading("Guardando");
+			await new Promise((r) => setTimeout(r, 20));
+		});
+		const el = document.querySelector<HTMLElement>("[data-sonner-toast][data-type=loading]")!;
+		const icon = el.querySelector("[data-icon]")!;
+		// Sonner ancla su cargador al cuadro del icono; que éste sea relative lo prueba tests/ventana-tokens
+		const loader = icon.querySelector(".sonner-loader")!;
+		expect(loader).toBeTruthy();
+		expect(loader.querySelector("svg")?.getAttribute("class")).toContain("vn-toast__spin");
+		expect(icon.className).toContain("vn-toast__icon");
 	});
 });

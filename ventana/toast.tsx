@@ -12,6 +12,10 @@
  * sonner son únicamente variables propias (`--index`, `--offset`, `--z-index`...).
  * Los botones de acción y de cancelar reutilizan los botones de Ventana.
  *
+ * La opción `closeButton` de sonner no se admite en esta versión: en `unstyled` saldría sin piel
+ * y Ventana no tiene todavía un aspa de aviso. Los iconos se dimensionan y giran con el CSS de
+ * Ventana (`.vn-toast__icon`), no con clases de Tailwind.
+ *
  * `theme="dark"` va fijo: Ventana es de un solo tema.
  */
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from "lucide-react";
@@ -42,11 +46,11 @@ export function Toaster({ toastOptions, ...props }: ToasterProps): ReactElement 
 		<Sonner
 			theme="dark"
 			icons={{
-				success: <CircleCheckIcon className="size-4" />,
-				info: <InfoIcon className="size-4" />,
-				warning: <TriangleAlertIcon className="size-4" />,
-				error: <OctagonXIcon className="size-4" />,
-				loading: <Loader2Icon className="size-4 animate-spin" />,
+				success: <CircleCheckIcon />,
+				info: <InfoIcon />,
+				warning: <TriangleAlertIcon />,
+				error: <OctagonXIcon />,
+				loading: <Loader2Icon className="vn-toast__spin" />,
 			}}
 			toastOptions={{ ...toastOptions, unstyled: true, classNames: mergeClassNames(toastOptions?.classNames) }}
 			{...props}

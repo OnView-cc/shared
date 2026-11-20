@@ -344,8 +344,11 @@
 .vn.vn-toast:focus-visible {
 	outline: 2px solid var(--vn-ink);
 	outline-offset: 2px;
+	/* La sombra de foco de sonner (0,2,0) pisaria el vidrio: se devuelve la del material por su variable compartida, sin repetir sus valores */
+	box-shadow: var(--vn-glass-elevation);
 }
 .vn-toast .vn-toast__icon {
+	position: relative;
 	display: flex;
 	flex: none;
 	align-items: center;
@@ -353,6 +356,23 @@
 	inline-size: 20px;
 	block-size: 1.2625rem;
 	color: var(--vn-ink);
+}
+.vn-toast .vn-toast__icon svg {
+	inline-size: 1rem;
+	block-size: 1rem;
+}
+/* El cargador de sonner se ancla al cuadro del icono (en unstyled no es relative por su cuenta) y gira con su propio fotograma */
+.vn-toast .vn-toast__icon .vn-toast__spin {
+	animation: vn-toast-spin 1s linear infinite;
+}
+@keyframes vn-toast-spin {
+	to {
+		rotate: 360deg;
+	}
+}
+/* Los avisos de atras de la pila no dejan ver su texto (la regla de sonner exige data-styled) */
+.vn-toast[data-expanded="false"][data-front="false"] > * {
+	opacity: 0;
 }
 .vn-toast[data-type="error"] .vn-toast__icon {
 	color: var(--vn-danger-glass);
@@ -381,6 +401,9 @@
 
 /* Movimiento reducido: la hoja sólo cambia de opacidad (sonner ya apaga sus transiciones) */
 @media (prefers-reduced-motion: reduce) {
+	.vn-toast .vn-toast__icon .vn-toast__spin {
+		animation: none;
+	}
 	.vn.vn-sheet,
 	.vn.vn-sheet[open] {
 		translate: none;

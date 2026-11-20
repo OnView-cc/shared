@@ -11,7 +11,8 @@
 	backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));
 	border: 1px solid var(--vn-glass-rim, var(--vn-rim));
 	border-radius: var(--vn-glass-r, var(--vn-r-panel));
-	box-shadow: inset 0 1px 0 var(--vn-rim-top), var(--vn-glass-shadow, 0 12px 40px rgba(0, 0, 0, 0.35));
+	--vn-glass-elevation: inset 0 1px 0 var(--vn-rim-top), var(--vn-glass-shadow, 0 12px 40px rgba(0, 0, 0, 0.35));
+	box-shadow: var(--vn-glass-elevation);
 	color: var(--vn-ink);
 }
 
