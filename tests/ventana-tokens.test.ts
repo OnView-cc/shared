@@ -273,6 +273,22 @@ describe("Ventana controles", () => {
 		"vn-sheet-scrim",
 		// El enlace de la barra pinta una píldora MÁS OSCURA para la página actual (nunca más clara: bajaría el contraste del texto) y un borde; nunca lleva vn-glass (hay prueba de marcado); la cápsula sí es vidrio
 		"vn-nav-link",
+		// Piezas sólidas de contenido (Section, Row, Skeleton, Alert, Status, Tabs, Progress, Accordion, Monogram): pintan su fondo, filete o foco; ninguna lleva vn-glass (hay prueba de marcado)
+		"vn-section",
+		"vn-row",
+		"vn-row--action",
+		"vn-skel__block",
+		"vn-alert",
+		"vn-status",
+		"vn-tabs__list",
+		"vn-tabs__tab",
+		"vn-tabs__panel",
+		"vn-progress",
+		"vn-progress__bar",
+		"vn-acc__item",
+		"vn-acc__trigger",
+		"vn-monogram",
+		"vn-monogram--mark",
 	];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
 	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
@@ -542,6 +558,50 @@ describe("Ventana controles", () => {
 			expect(sizes.length).toBeGreaterThan(0);
 			for (const size of sizes) expect(size).toBeGreaterThanOrEqual(0.75);
 		}
+	});
+
+	it("las piezas sólidas de contenido no tienen desenfoque y content.css sigue sin backdrop-filter", () => {
+		expect(content).not.toMatch(/backdrop-filter/);
+		const own = rules.filter((r) => r.selectors.some((sel) => /vn-(section|row|skel|alert|status|tabs|progress|acc|monogram)/.test(sel)));
+		expect(own.length).toBeGreaterThan(20);
+		for (const r of own) {
+			expect(r.body, r.selectors.join(", ")).not.toMatch(/backdrop-filter/);
+			expect(r.selectors.join(", ")).not.toMatch(/vn-glass/);
+		}
+	});
+
+	it("el aviso y el estado se pintan sobre surface: el danger (letra) y la tinta secundaria pasan AA ahí", () => {
+		expect(cnt(".vn .vn-alert")).toMatch(/background: var\(--vn-surface\);/);
+		expect(cnt(".vn .vn-alert")).toMatch(/color: var\(--vn-danger\);/);
+		expect(cnt(".vn .vn-status")).toMatch(/background: var\(--vn-surface\);/);
+		expect(contrast(token("danger")!, token("surface")!)).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("danger")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink-2")!, token("surface")!)).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink-2")!, token("raised")!)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("las pestañas marcan la elegida con tinta plena y raya de 2px; las demás en tinta 2", () => {
+		expect(cnt(".vn .vn-tabs__tab")).toMatch(/color: var\(--vn-ink-2\);/);
+		expect(cnt(".vn .vn-tabs__tab[data-state=\"active\"]")).toMatch(/color: var\(--vn-ink\);/);
+		expect(cnt(".vn .vn-tabs__tab::after")).toMatch(/block-size: 2px;[\s\S]*background: var\(--vn-ink\);/);
+		expect(cnt(".vn .vn-tabs__list")).toMatch(/border-block-end: 1px solid var\(--vn-hair\);/);
+	});
+
+	it("la fila mide 44px, rellena con surface al enfocar y al pasar el puntero fino", () => {
+		expect(cnt(".vn .vn-row")).toMatch(/min-block-size: 44px;/);
+		expect(cnt(".vn .vn-row--action:focus-visible")).toMatch(/background: var\(--vn-surface\);/);
+		const media = content.slice(content.indexOf("@media (hover: hover) and (pointer: fine)"));
+		expect(media).toMatch(/\.vn-row--action:hover/);
+		expect(content.match(/:hover/g)?.length).toBe(media.match(/:hover/g)?.length);
+	});
+
+	it("esqueleto, progreso y acordeón no animan nada con movimiento reducido", () => {
+		const reduced = content.slice(content.lastIndexOf("@media (prefers-reduced-motion: reduce)"));
+		expect(reduced).toMatch(/\.vn-skel__block \{\s*animation: none;/);
+		expect(reduced).toMatch(/\.vn-progress__bar,[\s\S]*transition: none;/);
+		expect(reduced).toMatch(/\.vn-acc__content\[data-state="open"\],[\s\S]*animation: none;/);
+		expect(cnt(".vn .vn-progress__bar")).toMatch(/scale: var\(--vn-progress, 0\) 1;/);
+		expect(content).toMatch(/--radix-accordion-content-height/);
 	});
 });
 

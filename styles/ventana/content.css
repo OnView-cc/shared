@@ -134,3 +134,431 @@
 		transition: none;
 	}
 }
+
+/*
+ * Piezas sólidas de contenido: Section, Row, Skeleton, Alert, Status, Tabs,
+ * Progress, Accordion y Monogram. Todas son sólidas (ninguna compone vn-glass ni
+ * declara desenfoque): fondo y filete sobre el suelo, tinta primaria y la
+ * secundaria `--vn-ink-2` sólo sobre sólido. Todo hover va con puntero fino.
+ */
+
+/* Sección: filete arriba, título, dato vivo, acción. */
+.vn .vn-section {
+	box-sizing: border-box;
+	padding-block: 24px 8px;
+	border-block-start: 1px solid var(--vn-hair);
+	scroll-margin-block-start: 96px;
+	font-family: var(--vn-font);
+	color: var(--vn-ink);
+}
+.vn .vn-section__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px 24px;
+}
+.vn .vn-section__titles {
+	min-inline-size: 0;
+}
+.vn .vn-section__title {
+	margin: 0;
+	max-inline-size: 48rem;
+	overflow-wrap: anywhere;
+}
+.vn .vn-section__meta {
+	margin: 4px 0 0;
+	color: var(--vn-ink-2);
+}
+.vn .vn-section__action {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+.vn .vn-section__body {
+	margin-block-start: 16px;
+}
+
+/* Fila: un solo objetivo (enlace, botón o div) bajo un filete. */
+.vn .vn-row {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	box-sizing: border-box;
+	inline-size: 100%;
+	min-block-size: 44px;
+	margin: 0;
+	padding: 12px;
+	border: 0;
+	border-block-end: 1px solid var(--vn-hair);
+	border-radius: 0;
+	background: transparent;
+	color: var(--vn-ink);
+	font: inherit;
+	text-align: start;
+	text-decoration: none;
+	-webkit-tap-highlight-color: transparent;
+}
+.vn .vn-row--action {
+	cursor: pointer;
+	appearance: none;
+	transition: background-color 120ms var(--vn-ease-out);
+}
+.vn .vn-row--action:focus-visible {
+	outline: none;
+	background: var(--vn-surface);
+	box-shadow: var(--vn-focus);
+}
+.vn .vn-row__lead,
+.vn .vn-row__end {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+}
+.vn .vn-row__end {
+	color: var(--vn-ink-2);
+	font-size: 0.8125rem;
+}
+.vn .vn-row__body {
+	flex: 1;
+	min-inline-size: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.vn .vn-row__title {
+	font-size: 0.9375rem;
+	font-weight: 500;
+	line-height: 1.4;
+	overflow-wrap: anywhere;
+}
+.vn .vn-row__meta {
+	overflow-wrap: anywhere;
+}
+
+/* Esqueleto: sólo respira en opacidad. */
+.vn .vn-skel {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.vn .vn-skel__block {
+	block-size: 24px;
+	border-radius: var(--vn-r-thumb);
+	background: var(--vn-raised);
+	animation: vn-skel-pulse 1.6s ease-in-out infinite;
+}
+.vn .vn-skel__block--head {
+	block-size: 36px;
+	inline-size: 50%;
+}
+@keyframes vn-skel-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.45;
+	}
+}
+
+/* Aviso de error: caja sólida con filete y letra en danger (danger sobre surface pasa 4.5:1, hay prueba). */
+.vn .vn-alert {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	box-sizing: border-box;
+	padding: 12px 14px;
+	border: 1px solid var(--vn-danger);
+	border-radius: var(--vn-r-field);
+	background: var(--vn-surface);
+	color: var(--vn-danger);
+	font-family: var(--vn-font);
+	font-size: 0.9375rem;
+	line-height: 1.45;
+}
+.vn .vn-alert__icon {
+	flex: none;
+	inline-size: 18px;
+	block-size: 18px;
+	margin-block-start: 1px;
+}
+.vn .vn-alert__text {
+	margin: 0;
+	min-inline-size: 0;
+	overflow-wrap: anywhere;
+}
+
+/* Estado: caja sólida sobre surface; el tono alert pone el filete y el título en danger. */
+.vn .vn-status {
+	box-sizing: border-box;
+	padding: 16px 20px;
+	border: 1px solid var(--vn-hair);
+	border-radius: var(--vn-r-panel);
+	background: var(--vn-surface);
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+}
+.vn .vn-status[data-tone="alert"] {
+	border-color: var(--vn-danger);
+}
+.vn .vn-status__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+}
+.vn .vn-status__title {
+	margin: 0;
+	font-weight: 600;
+	line-height: 1.35;
+	overflow-wrap: anywhere;
+}
+.vn .vn-status[data-tone="alert"] .vn-status__title {
+	color: var(--vn-danger);
+}
+.vn .vn-status__text {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-inline-size: 72ch;
+	margin-block-start: 8px;
+	color: var(--vn-ink-2);
+	font-size: 0.9375rem;
+	line-height: 1.55;
+}
+.vn .vn-status__footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	margin-block-start: 16px;
+}
+
+/* Pestañas: lista con filete; la elegida en tinta plena y con raya de 2px (la raya es la pista que no es de color). */
+.vn .vn-tabs {
+	font-family: var(--vn-font);
+}
+.vn .vn-tabs__list {
+	display: flex;
+	gap: 4px;
+	overflow-x: auto;
+	border-block-end: 1px solid var(--vn-hair);
+	scrollbar-width: none;
+}
+.vn .vn-tabs__tab {
+	position: relative;
+	flex: none;
+	box-sizing: border-box;
+	min-block-size: 44px;
+	padding: 0 14px;
+	border: 0;
+	background: transparent;
+	color: var(--vn-ink-2);
+	font: inherit;
+	font-size: 0.9375rem;
+	font-weight: 500;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: color 150ms var(--vn-ease-out);
+}
+.vn .vn-tabs__tab::after {
+	content: "";
+	position: absolute;
+	inset-inline: 14px;
+	inset-block-end: 0;
+	block-size: 2px;
+	border-radius: 2px;
+	background: var(--vn-ink);
+	opacity: 0;
+	scale: 0.6 1;
+	transition:
+		opacity 150ms var(--vn-ease-out),
+		scale var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn .vn-tabs__tab[data-state="active"] {
+	color: var(--vn-ink);
+}
+.vn .vn-tabs__tab[data-state="active"]::after {
+	opacity: 1;
+	scale: 1 1;
+}
+.vn .vn-tabs__tab:focus-visible,
+.vn .vn-tabs__panel:focus-visible {
+	outline: none;
+	box-shadow: var(--vn-focus);
+	border-radius: var(--vn-r-thumb);
+}
+.vn .vn-tabs__panel {
+	padding-block-start: 16px;
+}
+
+/* Progreso: tinta sobre una vía raised; la barra crece por escala, no por ancho. */
+.vn .vn-progress {
+	box-sizing: border-box;
+	block-size: 6px;
+	overflow: hidden;
+	border-radius: var(--vn-r-pill);
+	background: var(--vn-raised);
+}
+.vn .vn-progress__bar {
+	block-size: 100%;
+	inline-size: 100%;
+	background: var(--vn-ink);
+	transform-origin: left center;
+	scale: var(--vn-progress, 0) 1;
+	transition: scale 300ms var(--vn-ease-out);
+}
+
+/* Acordeón: cabeceras que son botones; el chevrón gira con el muelle y el contenido abre por la altura que mide Radix. */
+.vn .vn-acc {
+	font-family: var(--vn-font);
+	color: var(--vn-ink);
+}
+.vn .vn-acc__item {
+	border-block-end: 1px solid var(--vn-hair);
+}
+.vn .vn-acc__header {
+	margin: 0;
+	font: inherit;
+}
+.vn .vn-acc__trigger {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	box-sizing: border-box;
+	inline-size: 100%;
+	min-block-size: 44px;
+	padding: 12px 0;
+	border: 0;
+	background: transparent;
+	color: var(--vn-ink);
+	font: inherit;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	text-align: start;
+	cursor: pointer;
+}
+.vn .vn-acc__trigger:focus-visible {
+	outline: none;
+	box-shadow: var(--vn-focus);
+	border-radius: var(--vn-r-thumb);
+}
+.vn .vn-acc__title {
+	min-inline-size: 0;
+	overflow-wrap: anywhere;
+}
+.vn .vn-acc__chevron {
+	flex: none;
+	inline-size: 18px;
+	block-size: 18px;
+	color: var(--vn-ink-2);
+	transition: rotate var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn .vn-acc__trigger[data-state="open"] .vn-acc__chevron {
+	rotate: 180deg;
+}
+.vn .vn-acc__content {
+	overflow: hidden;
+}
+.vn .vn-acc__content[data-state="open"] {
+	animation: vn-acc-open 250ms var(--vn-ease-out);
+}
+.vn .vn-acc__content[data-state="closed"] {
+	animation: vn-acc-close 200ms var(--vn-ease-out);
+}
+.vn .vn-acc__body {
+	padding-block-end: 16px;
+	color: var(--vn-ink-2);
+	font-size: 0.9375rem;
+	line-height: 1.55;
+}
+@keyframes vn-acc-open {
+	from {
+		block-size: 0;
+		opacity: 0;
+	}
+	to {
+		block-size: var(--radix-accordion-content-height);
+		opacity: 1;
+	}
+}
+@keyframes vn-acc-close {
+	from {
+		block-size: var(--radix-accordion-content-height);
+		opacity: 1;
+	}
+	to {
+		block-size: 0;
+		opacity: 0;
+	}
+}
+
+/* Monograma: logo o iniciales, en cuadrado redondeado. */
+.vn .vn-monogram {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	inline-size: 44px;
+	block-size: 44px;
+	border: 1px solid var(--vn-hair);
+	border-radius: var(--vn-r-thumb);
+	object-fit: cover;
+	font-family: var(--vn-font);
+	font-size: 0.8125rem;
+	font-weight: 600;
+}
+.vn .vn-monogram--mark {
+	background: var(--vn-raised);
+	color: var(--vn-ink-2);
+}
+.vn .vn-monogram--xs {
+	inline-size: 24px;
+	block-size: 24px;
+	border-radius: 6px;
+	font-size: 0.75rem;
+	letter-spacing: -0.02em;
+}
+.vn .vn-monogram--sm {
+	inline-size: 36px;
+	block-size: 36px;
+	font-size: 0.75rem;
+}
+.vn .vn-monogram--lg {
+	inline-size: 56px;
+	block-size: 56px;
+	font-size: 1rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-row--action:hover {
+		background: var(--vn-surface);
+	}
+	.vn .vn-tabs__tab:not([data-state="active"]):hover {
+		color: var(--vn-ink);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.vn .vn-skel__block {
+		animation: none;
+	}
+	.vn .vn-row--action,
+	.vn .vn-tabs__tab,
+	.vn .vn-progress__bar,
+	.vn .vn-acc__chevron {
+		transition: none;
+	}
+	.vn .vn-tabs__tab::after {
+		scale: 1 1;
+		transition: opacity 150ms linear;
+	}
+	.vn .vn-acc__content[data-state="open"],
+	.vn .vn-acc__content[data-state="closed"] {
+		animation: none;
+	}
+}
