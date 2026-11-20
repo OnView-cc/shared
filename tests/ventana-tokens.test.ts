@@ -11,7 +11,8 @@ const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8"
 const tokens = read("../styles/ventana/tokens.css");
 const glass = read("../styles/ventana/glass.css");
 const type = read("../styles/ventana/type.css");
-const all = tokens + glass + type + read("../styles/ventana.css");
+const controls = read("../styles/ventana/controls.css");
+const all = tokens + glass + type + controls + read("../styles/ventana.css");
 const allVentanaCss = [
 	...readdirSync(new URL("../styles/ventana/", import.meta.url))
 		.filter((f) => f.endsWith(".css"))
@@ -177,5 +178,45 @@ describe("Ventana scrim y brillo", () => {
 		expect(body).toMatch(/filter: blur\(60px\)/);
 		expect(body).not.toMatch(/animation/);
 		expect(glass.slice(start)).not.toMatch(/animation|@keyframes/);
+	});
+});
+
+/** Cuerpo de la regla `selector { ... }` de controls.css, a nivel raíz. */
+const ctl = (selector: string) => controls.match(new RegExp(`(?:^|\n)${esc(selector)} \{([^}]*)\}`))?.[1] ?? "";
+
+describe("Ventana controles", () => {
+	it(".vn-btn no fija width y su nowrap trae max-width 100% con ellipsis", () => {
+		const body = ctl(".vn .vn-btn");
+		expect(body).not.toMatch(/(^|[^-])width:/);
+		expect(body).toMatch(/white-space: nowrap;/);
+		expect(body).toMatch(/max-inline-size: 100%;/);
+		expect(body).toMatch(/text-overflow: ellipsis;/);
+		expect(ctl(".vn .vn-btn__label")).toMatch(/overflow: hidden;[\s\S]*text-overflow: ellipsis;/);
+	});
+
+	it("el foco visible usa var(--vn-focus)", () => {
+		expect(ctl(".vn .vn-btn:focus-visible")).toMatch(/box-shadow: var\(--vn-focus\)/);
+	});
+
+	it("la primaria es acción sobre tinta de acción, y se lee", () => {
+		const body = ctl(".vn .vn-btn--primary");
+		expect(body).toMatch(/background: var\(--vn-action\);/);
+		expect(body).toMatch(/color: var\(--vn-action-ink\);/);
+		expect(contrast(token("action-ink")!, token("ink")!)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("el hover sólo existe con puntero fino y el área de toque llega a 44px", () => {
+		const hovers = controls.match(/:hover/g)?.length ?? 0;
+		const inMedia = controls.slice(controls.indexOf("@media (hover: hover) and (pointer: fine)"));
+		expect((inMedia.match(/:hover/g) ?? []).length).toBe(hovers);
+		expect(controls).toMatch(/inset-block: calc\(\(44px - var\(--vn-btn-h\)\) \/ -2\)/);
+	});
+
+	it("repite la transición de .vn-press (scale) en vez de pisarla", () => {
+		expect(ctl(".vn .vn-btn")).toMatch(/scale var\(--vn-spring-snap-ms\) var\(--vn-spring-snap\)/);
+	});
+
+	it("el danger se lee sobre el suelo", () => {
+		expect(contrast(token("danger")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);
 	});
 });

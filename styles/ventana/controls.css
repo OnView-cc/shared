@@ -1,0 +1,148 @@
+/*
+ * Ventana: controles. Botón en cápsula (texto) y botón redondo (ícono).
+ * El vidrio no se redeclara: `glass` y `clear` llevan además `vn-glass`, que trae
+ * el material y sus respaldos. Aquí sólo se cambia la forma y el sombreado.
+ */
+.vn .vn-btn {
+	--vn-btn-h: 44px;
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	box-sizing: border-box;
+	block-size: var(--vn-btn-h);
+	max-inline-size: 100%;
+	padding-inline: 20px;
+	border: 1px solid transparent;
+	border-radius: var(--vn-r-pill);
+	background: transparent;
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1;
+	letter-spacing: 0.005em;
+	text-decoration: none;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+	user-select: none;
+	/*
+	 * `.vn-press` fija `transition: scale ...`; esta regla pesa más y lo repite
+	 * entero (misma curva y duración) para añadir color y borde sin pisarlo.
+	 */
+	transition:
+		scale var(--vn-spring-snap-ms) var(--vn-spring-snap),
+		background-color 140ms ease-out,
+		border-color 140ms ease-out,
+		opacity 140ms ease-out;
+}
+
+/* Etiqueta: aquí se corta con puntos suspensivos; el botón mismo no recorta para que el área de toque sobresalga */
+.vn .vn-btn__label {
+	min-inline-size: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.vn .vn-btn--sm {
+	--vn-btn-h: 36px;
+	padding-inline: 16px;
+	font-size: 0.8125rem;
+}
+
+/* Área de toque mínima de 44px aunque el botón mida 36 */
+.vn .vn-btn::after {
+	content: "";
+	position: absolute;
+	inset-block: calc((44px - var(--vn-btn-h)) / -2);
+	inset-inline: 0;
+}
+
+/* Redondo: alto = ancho */
+.vn .vn-btn--icon {
+	inline-size: var(--vn-btn-h);
+	padding-inline: 0;
+	flex: none;
+}
+.vn .vn-btn--icon::after {
+	inset-inline: calc((44px - var(--vn-btn-h)) / -2);
+}
+.vn .vn-btn--icon > svg {
+	inline-size: 20px;
+	block-size: 20px;
+	flex: none;
+}
+
+/* Variantes */
+.vn .vn-btn--primary {
+	background: var(--vn-action);
+	color: var(--vn-action-ink);
+}
+.vn .vn-btn--plain {
+	color: var(--vn-ink);
+}
+.vn .vn-btn--danger {
+	border-color: var(--vn-line);
+	color: var(--vn-danger);
+}
+
+/* El vidrio de un botón es chico: sombra corta, esquina de cápsula */
+.vn .vn-btn.vn-glass {
+	--vn-glass-r: var(--vn-r-pill);
+	box-shadow: inset 0 1px 0 var(--vn-rim-top), 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* Foco visible: anillo de tinta de 2px con 2px de separación */
+.vn .vn-btn:focus-visible {
+	outline: none;
+	box-shadow: var(--vn-focus);
+}
+.vn .vn-btn.vn-glass:focus-visible {
+	box-shadow: inset 0 1px 0 var(--vn-rim-top), var(--vn-focus);
+}
+
+/* Sólo con puntero fino: en táctil el hover se queda pegado tras tocar */
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-btn--primary:hover {
+		background: color-mix(in srgb, var(--vn-action) 86%, var(--vn-ground));
+	}
+	.vn .vn-btn--plain:hover {
+		background: var(--vn-hair);
+	}
+	.vn .vn-btn--danger:hover {
+		background: rgba(255, 143, 126, 0.12);
+	}
+	.vn .vn-btn.vn-glass:hover {
+		border-color: var(--vn-rim-top);
+	}
+}
+
+.vn .vn-btn:disabled,
+.vn .vn-btn[aria-disabled="true"] {
+	opacity: 0.4;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+/* Movimiento reducido: sin hundirse; el color sigue cambiando */
+@media (prefers-reduced-motion: reduce) {
+	.vn .vn-btn {
+		transition:
+			background-color 140ms linear,
+			border-color 140ms linear,
+			opacity 140ms linear;
+	}
+}
+
+/* Contraste alto: el borde del botón sólido se vuelve visible */
+@media (prefers-contrast: more) {
+	.vn .vn-btn--primary,
+	.vn .vn-btn--danger {
+		border-color: var(--vn-ink);
+	}
+}
