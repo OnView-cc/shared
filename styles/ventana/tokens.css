@@ -1,0 +1,75 @@
+/*
+ * Ventana: tokens (raíz `.vn`). Un mundo oscuro único, al lado de Feed vertical
+ * (`styles/sky.css`), sin tocarlo. Sin color de acento: la acción es la tinta.
+ */
+.vn {
+	/* Suelo */
+	--vn-ground: #060607;
+	--vn-surface: #111114;
+	--vn-raised: #1a1a1e;
+
+	/* Tinta. La 3 no llega a AA: nunca es texto (sólo iconos decorativos y vacíos) */
+	--vn-ink: #f5f5f7;
+	--vn-ink-2: #a1a1a6;
+	--vn-ink-2-glass: #c7c7cc;
+	--vn-ink-3: #6e6e73;
+
+	/* Acción */
+	--vn-action: var(--vn-ink);
+	--vn-action-ink: #060607;
+	--vn-danger: #ff8f7e;
+
+	/* Filetes */
+	--vn-hair: rgba(255, 255, 255, 0.08);
+	--vn-line: rgba(255, 255, 255, 0.16);
+
+	/* Vidrio: la capa oscura va bajo el brillo, así la tinta se lee sobre cualquier fondo */
+	--vn-smoke-clear: rgba(18, 18, 22, 0.54);
+	--vn-smoke-thin: rgba(18, 18, 22, 0.66);
+	--vn-smoke-thick: rgba(18, 18, 22, 0.78);
+	--vn-sheen: rgba(255, 255, 255, 0.06);
+	--vn-rim: rgba(255, 255, 255, 0.22);
+	--vn-rim-top: rgba(255, 255, 255, 0.45);
+
+	/* Sólidos de respaldo de cada vidrio */
+	--vn-solid-clear: #2a2a2e;
+	--vn-solid-thin: #202024;
+	--vn-solid-thick: #17171a;
+
+	/* Desenfoque */
+	--vn-blur-thin: 20px;
+	--vn-blur-thick: 28px;
+	--vn-saturate: 180%;
+
+	/* Radios */
+	--vn-r-sheet: 28px;
+	--vn-r-panel: 22px;
+	--vn-r-field: 14px;
+	--vn-r-thumb: 10px;
+	--vn-r-pill: 999px;
+
+	/* Fuente: la del sistema de Apple primero; SF nunca se sirve como archivo */
+	--vn-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter Tight Variable", sans-serif;
+
+	/* Foco: anillo de tinta de 2px con 2px de separación */
+	--vn-focus: 0 0 0 2px var(--vn-ground), 0 0 0 4px var(--vn-ink);
+
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	color-scheme: dark;
+}
+
+/* Rendimiento: en táctil y en estrecho el desenfoque cuesta menos */
+@media (pointer: coarse), (max-width: 47.9rem) {
+	.vn {
+		--vn-blur-thin: 12px;
+		--vn-blur-thick: 12px;
+	}
+}
+
+/* Pinta el suelo en el documento entero (sobre <body> o el contenedor de página) */
+.vn-page {
+	background: var(--vn-ground);
+	color: var(--vn-ink);
+	min-height: 100%;
+}

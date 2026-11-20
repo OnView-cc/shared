@@ -1,0 +1,66 @@
+/*
+ * Ventana: vidrio ahumado. Sólo para lo que flota (barras, menús, hojas, avisos,
+ * controles sobre video). Listas, tablas y formularios van sólidos.
+ */
+.vn-glass {
+	--vn-glass-smoke: var(--vn-smoke-thin);
+	--vn-glass-blur: var(--vn-blur-thin);
+	--vn-glass-solid: var(--vn-solid-thin);
+	background: linear-gradient(var(--vn-sheen), transparent 40%), var(--vn-glass-smoke);
+	-webkit-backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));
+	backdrop-filter: blur(var(--vn-glass-blur)) saturate(var(--vn-saturate));
+	border: 1px solid var(--vn-rim);
+	border-radius: var(--vn-glass-r, var(--vn-r-panel));
+	box-shadow: inset 0 1px 0 var(--vn-rim-top), 0 12px 40px rgba(0, 0, 0, 0.35);
+	color: var(--vn-ink);
+}
+
+@supports (corner-shape: squircle) {
+	.vn-glass {
+		corner-shape: squircle;
+	}
+}
+
+.vn-glass--clear {
+	--vn-glass-smoke: var(--vn-smoke-clear);
+	--vn-glass-solid: var(--vn-solid-clear);
+}
+.vn-glass--thin {
+	--vn-glass-smoke: var(--vn-smoke-thin);
+	--vn-glass-solid: var(--vn-solid-thin);
+}
+.vn-glass--thick {
+	--vn-glass-smoke: var(--vn-smoke-thick);
+	--vn-glass-blur: var(--vn-blur-thick);
+	--vn-glass-solid: var(--vn-solid-thick);
+}
+
+/* Respaldos: sólido y sin desenfoque. Cuatro caminos, el mismo resultado */
+.vn-glass--solid {
+	background: var(--vn-glass-solid);
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+	.vn-glass {
+		background: var(--vn-glass-solid);
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+	}
+}
+
+@media (prefers-contrast: more) {
+	.vn-glass {
+		background: var(--vn-glass-solid);
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+		border-color: var(--vn-ink);
+	}
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+	.vn-glass {
+		background: var(--vn-glass-solid);
+	}
+}
