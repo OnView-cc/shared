@@ -44,7 +44,8 @@ export interface PlannedMoment {
 	templateKey: string;
 	block: BlockKind;
 	beats: number;
-	transition: Transition;
+	/** La fijada en el template; null = la del estilo (spec 2026-11-19). */
+	transition: Transition | null;
 	imageIds: string[];
 	fallback: boolean;
 	expanded: boolean;
@@ -125,7 +126,7 @@ export function adaptTemplate(t: Template, material: MaterialItem[], o: AdaptOpt
 					if ((!repeat || i < complete) && has(kind) >= Math.max(1, min) && n >= min) imageIds = take(kind, n);
 					else ok = false;
 				}
-				const base = { templateKey: m.key, transition: m.transition, write: m.write, slots: m.slots, unit: u, instance: i, optional: m.optional, expanded: false, params: {} };
+				const base = { templateKey: m.key, transition: m.transition ?? null, write: m.write, slots: m.slots, unit: u, instance: i, optional: m.optional, expanded: false, params: {} };
 				if (ok) {
 					items.push({ ...base, key: keyFor(m.key), block: m.block, beats: m.beats, imageIds, fallback: false });
 				} else if (missing(m) === "text") {

@@ -10,8 +10,7 @@ const T: Template = {
 	when: "Never: only for tests.",
 	materials: [{ kind: "screenshot", required: false }],
 	kinds: ["platform"],
-	defaultBpm: 120,
-	background: "sky",
+	style: "arcade",
 	moments: [
 		{ key: "hook", block: "text", beats: 4, transition: "blur", optional: false, slots: { lines: { max: 3, wordsPerLine: 3 } }, write: "The hook.", sample: {}, expandable: true },
 		{ key: "demo", block: "ui", beats: 8, transition: "blur", optional: false, expandable: true, slots: { images: { min: 1, max: 1 } }, write: "A screenshot.", sample: {}, consumes: { kind: "screenshot", min: 1, max: 1 }, repeat: { min: 1, max: 3 }, onMissing: "text" },

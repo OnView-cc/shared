@@ -8,20 +8,21 @@
  * golpe), `icons` (iconos o logos que vuelan o una lista que pasa), `ui` (una
  * captura real con zoom y cursor), `product` (la foto del producto con
  * movimiento de cámara) y `logo` (el cierre). Pasa al siguiente con una
- * transición: `blur`, `push` o `cut`.
+ * transición (`TRANSITIONS`); sin una fijada, la de su estilo (`styles.ts`).
  *
  * `parseBlockParams` es la única puerta de los parámetros: lo que llega de la
  * base, de la API o de Lumen se pasa por aquí, que rellena lo que falte y
  * recorta lo que se pase. Código puro, sin navegador.
  */
 import type { ImagesEntrance, ImagesLayout } from "../video/scene-images";
+import type { StyleId } from "./styles";
 
 export type BlockKind = "text" | "icons" | "ui" | "product" | "logo";
-export type Transition = "blur" | "push" | "cut";
+export type Transition = "blur" | "push" | "cut" | "wipe" | "slide" | "punch" | "fade";
 export type Language = "en" | "es" | "pt";
 
 export const BLOCKS: readonly BlockKind[] = ["text", "icons", "ui", "product", "logo"];
-export const TRANSITIONS: readonly Transition[] = ["blur", "push", "cut"];
+export const TRANSITIONS: readonly Transition[] = ["blur", "push", "cut", "wipe", "slide", "punch", "fade"];
 
 export interface TextParams {
 	/** De 1 a 3 grupos de palabras; cada uno entra en su golpe. */
@@ -92,7 +93,8 @@ export interface TemplateMoment {
 	key: string;
 	block: BlockKind;
 	beats: number;
-	transition: Transition;
+	/** Fijada a propósito (el `push` de los iconos de Arcade, el `cut` al cierre); sin ella, la del estilo. */
+	transition?: Transition;
 	/** Se puede quitar para que el video quepa en el límite del plan. */
 	optional: boolean;
 	slots: { lines?: { max: number; wordsPerLine: number }; images?: { min: number; max: number } };
@@ -128,8 +130,8 @@ export interface Template {
 	/** El material que pide: obligatorio u opcional. */
 	materials: { kind: MaterialKind; required: boolean }[];
 	kinds: ("product" | "platform" | "other")[];
-	defaultBpm: number;
-	background: "sky";
+	/** Cómo se ve y se mueve (spec 2026-11-19-onview-estilos-y-referencias): su fondo, su letra, su tempo… (`styles.ts`). */
+	style: StyleId;
 	moments: TemplateMoment[];
 }
 

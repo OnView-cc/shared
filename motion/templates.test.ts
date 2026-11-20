@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { adaptTemplate, plannedSeconds } from "./adapt";
 import { TEMPLATES, TEMPLATE_IDS, getTemplate } from "./templates";
+import { STYLE_IDS, STYLES, templateBpm } from "./styles";
 import type { MaterialItem, Template } from "./types";
 
 const LANGS = ["en", "es", "pt"] as const;
@@ -17,6 +18,40 @@ function minimum(t: Template): MaterialItem[] {
 }
 
 const needsImages = (block: string) => block === "ui" || block === "product" || block === "icons";
+
+describe("each template has its style (spec 2026-11-19)", () => {
+	it("maps each template to its style", () => {
+		expect(Object.fromEntries(TEMPLATE_IDS.map((id) => [id, getTemplate(id)!.style]))).toEqual({
+			"software-launch": "arcade",
+			news: "changelog",
+			integrations: "orbit",
+			product: "showcase",
+			catalog: "blocks",
+			"how-to": "steps",
+			offer: "impact",
+			"brand-story": "cinema",
+		});
+		for (const id of TEMPLATE_IDS) expect(STYLE_IDS).toContain(getTemplate(id)!.style);
+	});
+
+	it("takes its tempo from its style", () => {
+		expect(templateBpm(getTemplate("software-launch")!)).toBe(116);
+		expect(templateBpm(getTemplate("offer")!)).toBe(128);
+		expect(templateBpm(getTemplate("brand-story")!)).toBe(80);
+	});
+
+	it("Software launch keeps today's transitions: blur, push on the icons, cut to the closing", () => {
+		const t = getTemplate("software-launch")!;
+		const style = STYLES[t.style];
+		const effective = t.moments.map((m, i) => m.transition ?? (t.moments[i + 1]?.block === "logo" && i + 1 === t.moments.length - 1 ? style.transitions.close : style.transitions.between));
+		expect(effective).toEqual(["blur", "push", "blur", "blur", "blur", "cut"]);
+	});
+
+	it("only the closing and Arcade's icons fix their transition", () => {
+		const fixed = TEMPLATE_IDS.flatMap((id) => getTemplate(id)!.moments.filter((m) => m.transition).map((m) => `${id}:${m.key}:${m.transition}`));
+		expect(fixed.filter((f) => !f.endsWith(":close:cut"))).toEqual(["software-launch:products:push"]);
+	});
+});
 
 describe("the template library (entrega 1)", () => {
 	it("has the eight templates in the gallery's order", () => {
