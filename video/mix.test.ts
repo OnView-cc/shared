@@ -10,7 +10,7 @@ const shot = (o: Partial<ComposeInput["shots"][number]>): ComposeInput["shots"][
 	block: "text",
 	params: parseBlockParams("text", {}),
 	beats: null,
-	transition: "cut",
+	transition: "cut",
 	voice: null,
 	images: [],
 	...o,
@@ -99,7 +99,7 @@ describe("resolveAudio", () => {
 		expect(c.total).toBe(10);
 		const p = resolveAudio(c, { voices: { a: 3 }, music: 4 });
 		expect(p.music?.loops).toBe(3);
-		expect(p.voices).toEqual([{ shotId: "a", src: "VA", at: 0, rate: 1, play: 3, fade: 0, overflow: false }]);
+		expect(p.voices).toEqual([{ shotId: "a", src: "VA", at: 0, from: 0, rate: 1, play: 3, fade: 0, overflow: false }]);
 		expect(resolveAudio(c, { voices: {}, music: null }).music?.loops).toBe(1);
 	});
 
@@ -121,5 +121,22 @@ describe("resolveAudio", () => {
 	it("has no music plan without music", () => {
 		const c = { ...composition(), music: null };
 		expect(resolveAudio(c, { voices: { a: 3 }, music: null }).music).toBeNull();
+	});
+});
+
+describe("resolveAudio with a narration slice (2026-11-20)", () => {
+	it("a slice plays from its own second of the take, for exactly its length, and its moment lasts the slice", () => {
+		const base = composition();
+		const c = composeVideo({
+			format: "9:16", voiceVolume: 1, musicVolume: 0.4, musicFadeIn: 0, musicFadeOut: 2, closingLine: "", tempo: { bpm: 120, offset: 0 }, template: null,
+			shots: [shot({ id: "a", beats: 8, voice: { src: "N", from: 2.88, to: 5.98, words: [{ w: "Pulse", at: 0.12, end: 0.5 }], spoken: { from: 0.12, to: 2.62 } } })],
+			music: null, sfx: [], brand: null, limits: { watermark: false },
+		});
+		expect(base.moments.length).toBeGreaterThan(0);
+		expect(c.moments[0]!.seconds).toBeCloseTo(3.1);
+		expect(c.moments[0]!.words).toEqual([{ w: "Pulse", at: 0.12, end: 0.5 }]);
+		const p = resolveAudio(c, { voices: { a: 7 }, music: null });
+		expect(p.voices[0]).toMatchObject({ src: "N", at: 0, from: 2.88, rate: 1, fade: 0, overflow: false });
+		expect(p.voices[0]!.play).toBeCloseTo(3.1);
 	});
 });

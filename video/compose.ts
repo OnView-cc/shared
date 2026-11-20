@@ -28,6 +28,7 @@
 import { beatSeconds } from "../motion/fit";
 import { resolveStyle, type Style } from "../motion/styles";
 import type { AnyBlockParams, BlockKind, Transition } from "../motion/types";
+import type { MomentWord } from "./narration";
 
 export type Format = "9:16" | "1:1" | "16:9";
 export type TextPosition = "top" | "center" | "bottom";
@@ -87,8 +88,11 @@ export interface ComposeShot {
 	beats: number | null;
 	/** null = la del estilo (spec 2026-11-19-onview-estilos-y-referencias §5.2). */
 	transition: Transition | null;
-	/** La voz lista del momento. */
-	voice: { src: string } | null;
+	/**
+	 * La voz lista del momento. Con narración continua (spec 2026-11-20), un tramo de la toma: suena de `from` a `to`
+	 * del archivo, el momento dura eso, y trae sus palabras y lo hablado (desde el inicio del momento).
+	 */
+	voice: { src: string; from?: number; to?: number; words?: MomentWord[]; spoken?: { from: number; to: number } } | null;
 	/** Las imágenes del momento, en su orden, con su tamaño en píxeles. */
 	images: ComposeImage[];
 }
@@ -136,6 +140,9 @@ export interface Moment {
 	seconds: number;
 	transition: Transition;
 	images: ComposeImage[];
+	/** Lo que dice la narración en este momento, desde su inicio (spec 2026-11-20): la imagen entra con la palabra. */
+	words?: MomentWord[];
+	spoken?: { from: number; to: number };
 }
 
 export interface MotionBrand {
@@ -156,6 +163,9 @@ export interface VoiceCue {
 	at: number;
 	/** Lo que dura su momento: la voz tiene que caber ahí. */
 	slot: number;
+	/** El tramo del archivo que suena (narración continua); sin él, el archivo entero desde 0. */
+	from?: number;
+	to?: number;
 }
 
 export interface SfxCue {
@@ -206,7 +216,9 @@ export function composeVideo(input: ComposeInput): Composition {
 	const voices: VoiceCue[] = [];
 	let at = 0;
 	for (const shot of [...input.shots].sort((a, b) => a.position - b.position)) {
-		const length = Math.max(0, shot.beats != null ? shot.beats * beat : shot.seconds);
+		// Un tramo de la narración manda: el momento dura lo que suena (spec 2026-11-20).
+		const slice = voiced && shot.voice?.from != null && shot.voice.to != null ? { from: shot.voice.from, to: shot.voice.to } : null;
+		const length = Math.max(0, slice ? slice.to - slice.from : shot.beats != null ? shot.beats * beat : shot.seconds);
 		moments.push({
 			shotId: shot.id,
 			block: shot.block,
@@ -215,8 +227,9 @@ export function composeVideo(input: ComposeInput): Composition {
 			seconds: length,
 			transition: shot.transition ?? "cut",
 			images: shot.images,
+			...(voiced && shot.voice?.words?.length ? { words: shot.voice.words, spoken: shot.voice.spoken } : {}),
 		});
-		if (voiced && shot.voice) voices.push({ shotId: shot.id, src: shot.voice.src, at, slot: length });
+		if (voiced && shot.voice) voices.push({ shotId: shot.id, src: shot.voice.src, at, slot: length, ...(slice ?? {}) });
 		at += length;
 	}
 

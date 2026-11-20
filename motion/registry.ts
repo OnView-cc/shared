@@ -23,6 +23,11 @@ export interface BlockCtx {
 	beat(n: number): number;
 	/** Lo que dura un golpe. */
 	beatSeconds: number;
+	/**
+	 * El segundo absoluto en que la narración dice cada uno de estos textos, en orden (lo no dicho, repartido en lo
+	 * hablado); null si el momento no tiene narración con palabras: entonces, golpes.
+	 */
+	cues(texts: string[]): number[] | null;
 	/** El color de las letras sobre el fondo del estilo. */
 	ink: string;
 	/** El estilo del video, ya resuelto (spec 2026-11-19-onview-estilos-y-referencias). */

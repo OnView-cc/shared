@@ -25,6 +25,7 @@ import { STYLES } from "./styles";
 import { blockFor } from "./registry";
 import { injectMotionCss } from "./style";
 import { wireTransitions } from "./transitions";
+import { cueTimes } from "./cues";
 import type { MotionDoc } from "./doc";
 
 export type { MotionDoc, MotionMedia } from "./doc";
@@ -112,6 +113,8 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 			orientation,
 			mode: opts.mode,
 			beat: (n) => moment.at + n * beat,
+			// La imagen entra con la palabra (spec 2026-11-20): el segundo absoluto en que se dice cada texto, o null sin narración.
+			cues: (texts) => cueTimes(texts, moment.words, moment.spoken)?.map((t) => moment.at + t) ?? null,
 			beatSeconds: beat,
 			ink: own === background ? ink : inkOn(own, doc.brand),
 			style,

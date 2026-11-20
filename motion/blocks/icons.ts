@@ -146,8 +146,10 @@ function list(ctx: Parameters<Parameters<typeof registerBlock>[1]>[0], params: I
 	gsap.set(column, { y: 0 });
 	rows.forEach((row, i) => gsap.set(row, state(0, i)));
 	const every = params.every;
+	// Con narración, cada fila llega al centro cuando la voz la nombra (spec 2026-11-20); sin ella, cada `every` golpes.
+	const named = ctx.cues(moment.images.map((image) => params.labels[image.id] ?? ""));
 	for (let k = 1; k < rows.length; k++) {
-		const at = ctx.beat(k * every) - 0.31;
+		const at = named ? Math.max(moment.at, named[k]! - 0.31) : ctx.beat(k * every) - 0.31;
 		if (at >= moment.at + moment.seconds) break;
 		tl.to(column, { y: -k * ROW_GAP_U * u, duration: 0.62, ease: "expo.inOut", immediateRender: false }, at);
 		rows.forEach((row, i) => tl.to(row, { ...state(k, i), duration: 0.62, ease: "expo.inOut", immediateRender: false }, at));

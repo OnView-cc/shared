@@ -25,7 +25,7 @@ export interface MomentRow {
 	transition: Transition | null;
 	imagesLayout: ImagesLayout;
 	imagesEntrance: ImagesEntrance;
-	voice: { src: string } | null;
+	voice: ComposeShot["voice"];
 	images: { id: string; src: string; width: number; height: number; description?: string | null }[];
 }
 

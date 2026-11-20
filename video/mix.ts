@@ -39,6 +39,8 @@ export interface VoicePlan {
 	src: string;
 	/** Dónde empieza en el video armado. */
 	at: number;
+	/** Desde qué segundo del archivo suena (un tramo de la narración; 0 = desde el principio). */
+	from: number;
 	/** La velocidad a la que suena (1 = la suya). */
 	rate: number;
 	/** Cuánto suena, ya a esa velocidad. */
@@ -134,7 +136,14 @@ export function gainAt(envelope: GainPoint[], t: number): number {
 
 /** La mezcla de un video con las duraciones reales de sus voces y de su música. */
 export function resolveAudio(c: Composition, d: AudioDurations): AudioPlan {
-	const voices: VoicePlan[] = c.voices.map((v) => ({ shotId: v.shotId, src: v.src, at: v.at, ...fitVoice(d.voices[v.shotId], v.slot) }));
+	// Un tramo de la narración dura su tramo (y el momento dura eso: cabe tal cual); una voz suelta, su archivo.
+	const voices: VoicePlan[] = c.voices.map((v) => ({
+		shotId: v.shotId,
+		src: v.src,
+		at: v.at,
+		from: v.from ?? 0,
+		...fitVoice(v.from != null && v.to != null ? v.to - v.from : d.voices[v.shotId], v.slot),
+	}));
 	if (!c.music) return { voices, music: null };
 	const voiced = voices.filter((v) => v.play > 0).map((v) => ({ from: v.at, to: v.at + v.play }));
 	// La pista suena desde su primer golpe (`tempo.offset`): así la rejilla de golpes del video cae sobre la música.

@@ -8,8 +8,8 @@ import { burstPositions, ICON_U } from "./icons";
 const HALF = { landscape: [(1920 / 1080) * 50, 50], portrait: [50, (1920 / 1080) * 50], square: [50, 50] } as const;
 const img = (i: number) => ({ id: `i${i}`, src: `i${i}.png`, width: 256, height: 256 });
 
-function mount(params: Record<string, unknown>, n: number, format: "16:9" | "9:16" = "16:9", lightLogo: string | null = null) {
-	const shot: ComposeShot = { id: "m0", position: 0, seconds: 2, block: "icons", params: parseBlockParams("icons", params), beats: 12, transition: "cut", voice: null, images: Array.from({ length: n }, (_, i) => img(i)) };
+function mount(params: Record<string, unknown>, n: number, format: "16:9" | "9:16" = "16:9", lightLogo: string | null = null, voice: ComposeShot["voice"] = null) {
+	const shot: ComposeShot = { id: "m0", position: 0, seconds: 2, block: "icons", params: parseBlockParams("icons", params), beats: 12, transition: "cut", voice, images: Array.from({ length: n }, (_, i) => img(i)) };
 	const c = composeVideo({
 		format,
 		voiceVolume: 1,
@@ -70,6 +70,27 @@ describe("icons block", () => {
 		await m.seek(1.0 + 0.4);
 		expect(active()).toBe(1);
 		await m.seek(2.0 + 0.4);
+		expect(active()).toBe(2);
+	});
+
+	// 2026-11-20: con narración, cada fila llega al centro cuando la voz la nombra, no cada dos golpes.
+	it("with narration, the list moves to each item when the voice names it", async () => {
+		const words = [
+			{ w: "Soporte,", at: 0.2, end: 0.7 },
+			{ w: "archivos", at: 2.5, end: 3.0 },
+			{ w: "y", at: 3.0, end: 3.1 },
+			{ w: "chat.", at: 4.6, end: 5.0 },
+		];
+		const m = mount({ variant: "list", labels: { i0: "Soporte", i1: "Archivos", i2: "Chat" } }, 3, "16:9", null, { src: "n.mp3", from: 0, to: 5.5, words, spoken: { from: 0.2, to: 5 } });
+		const rows = [...root.querySelectorAll<HTMLElement>(".motion-row")];
+		const active = () => rows.findIndex((r) => op(r) === 1);
+		await m.seek(2.0);
+		expect(active()).toBe(0);
+		await m.seek(2.5 + 0.35);
+		expect(active()).toBe(1);
+		await m.seek(4.0);
+		expect(active()).toBe(1);
+		await m.seek(4.6 + 0.35);
 		expect(active()).toBe(2);
 	});
 

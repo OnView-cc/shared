@@ -181,14 +181,16 @@ registerBlock("text", (ctx) => {
 
 	const beats = moment.seconds / ctx.beatSeconds;
 	const at = entryBeats(spans.length, beats);
+	// Con narración, cada grupo entra cuando la voz lo dice (spec 2026-11-20); sin ella, en sus golpes.
+	const times = ctx.cues(groups) ?? at.map((b) => ctx.beat(b));
 	const grey = mix(ink, params.color ?? ctx.background.color, WORD_GREY);
 	if (type.entry !== "groups") {
-		enter(type.entry, { spans, words, risers, letters, at: at.map((b) => ctx.beat(b)), beatSeconds: ctx.beatSeconds, tl });
+		enter(type.entry, { spans, words, risers, letters, at: times, beatSeconds: ctx.beatSeconds, tl });
 		return;
 	}
 	gsap.set(spans, { opacity: 0, y: 2.2 * u, filter: "blur(14px)" });
 	spans.forEach((span, i) => {
-		const start = ctx.beat(at[i]!);
+		const start = times[i]!;
 		tl.fromTo(span, { opacity: 0, y: 2.2 * u, filter: "blur(14px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, ease: "expo.out", immediateRender: false }, start);
 		// Cada palabra aparece en su sitio, en gris, y pasa a la tinta (lo de «conocen.» en Arcade).
 		words[i]!.forEach((word, j) => {
