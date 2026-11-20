@@ -26,6 +26,7 @@
  */
 
 import { beatSeconds } from "../motion/fit";
+import { resolveStyle, type Style } from "../motion/styles";
 import type { AnyBlockParams, BlockKind, Transition } from "../motion/types";
 
 export type Format = "9:16" | "1:1" | "16:9";
@@ -35,6 +36,8 @@ export type TextPosition = "top" | "center" | "bottom";
 export interface Face {
 	family: string;
 	weight: number;
+	/** Los pesos que tiene la letra (el motor elige el más cercano al que pide el estilo); sin ellos, se supone que tiene el pedido. */
+	weights?: number[];
 }
 
 export const FPS = 30;
@@ -82,7 +85,8 @@ export interface ComposeShot {
 	params: AnyBlockParams;
 	/** Golpes de música; null = sus segundos. */
 	beats: number | null;
-	transition: Transition;
+	/** null = la del estilo (spec 2026-11-19-onview-estilos-y-referencias §5.2). */
+	transition: Transition | null;
 	/** La voz lista del momento. */
 	voice: { src: string } | null;
 	/** Las imágenes del momento, en su orden, con su tamaño en píxeles. */
@@ -113,6 +117,8 @@ export interface ComposeInput {
 	closingLine: string;
 	tempo: { bpm: number; offset: number };
 	template: { id: string; voice: boolean } | null;
+	/** El estilo elegido para el video (`projects.style_id`) y sus retoques; sin él, el del template. */
+	style?: { id: string | null; overrides: unknown };
 	shots: ComposeShot[];
 	music: { src: string } | null;
 	sfx: { id: string; shotId: string; sfxKey: string; at: number; volume: number }[];
@@ -168,6 +174,8 @@ export interface Composition {
 	fps: 30;
 	format: Format;
 	tempo: { bpm: number; offset: number };
+	/** El estilo ya resuelto: el motor sólo lee éste. */
+	style: Style;
 	moments: Moment[];
 	brand: MotionBrand;
 	voices: VoiceCue[];
@@ -205,7 +213,7 @@ export function composeVideo(input: ComposeInput): Composition {
 			params: shot.params,
 			at,
 			seconds: length,
-			transition: shot.transition,
+			transition: shot.transition ?? "cut",
 			images: shot.images,
 		});
 		if (voiced && shot.voice) voices.push({ shotId: shot.id, src: shot.voice.src, at, slot: length });
@@ -229,6 +237,14 @@ export function composeVideo(input: ComposeInput): Composition {
 		moments.push({ shotId: null, block: "logo", params: { line: input.closingLine.trim().slice(0, MAX_CLOSING_TEXT) }, at, seconds, transition: "cut", images: [] });
 		at += seconds;
 	}
+	// Una transición vacía es la del estilo; la que entra a un cierre `logo` final, su `close`; la del último, un corte.
+	const style = resolveStyle(input.template?.id || null, input.style?.id ?? null, input.style?.overrides ?? null);
+	const given = new Map(input.shots.map((s) => [s.id, s.transition]));
+	moments.forEach((m, i) => {
+		if (m.shotId === null || given.get(m.shotId) != null) return;
+		const next = moments[i + 1];
+		m.transition = !next ? "cut" : next.block === "logo" && i + 1 === moments.length - 1 ? style.transitions.close : style.transitions.between;
+	});
 	const total = at;
 	const last = moments.at(-1);
 	const scenesTotal = last?.block === "logo" ? total - last.seconds : total;
@@ -249,6 +265,7 @@ export function composeVideo(input: ComposeInput): Composition {
 		fps: FPS,
 		format: input.format,
 		tempo: { bpm: input.tempo.bpm, offset: input.tempo.offset },
+		style,
 		moments,
 		brand: motionBrand,
 		voices,

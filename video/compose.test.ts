@@ -180,3 +180,43 @@ describe("blocks", () => {
 		expect(BLOCKS).toEqual(["text", "icons", "ui", "product", "logo"]);
 	});
 });
+
+describe("composeVideo with styles (spec 2026-11-19)", () => {
+	const shots = [shot({ id: "a", position: 0, transition: null }), shot({ id: "b", position: 1, transition: null }), shot({ id: "c", position: 2, transition: null })];
+
+	it("resolves an empty transition to the style's, and the one into the closing to its close", () => {
+		const c = composeVideo({ ...base, template: { id: "offer", voice: true }, brand, shots });
+		expect(c.style.id).toBe("impact");
+		expect(c.moments.map((m) => [m.shotId, m.transition])).toEqual([
+			["a", "punch"],
+			["b", "punch"],
+			["c", "punch"],
+			[null, "cut"],
+		]);
+	});
+
+	it("uses the close transition for the moment before a closing logo the person placed", () => {
+		const style = { id: "cinema", overrides: { transitions: { close: "cut" } } };
+		const c = composeVideo({ ...base, template: { id: "offer", voice: true }, style, shots: [...shots, shot({ id: "z", position: 3, block: "logo", params: parseBlockParams("logo", {}), transition: null })] });
+		expect(c.moments.map((m) => m.transition)).toEqual(["fade", "fade", "cut", "cut"]);
+	});
+
+	it("keeps a transition the moment fixed", () => {
+		const c = composeVideo({ ...base, template: { id: "offer", voice: true }, shots: [shot({ id: "a", transition: "fade" }), shot({ id: "b", position: 1, transition: null }), shot({ id: "c", position: 2, transition: null })] });
+		// El último no pasa a nada: corte.
+		expect(c.moments.map((m) => m.transition)).toEqual(["fade", "punch", "cut"]);
+	});
+
+	it("takes the chosen style over the template's", () => {
+		expect(composeVideo({ ...base, template: { id: "offer", voice: true }, style: { id: "cinema", overrides: null } }).style.id).toBe("cinema");
+	});
+
+	it("is Arcade with neither style nor template", () => {
+		expect(composeVideo({ ...base, template: null }).style.id).toBe("arcade");
+	});
+
+	it("passes the font's weights to the engine", () => {
+		const c = composeVideo({ ...base, brand: { ...brand, primary: { family: "bebas-neue", weight: 400, weights: [400] } } });
+		expect(c.brand.face.weights).toEqual([400]);
+	});
+});
