@@ -269,6 +269,8 @@ describe("Ventana controles", () => {
 		"vn-frame",
 		// El envoltorio del rótulo pinta su propio scrim; nunca lleva vn-glass (hay prueba de marcado)
 		"vn-frame__caption",
+		// Sólo su `::backdrop` (la cortina de la hoja, que no es el vidrio): ninguna otra regla lleva esta clase (hay prueba)
+		"vn-sheet-scrim",
 	];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
 	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
@@ -572,7 +574,9 @@ describe("Ventana flotantes: menú, popover y tooltip", () => {
 		expect(overlays).toMatch(/animation: vn-overlay-in var\(--vn-spring-snap-ms\) var\(--vn-spring-snap\)/);
 		expect(overlays).toMatch(/animation: vn-overlay-out 120ms var\(--vn-ease-out\) forwards/);
 		// En movimiento reducido: sólo opacidad, de entrada y de salida
-		const reduced = overlays.slice(overlays.indexOf("@media (prefers-reduced-motion: reduce)"));
+		// El bloque de los flotantes de Radix (el de la hoja tiene el suyo y sí lleva translate y scale)
+		const from = overlays.indexOf("/* Movimiento reducido: sólo opacidad, de entrada y de salida */");
+		const reduced = overlays.slice(from, overlays.indexOf("@media (prefers-contrast: more)", from));
 		expect(reduced).toMatch(/vn-overlay-fade-in/);
 		expect(reduced).toMatch(/vn-overlay-fade-out/);
 		expect(reduced).not.toMatch(/scale|translate/);
@@ -630,5 +634,81 @@ describe("Ventana flotantes: menú, popover y tooltip", () => {
 		const sizes = [...overlays.matchAll(/font-size: ([\d.]+)rem/g)].map((m) => Number(m[1]));
 		expect(sizes.length).toBeGreaterThan(0);
 		for (const size of sizes) expect(size).toBeGreaterThanOrEqual(0.75);
+	});
+});
+
+describe("Ventana hoja y avisos", () => {
+	const strip = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+	const rulesOf = (css: string) => [...strip(css).matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: m[1].split(",").map((x) => x.trim()), body: m[2] }));
+	const all = rulesOf(overlays);
+	const ownedByGlass = /(^|[;\s])(background(-color|-image)?|backdrop-filter|-webkit-backdrop-filter|border|border-color|box-shadow)\s*:/;
+	const rule = (selector: string) => all.find((r) => r.selectors.includes(selector))?.body ?? "";
+	const thickBehind = () => over(token("sheen")!, over(token("smoke-thick")!, "#ffffff"));
+
+	it("las reglas de la hoja y del aviso no declaran lo que posee el vidrio", () => {
+		const mine = all.filter((r) => r.selectors.some((s) => /vn-(sheet|toast)/.test(s) && !/vn-sheet-scrim/.test(s)));
+		expect(mine.length).toBeGreaterThan(8);
+		for (const r of mine) expect(r.body, r.selectors.join(", ")).not.toMatch(ownedByGlass);
+	});
+
+	it("vn-sheet-scrim sólo sale en reglas de ::backdrop y la cortina es un literal rgba(0, 0, 0, 0.5)", () => {
+		const scrim = all.filter((r) => r.selectors.some((s) => s.includes("vn-sheet-scrim")));
+		expect(scrim.length).toBeGreaterThan(0);
+		for (const r of scrim) for (const s of r.selectors) expect(s, s).toMatch(/::backdrop$/);
+		expect(rule(".vn-sheet-scrim::backdrop")).toMatch(/background: rgba\(0, 0, 0, 0\.5\);/);
+	});
+
+	it("la hoja ajusta el material por variable: radio de hoja y sombra mayor", () => {
+		const body = rule(".vn.vn-sheet");
+		expect(body).toMatch(/--vn-glass-r: var\(--vn-r-sheet\);/);
+		expect(body).toMatch(/--vn-glass-shadow:/);
+	});
+
+	it("bajo 40rem es una hoja pegada abajo con esquinas inferiores rectas y área segura; desde 40rem, centrada", () => {
+		const body = rule(".vn.vn-sheet");
+		expect(body).toMatch(/margin-block: auto 0;/);
+		expect(body).toMatch(/border-end-start-radius: 0;/);
+		expect(body).toMatch(/border-end-end-radius: 0;/);
+		expect(overlays).toMatch(/env\(safe-area-inset-bottom, 0px\)/);
+		const wide = overlays.slice(overlays.indexOf("@media (min-width: 40rem)"));
+		expect(wide).toMatch(/max-inline-size: 32rem/);
+		expect(wide).toMatch(/scale: 0\.96;/);
+	});
+
+	it("entra y sale sin JavaScript: @starting-style y transition-behavior allow-discrete en display y overlay", () => {
+		expect(overlays).toMatch(/@starting-style/);
+		const body = rule(".vn.vn-sheet");
+		expect(body).toMatch(/transition-behavior: allow-discrete;/);
+		expect(body).toMatch(/overlay [^,;]*allow-discrete/);
+		expect(body).toMatch(/display [^,;]*allow-discrete/);
+		expect(rule(".vn.vn-sheet[open]")).toMatch(/translate var\(--vn-spring-soft-ms\) var\(--vn-spring-soft\)/);
+	});
+
+	it("con movimiento reducido la hoja sólo cambia de opacidad", () => {
+		const reduced = overlays.slice(overlays.indexOf("@media (prefers-reduced-motion: reduce)", overlays.indexOf("Hoja (`Sheet`)")));
+		expect(reduced.slice(0, reduced.indexOf("@starting-style"))).toMatch(/\.vn\.vn-sheet/);
+		expect(reduced).toMatch(/translate: none;/);
+		expect(reduced).toMatch(/scale: none;/);
+	});
+
+	it("el texto de la hoja: título en tinta, descripción en tinta secundaria de vidrio, que pasa 4.5:1 sobre el vidrio grueso", () => {
+		expect(rule(".vn .vn-sheet__title")).toMatch(/color: var\(--vn-ink\);/);
+		expect(rule(".vn .vn-sheet__desc")).toMatch(/color: var\(--vn-ink-2-glass\);/);
+		expect(contrast(token("ink-2-glass")!, thickBehind())).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink")!, thickBehind())).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("los avisos: título en tinta, descripción en tinta secundaria de vidrio (con la especificidad que gana al tema oscuro de sonner) e icono de error en danger-glass", () => {
+		expect(rule(".vn-toast .vn-toast__title")).toMatch(/color: var\(--vn-ink\);/);
+		const desc = all.find((r) => r.selectors.some((s) => s.includes(".vn-toast__desc") && s.startsWith("[data-sonner-toaster][data-sonner-theme]")));
+		expect(desc?.body).toMatch(/color: var\(--vn-ink-2-glass\);/);
+		expect(rule('.vn-toast[data-type="error"] .vn-toast__icon')).toMatch(/color: var\(--vn-danger-glass\);/);
+		expect(contrast(token("danger-glass")!, thickBehind())).toBeGreaterThanOrEqual(3);
+	});
+
+	it("el aviso es vidrio por variable, con el anillo de foco en outline", () => {
+		expect(rule(".vn.vn-toast")).toMatch(/--vn-glass-r: var\(--vn-r-panel\);/);
+		expect(rule(".vn.vn-toast")).toMatch(/--vn-glass-shadow:/);
+		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/outline: 2px solid var\(--vn-ink\);/);
 	});
 });
