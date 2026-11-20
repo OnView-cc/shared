@@ -584,7 +584,10 @@ describe("Ventana controles", () => {
 		expect(cnt(".vn .vn-tabs__tab")).toMatch(/color: var\(--vn-ink-2\);/);
 		expect(cnt(".vn .vn-tabs__tab[data-state=\"active\"]")).toMatch(/color: var\(--vn-ink\);/);
 		expect(cnt(".vn .vn-tabs__tab::after")).toMatch(/block-size: 2px;[\s\S]*background: var\(--vn-ink\);/);
-		expect(cnt(".vn .vn-tabs__list")).toMatch(/border-block-end: 1px solid var\(--vn-hair\);/);
+		// El filete de la lista es una sombra interior (dentro de la caja de relleno) y la raya queda pegada al borde inferior
+		expect(cnt(".vn .vn-tabs__list")).toMatch(/box-shadow: inset 0 -1px 0 var\(--vn-hair\);/);
+		expect(cnt(".vn .vn-tabs__list")).not.toMatch(/border/);
+		expect(cnt(".vn .vn-tabs__tab::after")).toMatch(/inset-block-end: 0;/);
 	});
 
 	it("el foco de la pestaña es un anillo interior y ninguna regla de una lista con desplazamiento usa uno exterior", () => {
@@ -595,7 +598,10 @@ describe("Ventana controles", () => {
 		for (const r of rules.filter((x) => x.selectors.some((sel) => /vn-tabs__tab/.test(sel) && sel.includes(":focus-visible")))) {
 			expect(r.body, r.selectors.join(", ")).not.toMatch(/var\(--vn-focus\)/);
 		}
-		expect(cnt(".vn .vn-progress__bar")).toMatch(/transform-origin: inline-start center;/);
+		// transform-origin sólo admite palabras físicas: base a la izquierda y, en RTL, a la derecha
+		expect(cnt(".vn .vn-progress__bar")).toMatch(/transform-origin: left center;/);
+		const rtl = rules.find((r) => r.selectors.some((sel) => sel.includes('[dir="rtl"]') && sel.includes("vn-progress__bar")));
+		expect(rtl?.body).toMatch(/transform-origin: right center;/);
 	});
 
 	it("el filete danger del aviso y del estado llega a 3:1 contra surface", () => {
@@ -619,6 +625,15 @@ describe("Ventana controles", () => {
 		expect(reduced).toMatch(/\.vn-acc__content\[data-state="open"\],[\s\S]*animation: none;/);
 		expect(cnt(".vn .vn-progress__bar")).toMatch(/scale: var\(--vn-progress, 0\) 1;/);
 		expect(content).toMatch(/--radix-accordion-content-height/);
+	});
+});
+
+describe("Ventana CSS: transform-origin", () => {
+	it("ninguna hoja declara transform-origin con una palabra lógica (la propiedad no las admite)", () => {
+		const logical = /transform-origin:[^;]*\b(inline-start|inline-end|block-start|block-end)\b/;
+		expect(allVentanaCss.length).toBeGreaterThan(5);
+		for (const css of allVentanaCss) expect(css).not.toMatch(logical);
+		expect("transform-origin: inline-start center;").toMatch(logical);
 	});
 });
 
