@@ -7,8 +7,8 @@
  *
  * Paridad con `sky/console.tsx` (mismas props, mismo sitio para cada una):
  * - `Section` añade `level` (2 por defecto, 3 si la página ya tiene un h2).
- * - `Skeleton` recibe `label` (sky escribía «Loading» a mano) y lleva `role="status"`
- *   para que el `aria-label` sea válido y se anuncie.
+ * - `Skeleton` recibe `label` (sky escribía «Loading» a mano) y lleva `role="group"`
+ *   (nombrable y sin ser una región viva: un marcador de posición no se anuncia).
  * - `Status` es `StatusBox` de sky; el tono `alert` se dice con borde y título en
  *   danger, y la caja es siempre `--vn-surface` (sky usaba un fondo rojo apagado).
  * - `Monogram` repite las iniciales de sky (`markOf`, que no es público allí).
@@ -16,6 +16,9 @@
 import { ChevronDown, CircleAlert } from "lucide-react";
 import { Accordion as A, Tabs as T } from "radix-ui";
 import { createElement, useState, type CSSProperties, type ReactNode } from "react";
+
+/** ¿Hay algo que mostrar? Ni vacío, ni nulo, ni false; el número 0 sí se muestra. */
+const present = (node: ReactNode) => node !== undefined && node !== null && node !== false && node !== "";
 
 // ─── Section ─────────────────────────────────────────────────────────────────
 
@@ -43,9 +46,9 @@ export function Section({
 			<div className="vn-section__head">
 				<div className="vn-section__titles">
 					{createElement(`h${level}`, { id: `${id}-title`, className: "vn-title-2 vn-section__title" }, title)}
-					{meta && <p className="vn-small vn-section__meta">{meta}</p>}
+					{present(meta) && <p className="vn-small vn-section__meta">{meta}</p>}
 				</div>
-				{action && <div className="vn-section__action">{action}</div>}
+				{present(action) && <div className="vn-section__action">{action}</div>}
 			</div>
 			<div className="vn-section__body">{children}</div>
 		</section>
@@ -78,12 +81,12 @@ export function Row({
 }) {
 	const inner = (
 		<>
-			{lead && <span className="vn-row__lead">{lead}</span>}
+			{present(lead) && <span className="vn-row__lead">{lead}</span>}
 			<span className="vn-row__body">
 				<span className="vn-row__title">{title}</span>
-				{meta && <span className="vn-small vn-row__meta">{meta}</span>}
+				{present(meta) && <span className="vn-small vn-row__meta">{meta}</span>}
 			</span>
-			{end && <span className="vn-row__end">{end}</span>}
+			{present(end) && <span className="vn-row__end">{end}</span>}
 		</>
 	);
 	if (href !== undefined) {
@@ -108,10 +111,10 @@ export function Row({
 /** La forma de lo que viene mientras llega: bloques que sólo cambian de opacidad, sin brillo que barra. */
 export function Skeleton({ rows = 4, label }: { rows?: number; label: string }) {
 	return (
-		<div role="status" aria-busy="true" aria-label={label} className="vn-skel">
+		<div role="group" aria-busy="true" aria-label={label} className="vn-skel">
 			<div className="vn-skel__block vn-skel__block--head" />
 			{Array.from({ length: rows }, (_, i) => (
-				<div key={i} className="vn-skel__block" style={{ inlineSize: `${92 - i * 9}%` }} />
+				<div key={i} className="vn-skel__block" style={{ inlineSize: `${Math.max(30, 92 - i * 9)}%` }} />
 			))}
 		</div>
 	);
@@ -121,8 +124,8 @@ export function Skeleton({ rows = 4, label }: { rows?: number; label: string }) 
 
 /** El error con el que volvió el servidor, con sus palabras. Sin texto no pinta nada. */
 export function Alert({ error, children }: { error?: Error | null; children?: ReactNode }) {
-	const text = children ?? error?.message;
-	if (!text) return null;
+	const text = present(children) ? children : error?.message;
+	if (!present(text)) return null;
 	return (
 		<div role="alert" className="vn-alert">
 			<CircleAlert className="vn-alert__icon" strokeWidth={2} aria-hidden="true" />
@@ -151,8 +154,8 @@ export function Status({
 				{stamp}
 				<p className="vn-status__title">{title}</p>
 			</div>
-			{children && <div className="vn-status__text">{children}</div>}
-			{footer && <div className="vn-status__footer">{footer}</div>}
+			{present(children) && <div className="vn-status__text">{children}</div>}
+			{present(footer) && <div className="vn-status__footer">{footer}</div>}
 		</div>
 	);
 }

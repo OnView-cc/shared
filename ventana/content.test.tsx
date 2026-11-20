@@ -94,6 +94,15 @@ describe("Skeleton", () => {
 		expect(s.getAttribute("aria-busy")).toBe("true");
 		expect(s.getAttribute("aria-label")).toBe("Cargando");
 		expect(s.querySelectorAll(".vn-skel__block").length).toBe(4);
+		// Un marcador de posición no es una región viva: grupo con nombre, sin role=status
+		expect(s.getAttribute("role")).toBe("group");
+		expect(h.querySelector('[role="status"]')).toBeNull();
+	});
+	it("con muchas filas ninguna baja del 30% de ancho", () => {
+		const h = mount(<Skeleton rows={12} label="Cargando" />);
+		const widths = Array.from(h.querySelectorAll<HTMLElement>(".vn-skel__block")).slice(1).map((b) => parseFloat(b.style.inlineSize));
+		expect(widths.length).toBe(12);
+		expect(Math.min(...widths)).toBeGreaterThanOrEqual(30);
 	});
 });
 
@@ -142,10 +151,36 @@ describe("Monogram", () => {
 		expect(mark.getAttribute("aria-hidden")).toBe("true");
 		expect(mark.className).toContain("vn-monogram--sm");
 	});
+	it("con un nombre vacío o sin letras cae a dos puntos medios", () => {
+		const h = mount(<Monogram name="  " />);
+		expect(h.querySelector(".vn-monogram")?.textContent).toBe("··");
+		act(() => root!.render(<Monogram name="& -" />));
+		expect(h.querySelector(".vn-monogram")?.textContent).toBe("··");
+	});
 	it("sin logo usa el inicio de un nombre de una palabra", () => {
 		const h = mount(<Monogram name="onview" />);
 		expect(h.querySelector(".vn-monogram")?.textContent).toBe("ON");
 		expect(h.querySelector(".vn-monogram")?.className).toContain("vn-monogram--md");
+	});
+});
+
+describe("opcionales", () => {
+	it("el número 0 se muestra y vacío, nulo y false no pintan nada", () => {
+		const h = mount(
+			<Section id="z" title="T" meta={0} action={false}>
+				<Row title="r" meta={0} lead={null} end="" />
+				<Status title="t" footer={0} stamp={undefined}>
+					{0}
+				</Status>
+			</Section>,
+		);
+		expect(h.querySelector(".vn-section__meta")?.textContent).toBe("0");
+		expect(h.querySelector(".vn-section__action")).toBeNull();
+		expect(h.querySelector(".vn-row__meta")?.textContent).toBe("0");
+		expect(h.querySelector(".vn-row__lead")).toBeNull();
+		expect(h.querySelector(".vn-row__end")).toBeNull();
+		expect(h.querySelector(".vn-status__footer")?.textContent).toBe("0");
+		expect(h.querySelector(".vn-status__text")?.textContent).toBe("0");
 	});
 });
 

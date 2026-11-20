@@ -587,6 +587,23 @@ describe("Ventana controles", () => {
 		expect(cnt(".vn .vn-tabs__list")).toMatch(/border-block-end: 1px solid var\(--vn-hair\);/);
 	});
 
+	it("el foco de la pestaña es un anillo interior y ninguna regla de una lista con desplazamiento usa uno exterior", () => {
+		const focus = cnt(".vn .vn-tabs__tab:focus-visible");
+		expect(focus).toMatch(/box-shadow: inset 0 0 0 2px var\(--vn-ink\);/);
+		expect(focus).not.toMatch(/var\(--vn-focus\)/);
+		expect(cnt(".vn .vn-tabs__list")).toMatch(/overflow-x: auto;/);
+		for (const r of rules.filter((x) => x.selectors.some((sel) => /vn-tabs__tab/.test(sel) && sel.includes(":focus-visible")))) {
+			expect(r.body, r.selectors.join(", ")).not.toMatch(/var\(--vn-focus\)/);
+		}
+		expect(cnt(".vn .vn-progress__bar")).toMatch(/transform-origin: inline-start center;/);
+	});
+
+	it("el filete danger del aviso y del estado llega a 3:1 contra surface", () => {
+		expect(cnt(".vn .vn-alert")).toMatch(/border: 1px solid var\(--vn-danger\);/);
+		expect(cnt('.vn .vn-status[data-tone="alert"]')).toMatch(/border-color: var\(--vn-danger\);/);
+		expect(contrast(token("danger")!, token("surface")!)).toBeGreaterThanOrEqual(3);
+	});
+
 	it("la fila mide 44px, rellena con surface al enfocar y al pasar el puntero fino", () => {
 		expect(cnt(".vn .vn-row")).toMatch(/min-block-size: 44px;/);
 		expect(cnt(".vn .vn-row--action:focus-visible")).toMatch(/background: var\(--vn-surface\);/);
