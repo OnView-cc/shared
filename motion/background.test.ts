@@ -31,6 +31,17 @@ describe("the ink always reads", () => {
 		}
 	}
 
+	it("on a photo background, whatever the kit, the ink reads on the worst photo (a white one under its veil) (revisión final, I-2)", () => {
+		for (const color of EXTREMES) {
+			for (const text of ["#ffd400", "#ffffff", "#16181d"]) {
+				const b = resolveBackground(bg("photo"), kit(color, text), "p.png");
+				expect(b.kind).toBe("photo");
+				const worst = mix("#ffffff", "#000000", photoScrim(1));
+				expect(contrast(inkOn(b, kit(color, text)), worst)).toBeGreaterThanOrEqual(4.5);
+			}
+		}
+	});
+
 	it("uses the kit's text colour when it reads", () => {
 		const b = resolveBackground(bg("dark"), kit("#3b5bfd", "#ffffff"));
 		expect(inkOn(b, kit("#3b5bfd", "#ffffff"))).toBe("#ffffff");

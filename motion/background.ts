@@ -137,7 +137,8 @@ export function resolveBackground(bg: Style["background"], brand: Pick<MotionBra
 		case "dark":
 			return { kind: "dark", color: DARK_BASE };
 		case "photo":
-			return photo ? { kind: "photo", color: DARK_BASE } : { kind: "dark", color: DARK_BASE };
+			// El color de base es el del peor caso (una foto blanca bajo su velo): la tinta se elige sobre él (revisión final, I-2).
+			return photo ? { kind: "photo", color: mix("#ffffff", "#000000", photoScrim(1)) } : { kind: "dark", color: DARK_BASE };
 		case "brand":
 			return { kind: "brand", color: saturate(color, bg.saturate) };
 		case "auto":
