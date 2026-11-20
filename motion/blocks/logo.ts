@@ -8,20 +8,33 @@
  * 2026-11-18-onview-todo-codigo: como Arcade, sin saltar a un fondo de color al
  * final). Sin él, como antes: el color de cierre del kit con su logo de cierre;
  * sin logo de cierre, sólo la línea.
+ *
+ * Con estilos (spec 2026-11-19-onview-estilos-y-referencias): sobre un fondo
+ * claro (cielo, papel, un color de marca claro) vale lo de arriba; sobre uno
+ * oscuro, el cierre se queda en el fondo con el logo de cierre si el color de
+ * cierre del kit es casi el del fondo, y si no, el de siempre.
  */
 import { gsap } from "gsap";
 import { registerBlock } from "../registry";
 import type { LogoParams } from "../types";
+import { contrast } from "../background";
 import { readableOn } from "./text";
+
+/** Por debajo de este contraste, el color de cierre del kit y el fondo del estilo son «el mismo fondo». */
+const SAME_BACKGROUND = 1.6;
 
 registerBlock("logo", (ctx) => {
 	const { el, tl, moment, u, doc: motion } = ctx;
 	const params = moment.params as LogoParams;
-	const onSky = Boolean(motion.brand.lightLogo);
 	const bg = motion.brand.closingColor;
-	if (!onSky) el.style.background = bg;
-	const ink = onSky ? ctx.ink : readableOn(bg);
-	const logo = onSky ? motion.brand.lightLogo : motion.brand.closingLogo;
+	// Sobre un fondo claro del estilo, con el logo para fondos claros; sobre uno oscuro, con el de cierre si su color
+	// de cierre se parece al fondo (el logo se pensó para él). Si no, el cierre de siempre: el color de cierre del kit.
+	const light = contrast(ctx.background.color, "#000000") > contrast(ctx.background.color, "#ffffff");
+	const stayLogo = light ? motion.brand.lightLogo : contrast(bg, ctx.background.color) < SAME_BACKGROUND ? motion.brand.closingLogo : null;
+	const onBackground = Boolean(stayLogo);
+	if (!onBackground) el.style.background = bg;
+	const ink = onBackground ? ctx.ink : readableOn(bg);
+	const logo = onBackground ? stayLogo : motion.brand.closingLogo;
 	const doc = el.ownerDocument;
 	const fill = doc.createElement("div");
 	fill.className = "motion-fill";
