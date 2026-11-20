@@ -257,6 +257,13 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 	const litRules = everyRule.filter((r) => r.selectors.some((sel) => sel.includes("vn-lit")));
 	const scope = litRules.find((r) => r.selectors.includes(".vn-lit"));
 	const scopeSets = Object.fromEntries(declarations(scope?.body ?? ""));
+	/**
+	 * El modelo del vidrio luminoso con los tokens, de abajo arriba: el gris atenuado
+	 * por el filtro (`brightness`; a un gris, saturar no le hace nada), la escarcha
+	 * (la capa plana, que aquí es un blanco muy tenue en vez de humo) y el brillo
+	 * en su punto más fuerte.
+	 */
+	const litUnder = (v: number, grade: string) => over(token("lit-sheen")!, over(token("lit-frost")!, dimmed(grey(v), Number(token(`lit-dim-${grade}`)))));
 
 	it("GLASS (glass-contrast.ts) lleva los números de los tokens, uno a uno", () => {
 		for (const grade of GRADES) {
@@ -266,7 +273,9 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		}
 		expect(channels(token("sheen")!)).toEqual([255, 255, 255, GLASS.sheen.smoked]);
 		expect(channels(token("lit-sheen")!)).toEqual([255, 255, 255, GLASS.sheen.lit]);
-		expect(token("saturate")).toBe(`${GLASS.saturate * 100}%`);
+		expect(channels(token("lit-frost")!)).toEqual([255, 255, 255, GLASS.frost]);
+		expect(token("saturate")).toBe(`${GLASS.saturate.smoked * 100}%`);
+		expect(token("lit-saturate")).toBe(`${GLASS.saturate.lit * 100}%`);
 		expect(token("ink")).toBe(GLASS.ink);
 		// Los umbrales son los de esta prueba: el claro sólo lleva íconos (3:1), fino y grueso llevan texto (4.5:1)
 		expect(GLASS.threshold).toEqual({ clear: 3, thin: 4.5, thick: 4.5 });
@@ -276,7 +285,7 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		for (const v of [0, 37, 128, 200, 255]) {
 			for (const grade of GRADES) {
 				expect(underGlass(grey(v), grade, "smoked"), `${grade} ahumado ${v}`).toBe(over(token("sheen")!, over(token(`smoke-${grade}`)!, grey(v))));
-				expect(underGlass(grey(v), grade, "lit"), `${grade} luminoso ${v}`).toBe(over(token("lit-sheen")!, dimmed(grey(v), Number(token(`lit-dim-${grade}`)))));
+				expect(underGlass(grey(v), grade, "lit"), `${grade} luminoso ${v}`).toBe(litUnder(v, grade));
 				expect(glassContrast(grey(v), grade, "lit")).toBeCloseTo(contrast(token("ink")!, underGlass(grey(v), grade, "lit")), 10);
 			}
 		}
@@ -287,11 +296,10 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		["thin", 4.5],
 		["thick", 4.5],
 	] as const)("el techo de %s es la frontera: con ese gris detrás la tinta llega a %s:1 y con el siguiente ya no", (grade, min) => {
-		const under = (v: number) => over(token("lit-sheen")!, dimmed(grey(v), Number(token(`lit-dim-${grade}`))));
 		const ceiling = channels(token(`lit-ceiling-${grade}`)!)[0];
 		expect(token(`lit-ceiling-${grade}`)).toBe(grey(ceiling));
-		expect(contrast(token("ink")!, under(ceiling))).toBeGreaterThanOrEqual(min);
-		expect(contrast(token("ink")!, under(ceiling + 1))).toBeLessThan(min);
+		expect(contrast(token("ink")!, litUnder(ceiling, grade))).toBeGreaterThanOrEqual(min);
+		expect(contrast(token("ink")!, litUnder(ceiling + 1, grade))).toBeLessThan(min);
 		// Y es el único salto: por debajo del techo todo pasa, por encima nada
 		for (let v = 0; v <= 255; v++) expect(passesOnGlass(grey(v), grade, "lit"), `${grade} ${v}`).toBe(v <= ceiling);
 	});
@@ -305,8 +313,16 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		}
 	});
 
-	it("en zona luminosa el vidrio sigue siendo una lámina sobre negro puro: el brillo la levanta", () => {
-		for (const grade of GRADES) expect(contrast(underGlass("#000000", grade, "lit"), "#000000"), grade).toBeGreaterThanOrEqual(1.1);
+	it("en zona luminosa el vidrio sigue siendo una lámina sobre negro puro: la escarcha la levanta entera y el brillo, arriba", () => {
+		// Sólo la escarcha (lo que queda del 40 % para abajo): el doble de luminancia que el suelo de la página
+		const body = over(token("lit-frost")!, "#000000");
+		expect(luminance(body)).toBeGreaterThan(luminance(token("ground")!) * 2);
+		for (const grade of GRADES) expect(contrast(underGlass("#000000", grade, "lit"), "#000000"), grade).toBeGreaterThanOrEqual(1.2);
+		// El brillo y la escarcha juntos son el relleno del boceto elegido: de un 16 % de blanco arriba a un 6 %
+		const top = 1 - (1 - channels(token("lit-sheen")!)[3]) * (1 - channels(token("lit-frost")!)[3]);
+		expect(top).toBeGreaterThanOrEqual(0.15);
+		expect(top).toBeLessThanOrEqual(0.16);
+		expect(channels(token("lit-frost")!)[3]).toBe(0.06);
 	});
 
 	it("el ámbito sólo redefine variables: ninguna regla con vn-lit declara una propiedad", () => {
@@ -318,15 +334,16 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		}
 	});
 
-	it("el ámbito quita el humo, pone la atenuación de cada grado y sube el brillo, y nada más", () => {
+	it("el ámbito cambia el humo por la escarcha, pone la atenuación de cada grado, sube el brillo y baja la saturación, y nada más", () => {
 		expect(scopeSets).toEqual({
-			"--vn-smoke-clear": "transparent",
-			"--vn-smoke-thin": "transparent",
-			"--vn-smoke-thick": "transparent",
+			"--vn-smoke-clear": "var(--vn-lit-frost)",
+			"--vn-smoke-thin": "var(--vn-lit-frost)",
+			"--vn-smoke-thick": "var(--vn-lit-frost)",
 			"--vn-dim-clear": "var(--vn-lit-dim-clear)",
 			"--vn-dim-thin": "var(--vn-lit-dim-thin)",
 			"--vn-dim-thick": "var(--vn-lit-dim-thick)",
 			"--vn-sheen": "var(--vn-lit-sheen)",
+			"--vn-saturate": "var(--vn-lit-saturate)",
 		});
 		// Lo que redefine es justo lo que la raíz declara como «valores vivos»: una raíz `.vn` dentro de la zona lo devuelve todo al ahumado
 		expect(Object.keys(scopeSets).sort()).toEqual(declarations(liveRule?.[2] ?? "").map(([prop]) => prop).sort());

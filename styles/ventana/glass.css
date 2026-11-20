@@ -72,7 +72,10 @@
  * pone en la página o en una zona (`Lit` en glass.tsx) y todo vidrio de dentro
  * deja pasar el color de lo que tiene detrás. No lleva humo: es el filtro quien
  * atenúa el fondo (`brightness`, que oscurece sin quitar color: la lámina queda
- * luminosa y no gris), con un brillo algo más fuerte arriba.
+ * luminosa y no gris). La capa plana del relleno, que en el ahumado es el humo,
+ * aquí es una escarcha: un blanco muy tenue que levanta la lámina sobre un fondo
+ * oscuro. Encima, un brillo algo más fuerte, y el filtro satura menos (sin humo
+ * que la temple, la saturación del ahumado cambiaría el tono de un color vivo).
  *
  * Cuál toca lo decide lo que hay detrás. Luminoso sólo sobre fondos que
  * controlamos (el video de demostración, el resplandor de `Glow`): su garantía no
@@ -99,13 +102,14 @@
  */
 .vn-lit,
 .vn-lit .vn-nav__bar {
-	--vn-smoke-clear: transparent;
-	--vn-smoke-thin: transparent;
-	--vn-smoke-thick: transparent;
+	--vn-smoke-clear: var(--vn-lit-frost);
+	--vn-smoke-thin: var(--vn-lit-frost);
+	--vn-smoke-thick: var(--vn-lit-frost);
 	--vn-dim-clear: var(--vn-lit-dim-clear);
 	--vn-dim-thin: var(--vn-lit-dim-thin);
 	--vn-dim-thick: var(--vn-lit-dim-thick);
 	--vn-sheen: var(--vn-lit-sheen);
+	--vn-saturate: var(--vn-lit-saturate);
 }
 
 /*

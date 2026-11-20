@@ -26,22 +26,34 @@
 	--vn-line: rgba(255, 255, 255, 0.16);
 
 	/*
-	 * Vidrio luminoso (dentro de un ámbito `vn-lit`, ver glass.css): sin humo; es el
-	 * filtro quien atenúa lo de detrás, con `brightness()` por este factor, y el
-	 * brillo sube un poco. Sólo sobre fondos que controlamos. Cada techo es el gris
-	 * neutro más claro sobre el que la tinta aún llega al umbral del grado (3:1 el
-	 * claro, 4.5:1 fino y grueso): no se eligen, salen de la atenuación y del brillo
-	 * (255 × brillo + (1 − brillo) × atenuación × gris), y la prueba de tokens
+	 * Vidrio luminoso (dentro de un ámbito `vn-lit`, ver glass.css). Sólo sobre
+	 * fondos que controlamos. No lleva humo: es el filtro quien atenúa lo de detrás,
+	 * con `brightness()` por el factor de su grado, y bajo el brillo va una escarcha
+	 * (un blanco muy tenue en toda la lámina) en vez del humo. La escarcha y el
+	 * brillo juntos son el relleno del boceto que se eligió: de un 16 % de blanco
+	 * arriba a un 6 %; la atenuación es lo que se añade para que el texto se lea.
+	 * Sobre un fondo vivo la lámina enseña su color, algo más oscuro; sobre uno
+	 * oscuro la escarcha la levanta (sin ella un vidrio que sólo atenúa sería negro
+	 * sobre negro). Satura menos que el ahumado (140 % y no 180 %): sin humo encima,
+	 * tanta saturación cambia el tono de un color vivo (un naranja de marca sale
+	 * rojo).
+	 *
+	 * Cada techo es el gris neutro más claro sobre el que la tinta aún llega al
+	 * umbral del grado (3:1 el claro, 4.5:1 fino y grueso). No se eligen: salen de
+	 * la atenuación, la escarcha y el brillo, capa a capa
+	 * (brillo sobre (escarcha sobre (atenuación × gris))), y la prueba de tokens
 	 * comprueba que son la frontera exacta. Un color se prueba con `passesOnGlass`
 	 * de `ventana/glass-contrast.ts`, que lleva estos mismos números.
 	 */
-	--vn-lit-dim-clear: 0.82;
-	--vn-lit-dim-thin: 0.72;
-	--vn-lit-dim-thick: 0.6;
+	--vn-lit-dim-clear: 0.8;
+	--vn-lit-dim-thin: 0.7;
+	--vn-lit-dim-thick: 0.58;
+	--vn-lit-frost: rgba(255, 255, 255, 0.06);
 	--vn-lit-sheen: rgba(255, 255, 255, 0.1);
-	--vn-lit-ceiling-clear: #9d9d9d;
-	--vn-lit-ceiling-thin: #868686;
-	--vn-lit-ceiling-thick: #a0a0a0;
+	--vn-lit-saturate: 140%;
+	--vn-lit-ceiling-clear: #979797;
+	--vn-lit-ceiling-thin: #7b7b7b;
+	--vn-lit-ceiling-thick: #959595;
 	/*
 	 * Filete. `--vn-rim-light` son los tres colores del borde del vidrio (arriba,
 	 * lados, abajo): la luz cae desde arriba, así que el canto de arriba brilla, los
@@ -63,7 +75,6 @@
 	/* Desenfoque */
 	--vn-blur-thin: 20px;
 	--vn-blur-thick: 28px;
-	--vn-saturate: 180%;
 
 	/* Radios */
 	--vn-r-sheet: 28px;
@@ -91,8 +102,8 @@
  * grueso, 3:1 en claro; lo prueba tests/ventana-tokens.test.ts) y el negro puro
  * SUBE a un gris (37, 33 y 27 de 255): sobre una escena oscura la lámina se sigue
  * viendo como lámina y no como una tarjeta negra. Más humo (más alfa) es más
- * grueso: menos fondo y más texto. La atenuación del filtro vale 1: en el ahumado
- * el filtro ni oscurece ni aclara.
+ * grueso: menos fondo y más texto. El filtro satura al 180 % (el humo de encima
+ * lo templa) y su atenuación vale 1: en el ahumado ni oscurece ni aclara.
  *
  * Un ámbito `vn-lit` (glass.css) redefine justo estos valores para sus
  * descendientes. Por eso van en regla aparte y con tres selectores: quien los
@@ -110,6 +121,7 @@
 	--vn-smoke-thin: rgba(44, 44, 50, 0.74);
 	--vn-smoke-thick: rgba(32, 32, 37, 0.84);
 	--vn-sheen: rgba(255, 255, 255, 0.06);
+	--vn-saturate: 180%;
 	--vn-dim-clear: 1;
 	--vn-dim-thin: 1;
 	--vn-dim-thick: 1;

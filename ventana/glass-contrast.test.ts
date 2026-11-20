@@ -75,36 +75,50 @@ describe("vidrio luminoso: la garantía es sobre un techo declarado", () => {
 	 * sobre vidrio fino luminoso. La cuenta, a mano:
 	 *
 	 * Naranja #c2410c = (194, 65, 12).
-	 *   saturate(180 %): R = 1.6296·194 − 0.572·65 − 0.0576·12 = 278.3 → 255
-	 *                    G = −0.1704·194 + 1.228·65 − 0.0576·12 = 46.1 → 46
-	 *                    B = −0.1704·194 − 0.572·65 + 1.7424·12 = −49.3 → 0
-	 *   brightness(0.72): (183.6, 33.1, 0) → (184, 33, 0)
-	 *   brillo 10 % de blanco encima: 25.5 + 0.9·canal → (191, 55, 26) = #bf371a
-	 *   luminancia 0.139; tinta #f5f5f7 0.913: (0.913 + 0.05) / (0.139 + 0.05) = 5.1:1. Pasa.
+	 *   saturate(140 %): R = 1.3148·194 − 0.286·65 − 0.0288·12 = 236.1 → 236
+	 *                    G = −0.0852·194 + 1.114·65 − 0.0288·12 = 55.5 → 56
+	 *                    B = −0.0852·194 − 0.286·65 + 1.3712·12 = −18.7 → 0
+	 *   brightness(0.7): (165.2, 39.2, 0) → (165, 39, 0)
+	 *   escarcha, 6 % de blanco encima: 15.3 + 0.94·canal → (170, 52, 15)
+	 *   brillo, 10 % de blanco encima: 25.5 + 0.9·canal → (179, 72, 39) = #b34827
+	 *   luminancia 0.144; tinta #f5f5f7 0.914: (0.914 + 0.05) / (0.144 + 0.05) = 5.0:1. Pasa.
 	 *
 	 * Crema #f5ead8 = (245, 234, 216).
-	 *   saturate(180 %): (253, 233, 201); brightness(0.72): (182, 168, 145)
-	 *   brillo: (189, 177, 156) = #bdb19c; luminancia 0.445: 0.963 / 0.495 = 1.9:1. No pasa.
+	 *   saturate(140 %): (249, 234, 208); brightness(0.7): (174, 164, 146)
+	 *   escarcha: (179, 169, 153); brillo: (187, 178, 163) = #bbb2a3
+	 *   luminancia 0.450: 0.964 / 0.500 = 1.9:1. No pasa.
 	 */
 	it("el naranja de la marca de demostración pasa en fino", () => {
-		expect(underGlass("#c2410c", "thin", "lit")).toBe("#bf371a");
-		expect(glassContrast("#c2410c", "thin", "lit")).toBeCloseTo(5.1, 1);
+		expect(underGlass("#c2410c", "thin", "lit")).toBe("#b34827");
+		expect(glassContrast("#c2410c", "thin", "lit")).toBeCloseTo(5.0, 1);
 		expect(passesOnGlass("#c2410c", "thin", "lit")).toBe(true);
 	});
 
 	it("su crema no pasa: un fondo con esa crema bajo el vidrio pide ahumado", () => {
-		expect(underGlass("#f5ead8", "thin", "lit")).toBe("#bdb19c");
+		expect(underGlass("#f5ead8", "thin", "lit")).toBe("#bbb2a3");
 		expect(glassContrast("#f5ead8", "thin", "lit")).toBeCloseTo(1.9, 1);
 		expect(passesOnGlass("#f5ead8", "thin", "lit")).toBe(false);
 		expect(passesOnGlass("#f5ead8", "thin", "smoked")).toBe(true);
 	});
 
 	it("la saturación del filtro cuenta: un color vivo queda más claro de lo que diría sólo la atenuación", () => {
-		// Sin saturar, el naranja atenuado sería (140, 47, 9): la cuenta daría 6.1:1 y prometería de más
-		const naive = 6.1;
-		expect(glassContrast("#c2410c", "thin", "lit")).toBeLessThan(naive - 0.5);
+		// Sin saturar, el naranja atenuado sería (136, 46, 8): la cuenta daría 5.5:1 y prometería de más
+		const naive = 5.5;
+		expect(glassContrast("#c2410c", "thin", "lit")).toBeLessThan(naive - 0.3);
+		// El ahumado satura más (180 %) que el luminoso (140 %): sin humo encima, tanta saturación volvería rojo un naranja
+		expect(GLASS.saturate.lit).toBeLessThan(GLASS.saturate.smoked);
 		// Un gris no tiene color que saturar: sólo se atenúa
-		expect(underGlass("#808080", "thin", "lit")).toBe("#6c6c6c");
+		// 128 × 0.7 = 90; con la escarcha, 100; con el brillo, 116
+		expect(underGlass("#808080", "thin", "lit")).toBe("#747474");
+	});
+
+	it("sobre negro puro la lámina no desaparece: la escarcha la levanta, entera, y el brillo más arriba", () => {
+		// Sin escarcha un vidrio que sólo atenúa sería negro sobre negro, con el canto de luz y nada más
+		expect(GLASS.frost).toBeGreaterThan(0);
+		for (const grade of GRADES) {
+			// 255 × 0.06 = 15 en toda la lámina; con el brillo arriba, 39
+			expect(underGlass("#000000", grade, "lit")).toBe("#272727");
+		}
 	});
 });
 

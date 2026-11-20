@@ -18,8 +18,8 @@
  * El modelo es el de `styles/ventana/glass.css`, capa a capa y de abajo arriba:
  * el fondo saturado por el filtro (`saturate`, que deja igual los grises y aviva
  * los colores: un naranja queda más claro de lo que era), después atenuado
- * (`brightness`, sólo en el luminoso) o cubierto por el humo (en el ahumado), y
- * encima el brillo en su punto más fuerte. El desenfoque no se cuenta a
+ * (`brightness`) y con una escarcha encima (en el luminoso) o cubierto por el
+ * humo (en el ahumado), y arriba el brillo en su punto más fuerte. El desenfoque no se cuenta a
  * propósito: desenfocar promedia colores, así que el peor caso es el color más
  * claro sin desenfocar. Cada capa se redondea a 8 bits, como la prueba de tokens.
  *
@@ -38,10 +38,12 @@ export const GLASS: {
 	smoked: Record<GlassGrade, { smoke: [number, number, number, number] }>;
 	/** La atenuación (`brightness`) de cada grado en zona luminosa y su techo. */
 	lit: Record<GlassGrade, { dim: number; ceiling: string }>;
+	/** El alfa de la escarcha: el blanco muy tenue que el luminoso lleva en toda la lámina donde el ahumado lleva el humo. */
+	frost: number;
 	/** El alfa del brillo (blanco) en su punto más fuerte, por densidad. */
 	sheen: { smoked: number; lit: number };
-	/** El factor de `saturate()` del filtro (180 %). */
-	saturate: number;
+	/** El factor de `saturate()` del filtro, por densidad: 180 % el ahumado, 140 % el luminoso. */
+	saturate: { smoked: number; lit: number };
 	ink: string;
 	/** El contraste que pide cada grado: el claro sólo lleva íconos. */
 	threshold: Record<GlassGrade, number>;
@@ -52,12 +54,13 @@ export const GLASS: {
 		thick: { smoke: [32, 32, 37, 0.84] },
 	},
 	lit: {
-		clear: { dim: 0.82, ceiling: "#9d9d9d" },
-		thin: { dim: 0.72, ceiling: "#868686" },
-		thick: { dim: 0.6, ceiling: "#a0a0a0" },
+		clear: { dim: 0.8, ceiling: "#979797" },
+		thin: { dim: 0.7, ceiling: "#7b7b7b" },
+		thick: { dim: 0.58, ceiling: "#959595" },
 	},
+	frost: 0.06,
 	sheen: { smoked: 0.06, lit: 0.1 },
-	saturate: 1.8,
+	saturate: { smoked: 1.8, lit: 1.4 },
 	ink: "#f5f5f7",
 	threshold: { clear: 3, thin: 4.5, thick: 4.5 },
 };
@@ -97,10 +100,10 @@ function luminance(rgb: Rgb): number {
 
 /** El color que queda bajo el texto de un vidrio de ese grado y densidad con `backdrop` (#rrggbb) detrás. */
 export function underGlass(backdrop: string, grade: GlassGrade, density: GlassDensity): string {
-	const behind = saturate(parse(backdrop), GLASS.saturate);
+	const behind = saturate(parse(backdrop), GLASS.saturate[density]);
 	if (density === "lit") {
 		const dimmed = each(behind, (c) => c * GLASS.lit[grade].dim);
-		return toHex(over(WHITE, GLASS.sheen.lit, dimmed));
+		return toHex(over(WHITE, GLASS.sheen.lit, over(WHITE, GLASS.frost, dimmed)));
 	}
 	const [r, g, b, alpha] = GLASS.smoked[grade].smoke;
 	return toHex(over(WHITE, GLASS.sheen.smoked, over([r, g, b], alpha, behind)));
