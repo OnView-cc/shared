@@ -13,6 +13,7 @@
     "check:neutral": "node scripts/check-neutral.mjs",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.ui.json --noEmit && tsc -p tsconfig.worker.json --noEmit",
+    "springs": "node --experimental-strip-types scripts/gen-springs.mjs",
     "docs": "node scripts/gen-docs.mjs",
     "docs:check": "node scripts/gen-docs.mjs --check",
     "docs:gaps": "node scripts/gen-docs.mjs --gaps"

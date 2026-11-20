@@ -1,0 +1,59 @@
+/*
+ * Ventana: movimiento. GENERADO, no editar: `npm run springs` (scripts/gen-springs.mjs
+ * a partir de ventana/springs.ts).
+ */
+.vn {
+	--vn-spring-soft: linear(0, 0.016, 0.058, 0.118, 0.188, 0.264, 0.342, 0.418, 0.492, 0.56, 0.624, 0.681, 0.733, 0.778, 0.818, 0.852, 0.882, 0.906, 0.927, 0.945, 0.959, 0.971, 0.98, 0.987, 0.993, 0.997, 1.001, 1.003, 1.004, 1.005, 1.006, 1.006, 1.006, 1.006, 1.006, 1.005, 1.005, 1.004, 1.004, 1.003, 1.003, 1.002, 1.002, 1.002, 1.001, 1.001, 1.001, 1.001, 1.001, 1);
+	--vn-spring-soft-ms: 817ms;
+	--vn-spring-snap: linear(0, 0.038, 0.132, 0.254, 0.385, 0.513, 0.629, 0.73, 0.814, 0.881, 0.932, 0.969, 0.995, 1.013, 1.023, 1.027, 1.028, 1.027, 1.024, 1.021, 1.017, 1.013, 1.01, 1.007, 1.005, 1.003, 1.002, 1.001, 1, 1, 1);
+	--vn-spring-snap-ms: 500ms;
+	--vn-ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Llegada: sube, se aclara y se enfoca con el muelle suave. `--vn-i` escalona 60ms por hermano. */
+.vn-arrive {
+	opacity: 1;
+	translate: 0 0;
+	scale: 1;
+	filter: blur(0);
+	transition:
+		opacity var(--vn-spring-soft-ms) var(--vn-ease-out),
+		translate var(--vn-spring-soft-ms) var(--vn-spring-soft),
+		scale var(--vn-spring-soft-ms) var(--vn-spring-soft),
+		filter var(--vn-spring-soft-ms) var(--vn-ease-out);
+	transition-delay: calc(var(--vn-i, 0) * 60ms);
+	@starting-style {
+		opacity: 0;
+		translate: 0 10px;
+		scale: 0.96;
+		filter: blur(6px);
+	}
+}
+
+/* Pulsación: se hunde un poco con el muelle vivo. */
+.vn-press {
+	transition: scale var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn-press:active {
+	scale: 0.97;
+}
+
+/* Movimiento reducido: sólo opacidad */
+@media (prefers-reduced-motion: reduce) {
+	.vn-arrive {
+		transition: opacity var(--vn-spring-snap-ms) linear;
+		transition-delay: 0ms;
+		@starting-style {
+			opacity: 0;
+			translate: none;
+			scale: 1;
+			filter: none;
+		}
+	}
+	.vn-press {
+		transition: none;
+	}
+	.vn-press:active {
+		scale: 1;
+	}
+}
