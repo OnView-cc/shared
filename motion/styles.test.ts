@@ -9,7 +9,7 @@ describe("the styles", () => {
 		expect(summary.length).toBeGreaterThan(10);
 		expect(music.mood.length).toBeGreaterThan(3);
 		expect(look).toEqual({
-			background: { kind: "sky", motion: "still", saturate: 0 },
+			background: { kind: "sky", motion: "still", saturate: 0, cycle: false },
 			type: { scale: "m", weight: "kit-500", case: "normal", tracking: -0.025, entry: "groups", place: "center" },
 			tempo: { bpm: 116, min: 110, max: 124 },
 			transitions: { between: "blur", close: "blur" },

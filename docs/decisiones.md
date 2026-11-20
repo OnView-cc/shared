@@ -94,3 +94,16 @@ Spec `../docs/superpowers/specs/2026-11-18-onview-todo-codigo-design.md`.
 - **La biblioteca de la entrega 1** (`motion/templates.ts`, `TEMPLATE_IDS`): Lanzamiento de software, Novedades, Integraciones, Producto, Catálogo, Cómo se usa, Oferta e Historia de marca, con nombre y descripción en en/es/pt, cuándo elegirlo (para Lumen) y muestras genéricas (nunca el texto de una marca).
 - **Material con tipo** (`MaterialKind`: captura, foto de producto, logo, otra; `parseMaterialKind` lee lo desconocido como «otra»).
 - **Pulido tras la comparación con Arcade** (tarea 0b del plan): ver el commit `6a55d16`.
+
+## v2.5.0: estilos (OnView, 2026-11-19)
+
+Spec `../docs/superpowers/specs/2026-11-19-onview-estilos-y-referencias-design.md`, plan `../docs/superpowers/plans/2026-11-19-onview-estilos-y-referencias.md` (tareas 1–9).
+
+- **Template = estructura + estilo** (`motion/styles.ts`): 8 estilos (Arcade, Changelog, Órbita, Escaparate, Bloques, Paso a paso, Impacto, Cine), uno por template. El kit pone la familia, los colores y los logos; el estilo, el fondo, el peso, la escala, la entrada de la letra, el tempo, las transiciones, la cámara, el marco del producto y la energía de la música. `resolveStyle` es la única puerta (template → `style_id` → retoques) y nunca lanza; el tempo no se retoca aquí (vive en `tempo_bpm`).
+- **Arcade no cambia ni un cuadro**: su ficha es el aspecto de antes (cielo quieto, peso del kit hasta 500, `blur`), y la línea base del estudio (`render/test/arcade-baseline.int.test.ts`, PSNR ≥ 45 dB) lo comprueba en cada cambio.
+- **La transición vacía es la del estilo** (`compose.ts`): la del momento anterior a un cierre `logo`, `transitions.close`; la del último, un corte. Un momento del template sólo la fija a propósito (el `push` de la ráfaga de Arcade y el `cut` del cierre).
+- **Fondos** (`background.ts`): `sky`, `dark`, `brand` (con `saturate`), `paper`, `photo`, `auto`; `inkOn` elige la tinta (≥ 4.5) y sobre el cielo es la de siempre. `cycle` (Bloques) pinta cada momento de otro color del kit con su tinta.
+- **Transiciones nuevas** (`transitions.ts`): `wipe`, `slide`, `punch` y `fade` (dos golpes). **Cámara** (`camera.ts`): dos envolturas (`camera` y `hit`) para el acercamiento lento, el paralaje y los golpes; si algo se mueve, el fondo sobra 6 u por lado.
+- **La letra** (`type.ts`): `phraseWeight` fija el peso del estilo con el más cercano que tenga la letra (`Face.weights`), `SCALE`, mayúsculas y espaciado; el motor carga la letra a ese peso antes de medir. Entradas `groups` (Arcade), `slam`, `rise`, `fade` y `type`; sitio `center`, `corner` o `lower`.
+- **Producto**: marcos `shadow`, `plinth` (base y reflejo) y `bleed`; `wide` dobla el movimiento. **Cierre**: sobre fondo claro con el logo para fondos claros; sobre oscuro, con el de cierre si el color de cierre es casi el del fondo; si no, la tarjeta de siempre.
+- Lo que enseñaron las muestras (tarea 8) y Bloques (tarea 9) está en el registro del plan.

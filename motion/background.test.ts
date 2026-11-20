@@ -15,7 +15,7 @@ const kit = (color: string, text = "#ffffff", closing = "#0b1f44") => ({
 	lightLogo: null,
 });
 
-const bg = (kind: BackgroundKind, saturate = 0): Style["background"] => ({ kind, motion: "still", saturate });
+const bg = (kind: BackgroundKind, saturate = 0): Style["background"] => ({ kind, motion: "still", saturate, cycle: false });
 const EXTREMES = ["#ffffff", "#000000", "#ffd400", "#0b1f4d"];
 const KINDS: BackgroundKind[] = ["sky", "dark", "brand", "paper", "auto"];
 

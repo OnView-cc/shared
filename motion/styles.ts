@@ -33,7 +33,8 @@ export interface Style {
 	name: LocalText;
 	/** Una línea para Lumen, en inglés. */
 	summary: string;
-	background: { kind: BackgroundKind; motion: "still" | "drift"; saturate: number };
+	/** `cycle`: cada momento sobre otro color del kit (Bloques); la tinta se elige para cada uno. */
+	background: { kind: BackgroundKind; motion: "still" | "drift"; saturate: number; cycle: boolean };
 	type: { scale: "s" | "m" | "l" | "xl"; weight: number | "kit-500"; case: "normal" | "upper"; tracking: number; entry: TypeEntry; place: "center" | "corner" | "lower" };
 	tempo: { bpm: number; min: number; max: number };
 	transitions: { between: Transition; close: Transition };
@@ -59,7 +60,7 @@ export const STYLES: Record<StyleId, Style> = {
 		id: "arcade",
 		name: { en: "Arcade", es: "Arcade", pt: "Arcade" },
 		summary: "Arcade: light sky with soft brand-colour glows, phrases that come in word by word, 116 BPM, blur between moments",
-		background: { kind: "sky", motion: "still", saturate: 0 },
+		background: { kind: "sky", motion: "still", saturate: 0, cycle: false },
 		type: { scale: "m", weight: "kit-500", case: "normal", tracking: -0.025, entry: "groups", place: "center" },
 		tempo: { bpm: 116, min: 110, max: 124 },
 		transitions: { between: "blur", close: "blur" },
@@ -71,7 +72,7 @@ export const STYLES: Record<StyleId, Style> = {
 		id: "changelog",
 		name: { en: "Changelog", es: "Changelog", pt: "Changelog" },
 		summary: "Changelog: flat off-white paper, phrases that rise in, 120 BPM, hard cuts on the beat with a small zoom hit",
-		background: { kind: "paper", motion: "still", saturate: 0 },
+		background: { kind: "paper", motion: "still", saturate: 0, cycle: false },
 		type: { scale: "m", weight: 600, case: "normal", tracking: -0.02, entry: "rise", place: "center" },
 		tempo: { bpm: 120, min: 114, max: 128 },
 		transitions: { between: "cut", close: "cut" },
@@ -83,7 +84,7 @@ export const STYLES: Record<StyleId, Style> = {
 		id: "orbit",
 		name: { en: "Orbit", es: "Órbita", pt: "Órbita" },
 		summary: "Orbit: near-black with a brand-colour glow, large phrases, logos in orbit with parallax, 120 BPM, push between moments",
-		background: { kind: "dark", motion: "drift", saturate: 0 },
+		background: { kind: "dark", motion: "drift", saturate: 0, cycle: false },
 		type: { scale: "l", weight: 600, case: "normal", tracking: -0.025, entry: "groups", place: "center" },
 		tempo: { bpm: 120, min: 112, max: 126 },
 		transitions: { between: "push", close: "push" },
@@ -95,7 +96,7 @@ export const STYLES: Record<StyleId, Style> = {
 		id: "showcase",
 		name: { en: "Showcase", es: "Escaparate", pt: "Vitrine" },
 		summary: "Showcase: editorial, near-black with a soft brand glow, the product photo on a plinth with a slow push-in, small uppercase words in a corner, 96 BPM, wipes",
-		background: { kind: "dark", motion: "still", saturate: 0 },
+		background: { kind: "dark", motion: "still", saturate: 0, cycle: false },
 		type: { scale: "s", weight: 400, case: "upper", tracking: 0.12, entry: "fade", place: "corner" },
 		tempo: { bpm: 96, min: 88, max: 104 },
 		transitions: { between: "wipe", close: "wipe" },
@@ -107,7 +108,7 @@ export const STYLES: Record<StyleId, Style> = {
 		id: "blocks",
 		name: { en: "Blocks", es: "Bloques", pt: "Blocos" },
 		summary: "Blocks: solid brand-colour blocks, large bold phrases that slam in, one product per beat, 124 BPM, hard cuts with a zoom hit",
-		background: { kind: "brand", motion: "still", saturate: 0.3 },
+		background: { kind: "brand", motion: "still", saturate: 0.3, cycle: true },
 		type: { scale: "l", weight: 700, case: "normal", tracking: -0.03, entry: "slam", place: "center" },
 		tempo: { bpm: 124, min: 118, max: 130 },
 		transitions: { between: "cut", close: "cut" },
@@ -119,7 +120,7 @@ export const STYLES: Record<StyleId, Style> = {
 		id: "steps",
 		name: { en: "Step by step", es: "Paso a paso", pt: "Passo a passo" },
 		summary: "Step by step: calm off-white paper, phrases that rise in the lower third, 90 BPM, moments slide from one to the next",
-		background: { kind: "paper", motion: "still", saturate: 0 },
+		background: { kind: "paper", motion: "still", saturate: 0, cycle: false },
 		type: { scale: "m", weight: 500, case: "normal", tracking: -0.02, entry: "rise", place: "lower" },
 		tempo: { bpm: 90, min: 84, max: 100 },
 		transitions: { between: "slide", close: "slide" },
@@ -131,7 +132,7 @@ export const STYLES: Record<StyleId, Style> = {
 		id: "impact",
 		name: { en: "Impact", es: "Impacto", pt: "Impacto" },
 		summary: "Impact: saturated brand colour full frame, huge uppercase words that slam in, 128 BPM, cuts with a zoom punch and a shake on strong beats",
-		background: { kind: "brand", motion: "still", saturate: 0.8 },
+		background: { kind: "brand", motion: "still", saturate: 0.8, cycle: false },
 		type: { scale: "xl", weight: 800, case: "upper", tracking: -0.02, entry: "slam", place: "center" },
 		tempo: { bpm: 128, min: 122, max: 134 },
 		transitions: { between: "punch", close: "punch" },
@@ -143,7 +144,7 @@ export const STYLES: Record<StyleId, Style> = {
 		id: "cinema",
 		name: { en: "Cinema", es: "Cine", pt: "Cinema" },
 		summary: "Cinema: near-black, large light phrases that fade in word by word, a slow push-in, 80 BPM, long crossfades",
-		background: { kind: "dark", motion: "drift", saturate: 0 },
+		background: { kind: "dark", motion: "drift", saturate: 0, cycle: false },
 		type: { scale: "l", weight: 400, case: "normal", tracking: -0.01, entry: "fade", place: "center" },
 		tempo: { bpm: 80, min: 72, max: 90 },
 		transitions: { between: "fade", close: "fade" },
@@ -166,7 +167,7 @@ const isWeight = (v: unknown): v is number => typeof v === "number" && Number.is
 
 /** Un campo por cada parte que se puede retocar: el nombre del campo y si el valor vale. */
 const FIELDS: { [P in Exclude<keyof StylePatch, "styleId">]: Record<string, (v: unknown) => boolean> } = {
-	background: { kind: (v) => oneOf(BG_KINDS, v), motion: (v) => oneOf(["still", "drift"], v), saturate: (v) => between(v, 0, 1) },
+	background: { kind: (v) => oneOf(BG_KINDS, v), motion: (v) => oneOf(["still", "drift"], v), saturate: (v) => between(v, 0, 1), cycle: (v) => typeof v === "boolean" },
 	type: {
 		scale: (v) => oneOf(["s", "m", "l", "xl"], v),
 		weight: (v) => isWeight(v) || v === "kit-500",

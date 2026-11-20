@@ -9,7 +9,8 @@
  * `worst=1` usa los peores casos (frases largas, una sola imagen muy ancha…).
  * `icons=<carpeta>` toma los iconos de `<carpeta>/0.svg`…`5.svg` y el logo de
  * `<carpeta>/logo.svg`; `bpm` y `offset` fijan el tempo (para comparar con una
- * pista real).
+ * pista real). `style=<id>` pinta el ejemplo con uno de los 8 estilos (`styles.ts`;
+ * spec 2026-11-19-onview-estilos-y-referencias); sin él, Arcade.
  * Expone `window.__motion` (`seek`, `duration`, `ready`) como la página del
  * Container, así el mismo script de capturas sirve para las dos. Los iconos son
  * cuadrados de color dibujados aquí: este repo es público y no lleva marcas de
@@ -26,6 +27,7 @@ const lang = (q.get("lang") ?? "es") as "en" | "es" | "pt";
 const iconDir = q.get("icons");
 const bpm = Number(q.get("bpm") ?? 116);
 const offset = Number(q.get("offset") ?? 0);
+const styleId = q.get("style");
 
 const COLORS = ["#0b8fa3", "#168a63", "#d3622b", "#3e5dda", "#804ed2", "#51972e"];
 const icon = (i: number, w = 256, h = 256) => {
@@ -78,6 +80,7 @@ const doc = composeVideo({
 	closingLine: worst ? "Empieza hoy con todo tu equipo en un mismo sitio" : "onview.cc",
 	tempo: { bpm, offset },
 	template: { id: "software-launch", voice: false },
+	style: { id: styleId, overrides: null },
 	shots,
 	music: null,
 	sfx: [],

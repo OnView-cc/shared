@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { composeVideo, type ComposeShot } from "../../video/compose";
 import { createMotion } from "../index";
 import { parseBlockParams, type BlockKind } from "../types";
+import { contrast } from "../background";
 
 
 const shot = (block: BlockKind, params: Record<string, unknown>, beats: number, position = 0, images: ComposeShot["images"] = []): ComposeShot => ({
@@ -135,5 +136,25 @@ describe("what the samples showed (task 8)", () => {
 			expect(parseFloat(base.style.top) + parseFloat(base.style.height)).toBeLessThanOrEqual(1080);
 			root.remove();
 		}
+	});
+});
+
+describe("Blocks: each moment on a different colour of the kit (task 9)", () => {
+	it("cycles the kit's colours across moments, with ink that reads on each", async () => {
+		const shots = [0, 1, 2].map((i) => shot("text", { lines: [`Line ${i}`] }, 4, i));
+		mount(shots, "catalog", null, { colors: ["#3b5bfd", "#ff7a59", "#ffd400"], accentColor: "#ff7a59" });
+		const bgs = [0, 1, 2].map((i) => layer(i).style.background);
+		expect(new Set(bgs).size).toBe(3);
+		for (const i of [0, 1, 2]) {
+			const word = layer(i).querySelector<HTMLElement>(".motion-text")!;
+			const toHex = (rgb: string) => `#${(rgb.match(/\d+/g) ?? []).slice(0, 3).map((n) => Number(n).toString(16).padStart(2, "0")).join("")}`;
+			expect(contrast(toHex(word.style.color), toHex(layer(i).style.background))).toBeGreaterThanOrEqual(4.5);
+		}
+	});
+
+	it("only Blocks cycles", () => {
+		mount([shot("text", { lines: ["A"] }, 4), shot("text", { lines: ["B"] }, 4, 1)], "offer");
+		expect(layer(0).style.background).toBe("");
+		expect(layer(1).style.background).toBe("");
 	});
 });

@@ -201,3 +201,15 @@ export function drawBackground(stage: HTMLElement, bg: Style["background"], bran
 	stage.appendChild(layer);
 	return { ...resolved, layer };
 }
+
+/**
+ * Los colores por los que pasa Bloques (`background.cycle`): los del kit que
+ * dan un bloque (ni casi blancos ni casi negros), el acento primero; con menos
+ * de dos, el color de la marca y una versión más oscura.
+ */
+export function cyclePalette(brand: Pick<MotionBrand, "accent" | "colors">, saturation = 0): string[] {
+	const first = brandColor(brand);
+	const usable = [first, ...brand.colors].filter((c, i, all) => rgb(c) && luminance(c) > 0.03 && luminance(c) < 0.85 && all.findIndex((x) => x.toLowerCase() === c.toLowerCase()) === i);
+	const list = usable.length >= 2 ? usable : [first, mix(first, "#000000", 0.35)];
+	return list.map((c) => saturate(c, saturation));
+}

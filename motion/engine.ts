@@ -18,7 +18,7 @@
 import { gsap } from "gsap";
 import { WATERMARK } from "../video/compose";
 import { beatSeconds as beatOf } from "./fit";
-import { drawBackground, inkOn } from "./background";
+import { cyclePalette, drawBackground, inkOn } from "./background";
 import { wireCamera } from "./camera";
 import { phraseWeight } from "./type";
 import { STYLES } from "./styles";
@@ -95,7 +95,14 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	});
 	wireTransitions(tl, layers, doc.moments, beat);
 	wireCamera(tl, { camera, hit, background: drawn.layer }, style, { total: doc.total, beatSeconds: beat, offset: doc.tempo.offset, u });
+	// Bloques: cada momento sobre otro color del kit, con la tinta que se lea en él (el cierre, con el suyo).
+	const palette = style.background.cycle ? cyclePalette(doc.brand, style.background.saturate) : null;
 	doc.moments.forEach((moment, i) => {
+		let own = background;
+		if (palette && moment.block !== "logo") {
+			own = { kind: "brand", color: palette[i % palette.length]! };
+			layers[i]!.style.background = own.color;
+		}
 		blockFor(moment.block)?.({
 			el: layers[i]!,
 			tl,
@@ -106,9 +113,9 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 			mode: opts.mode,
 			beat: (n) => moment.at + n * beat,
 			beatSeconds: beat,
-			ink,
+			ink: own === background ? ink : inkOn(own, doc.brand),
 			style,
-			background,
+			background: own,
 			font,
 			onReady: (fn) => fitters.push(fn),
 		});
