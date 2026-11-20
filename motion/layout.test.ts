@@ -39,3 +39,19 @@ describe("textLayout", () => {
 		expect(textLayout([], "square").sizeU).toBe(11.4);
 	});
 });
+
+describe("textLayout with the style's scale (spec 2026-11-19)", () => {
+	it("with no scale it is exactly as before", () => {
+		expect(textLayout(["Seis apps"], "landscape", 1)).toEqual(textLayout(["Seis apps"], "landscape"));
+		expect(textLayout(["Seis apps"], "portrait", 1, "center")).toEqual(textLayout(["Seis apps"], "portrait"));
+	});
+
+	it("scales the size", () => {
+		expect(textLayout(["Sale"], "landscape", 1.7).sizeU).toBeCloseTo(11.4 * 1.7, 1);
+		expect(textLayout(["Sale"], "landscape", 0.55).sizeU).toBeCloseTo(11.4 * 0.55, 1);
+	});
+
+	it("a corner phrase takes a narrower column", () => {
+		expect(textLayout(["New collection"], "landscape", 0.55, "corner").widthPct).toBeLessThan(textLayout(["New collection"], "landscape").widthPct);
+	});
+});

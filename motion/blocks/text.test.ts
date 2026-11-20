@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import { composeVideo, type ComposeShot } from "../../video/compose";
 import { parseBlockParams, type BlockKind } from "../types";
 import { createMotion } from "../index";
+import { STYLES } from "../styles";
+import { nearestWeight, phraseWeight } from "./text";
 
 const shot = (block: BlockKind, params: Record<string, unknown>, beats: number, position = 0): ComposeShot => ({
 	id: `m${position}`,
@@ -11,7 +13,7 @@ const shot = (block: BlockKind, params: Record<string, unknown>, beats: number, 
 	block,
 	params: parseBlockParams(block, params),
 	beats,
-	transition: "cut",
+	transition: "cut",
 	voice: null,
 	images: [],
 });
@@ -149,4 +151,68 @@ describe("logo block", () => {
 		expect(layer.querySelector("img")?.getAttribute("src")).toBe("light.png");
 		expect(layer.querySelector<HTMLElement>(".motion-line")!.style.color).toBe("rgb(11, 31, 68)");
 	});
+});
+
+describe("the style's type (spec 2026-11-19)", () => {
+	function mountStyled(lines: string[], template: string | null, style: { id: string | null; overrides: unknown } | undefined, primary = { family: "inter", weight: 500 } as { family: string; weight: number; weights?: number[] }, format: "16:9" | "9:16" = "16:9") {
+		const c = composeVideo({ format, voiceVolume: 1, musicVolume: 0.35, musicFadeIn: 0, musicFadeOut: 1.5, closingLine: "", tempo: { bpm: 120, offset: 0 }, template: template ? { id: template, voice: true } : null, style, shots: [shot("text", { lines }, 4)], music: null, sfx: [], brand: { ...brand, primary }, limits: { watermark: false } });
+		root = document.createElement("div");
+		document.body.appendChild(root);
+		return createMotion(root, { ...c, media: { watermark: null } }, { mode: "export", imageWaitMs: 10 });
+	}
+	const text = () => root.querySelector<HTMLElement>(".motion-text")!;
+
+	it("nearestWeight picks the closest weight the font has, the lighter on a tie", () => {
+		expect(nearestWeight(800, [400])).toBe(400);
+		expect(nearestWeight(800, [400, 500, 600, 700])).toBe(700);
+		expect(nearestWeight(650, [600, 700])).toBe(600);
+		expect(nearestWeight(650)).toBe(650);
+	});
+
+	it("phraseWeight: Arcade keeps the kit's weight up to 500; a number is the style's weight", () => {
+		expect(phraseWeight({ ...STYLES.arcade.type }, { family: "inter", weight: 700 })).toBe(500);
+		expect(phraseWeight({ ...STYLES.arcade.type }, { family: "inter", weight: 400 })).toBe(400);
+		expect(phraseWeight({ ...STYLES.impact.type }, { family: "inter", weight: 400, weights: [400, 500, 600, 700, 800] })).toBe(800);
+	});
+
+	it("Arcade writes exactly as before", () => {
+		mountStyled(["Seis apps"], "software-launch", undefined, { family: "inter", weight: 700 });
+		expect(text().style.fontWeight).toBe("500");
+		expect(text().style.fontSize).toBe(`${11.4 * 10.8}px`);
+		expect(text().style.textTransform).toBe("");
+		expect(text().style.letterSpacing).toBe("");
+	});
+
+	it("Impact with a font that only has 400 stays at 400, in uppercase and larger", () => {
+		mountStyled(["Sale"], "offer", undefined, { family: "bebas-neue", weight: 400, weights: [400] });
+		expect(text().style.fontWeight).toBe("400");
+		expect(text().style.textTransform).toBe("uppercase");
+		expect(parseFloat(text().style.fontSize)).toBeGreaterThan(11.4 * 10.8);
+	});
+
+	it("Showcase writes small, in a corner, aligned left", () => {
+		mountStyled(["New collection"], "product", undefined);
+		expect(text().style.textAlign).toBe("left");
+		expect(parseFloat(text().style.fontSize)).toBeLessThan(11.4 * 10.8);
+		const fill = root.querySelector<HTMLElement>(".motion-fill")!;
+		expect(fill.style.placeItems).toBe("end start");
+		expect(fill.style.padding).toBe(`${7 * 10.8}px`);
+	});
+
+	for (const entry of ["groups", "slam", "rise", "fade", "type"] as const) {
+		it(`entry ${entry}: everything is in by the end and seeking back gives the same frame`, async () => {
+			const m = mountStyled(["Seis apps", "que ya se"], null, { id: null, overrides: { type: { entry } } });
+			const look = () => [...root.querySelectorAll<HTMLElement>(".motion-line, .motion-word, .motion-letter, .motion-rise")].map((e) => `${e.style.opacity}|${e.style.transform}|${e.style.color}`).join(";");
+			await m.seek(0.6);
+			const direct = look();
+			await m.seek(1.9);
+			const lines = [...root.querySelectorAll<HTMLElement>(".motion-line")];
+			// Sin opacidad escrita, se ve entero.
+			const seen = (e: HTMLElement) => Number(e.style.opacity === "" ? "1" : e.style.opacity);
+			expect(lines.map(seen)).toEqual([1, 1]);
+			expect([...root.querySelectorAll<HTMLElement>(".motion-word, .motion-letter")].every((w) => seen(w) === 1)).toBe(true);
+			await m.seek(0.6);
+			expect(look()).toBe(direct);
+		});
+	}
 });

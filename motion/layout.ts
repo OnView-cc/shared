@@ -29,9 +29,6 @@ const BASE: Record<Orientation, { sizeU: number; widthPct: number; widthU: numbe
 /** El ancho medio de una letra, en «emes». */
 const CHAR_EM = 0.46;
 
-/** Cuántas letras caben en una línea a un tamaño dado. */
-const capacity = (o: Orientation, sizeU: number) => ((BASE[o].widthPct / 100) * BASE[o].widthU) / (CHAR_EM * sizeU);
-
 /**
  * Encoge un texto que no cabe en `maxPx` según lo que mide de verdad (con las
  * fuentes ya cargadas): la estimación por letras falla con letras anchas
@@ -56,8 +53,19 @@ export function shrinkToFit(sizeEl: HTMLElement, measured: HTMLElement[], maxPx:
  */
 const PORTRAIT_FLOOR = 0.8;
 
-export function textLayout(lines: string[], o: Orientation): { sizeU: number; widthPct: number; wrap: boolean; breakGroups: boolean } {
-	const { sizeU: base, widthPct } = BASE[o];
+/** Una frase en una esquina (estilo Escaparate) ocupa esta parte del ancho de siempre. */
+const CORNER_WIDTH = 0.7;
+
+/**
+ * `scale` es la escala de la letra del estilo (1 = la de siempre) y `place`,
+ * dónde va: en una esquina la columna es más estrecha (spec
+ * 2026-11-19-onview-estilos-y-referencias §5.2).
+ */
+export function textLayout(lines: string[], o: Orientation, scale = 1, place: "center" | "corner" | "lower" = "center"): { sizeU: number; widthPct: number; wrap: boolean; breakGroups: boolean } {
+	const base = Math.round(BASE[o].sizeU * scale * 100) / 100;
+	const widthPct = place === "corner" ? Math.round(BASE[o].widthPct * CORNER_WIDTH) : BASE[o].widthPct;
+	/** Cuántas letras caben en una línea a un tamaño dado. */
+	const capacity = (_o: Orientation, sizeU: number) => ((widthPct / 100) * BASE[o].widthU) / (CHAR_EM * sizeU);
 	const groups = lines.map((l) => l.trim()).filter(Boolean);
 	if (groups.length === 0) return { sizeU: base, widthPct, wrap: false, breakGroups: false };
 	const whole = groups.join(" ").length;
