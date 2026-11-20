@@ -234,7 +234,8 @@ describe("Ventana controles", () => {
 		body: m[2],
 	}));
 	const owned = /(^|[;\s])(background(-color|-image)?|backdrop-filter|-webkit-backdrop-filter|border|border-color|box-shadow)\s*:/;
-	const noMaterial = /--(plain|danger|primary)\b/;
+	// Los campos (`vn-input`) son sólidos y nunca llevan `vn-glass`: pintan su propio fondo y borde
+	const noMaterial = /--(plain|danger|primary)\b|\.vn-input\b/;
 
 	it("ninguna regla que alcance un botón de vidrio declara lo que el material posee", () => {
 		const reaching = rules.filter((r) => r.selectors.some((sel) => !noMaterial.test(sel)));
@@ -268,5 +269,29 @@ describe("Ventana controles", () => {
 		expect(resets.some((sel) => sel.includes("--plain"))).toBe(true);
 		expect(resets.some((sel) => sel.includes("--danger"))).toBe(true);
 		expect(resets.every((sel) => noMaterial.test(sel))).toBe(true);
+	});
+
+	it("los campos son sólidos: suelo, filete, radio de campo, 44px y sin desenfoque", () => {
+		const body = ctl(".vn .vn-input");
+		expect(body).toMatch(/background: var\(--vn-ground\);/);
+		expect(body).toMatch(/border: 1px solid var\(--vn-line\);/);
+		expect(body).toMatch(/border-radius: var\(--vn-r-field\);/);
+		expect(body).toMatch(/min-block-size: 44px;/);
+		const fieldRules = rules.filter((x) => x.selectors.some((sel) => sel.includes("vn-input")));
+		expect(fieldRules.length).toBeGreaterThan(3);
+		for (const r of fieldRules) expect(r.body, r.selectors.join(", ")).not.toMatch(/backdrop-filter/);
+	});
+
+	it("el foco del campo es su borde en tinta más el anillo, y el error usa danger", () => {
+		const focus = ctl(".vn .vn-input:focus-visible");
+		expect(focus).toMatch(/border-color: var\(--vn-ink\);/);
+		expect(focus).toMatch(/box-shadow: var\(--vn-focus\);/);
+		expect(ctl('.vn .vn-input[aria-invalid="true"]')).toMatch(/border-color: var\(--vn-danger\);/);
+		expect(ctl(".vn .vn-field__msg--error")).toMatch(/color: var\(--vn-danger\);/);
+	});
+
+	it("el texto del campo y su ayuda se leen sobre el suelo", () => {
+		expect(contrast(token("ink")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink-2")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);
 	});
 });

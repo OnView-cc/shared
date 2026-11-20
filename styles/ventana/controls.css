@@ -153,3 +153,112 @@
 		border-color: var(--vn-ink);
 	}
 }
+
+/*
+ * Campos de texto. Sólidos, nunca vidrio: un formulario es texto que se lee y se
+ * escribe, y el vidrio es sólo para lo que flota. Pintan su propio fondo y borde
+ * porque ninguno lleva `vn-glass`. 16px de letra para que iOS no haga zoom al enfocar.
+ */
+.vn .vn-field {
+	display: block;
+	min-inline-size: 0;
+}
+.vn .vn-field__head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-block-end: 6px;
+}
+.vn .vn-field__label {
+	margin: 0;
+}
+.vn .vn-field__count {
+	font-size: 0.8125rem;
+	color: var(--vn-ink-2);
+}
+.vn .vn-field__count--full {
+	color: var(--vn-danger);
+	font-weight: 600;
+}
+
+.vn .vn-input {
+	display: block;
+	box-sizing: border-box;
+	inline-size: 100%;
+	min-block-size: 44px;
+	padding: 10px 14px;
+	background: var(--vn-ground);
+	border: 1px solid var(--vn-line);
+	border-radius: var(--vn-r-field);
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	font-size: 1rem;
+	line-height: 1.5rem;
+	letter-spacing: 0;
+	appearance: none;
+	-webkit-tap-highlight-color: transparent;
+	transition:
+		border-color 140ms ease-out,
+		box-shadow 140ms ease-out,
+		opacity 140ms ease-out;
+}
+.vn .vn-input::placeholder {
+	color: var(--vn-ink-2);
+	opacity: 0.8;
+}
+.vn .vn-input--area {
+	resize: none;
+	overflow-y: hidden;
+}
+
+/* Foco: el borde del campo en tinta y el anillo de siempre */
+.vn .vn-input:focus-visible {
+	outline: none;
+	border-color: var(--vn-ink);
+	box-shadow: var(--vn-focus);
+}
+.vn .vn-input[aria-invalid="true"] {
+	border-color: var(--vn-danger);
+}
+.vn .vn-input[aria-invalid="true"]:focus-visible {
+	border-color: var(--vn-danger);
+}
+
+.vn .vn-input:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+/* La línea de aviso guarda su sitio (una línea) aunque esté vacía */
+.vn .vn-field__msg {
+	margin: 6px 0 0;
+	min-block-size: 1.25rem;
+	line-height: 1.25rem;
+	color: var(--vn-ink-2);
+}
+.vn .vn-field__msg--error {
+	color: var(--vn-danger);
+	font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-input:hover:not(:focus-visible):not(:disabled):not([aria-invalid="true"]) {
+		border-color: var(--vn-ink-3);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.vn .vn-input {
+		transition:
+			border-color 140ms linear,
+			opacity 140ms linear;
+	}
+}
+
+/* Contraste alto: el filete del campo se vuelve firme */
+@media (prefers-contrast: more) {
+	.vn .vn-input {
+		border-color: var(--vn-ink-2);
+	}
+}
