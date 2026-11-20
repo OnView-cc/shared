@@ -25,7 +25,7 @@ describe("the styles", () => {
 		};
 		expect(pick("changelog")).toEqual(["paper", "m", 600, "rise", 120, 114, 128, "cut", "none", "zoom"]);
 		expect(pick("orbit")).toEqual(["dark", "l", 600, "groups", 120, 112, 126, "push", "parallax", "none"]);
-		expect(pick("showcase")).toEqual(["auto", "s", 400, "fade", 96, 88, 104, "wipe", "in", "none"]);
+		expect(pick("showcase")).toEqual(["dark", "s", 400, "fade", 96, 88, 104, "wipe", "in", "none"]);
 		expect(pick("blocks")).toEqual(["brand", "l", 700, "slam", 124, 118, 130, "cut", "none", "zoom"]);
 		expect(pick("steps")).toEqual(["paper", "m", 500, "rise", 90, 84, 100, "slide", "none", "none"]);
 		expect(pick("impact")).toEqual(["brand", "xl", 800, "slam", 128, 122, 134, "punch", "none", "shake"]);

@@ -20,6 +20,7 @@ import { WATERMARK } from "../video/compose";
 import { beatSeconds as beatOf } from "./fit";
 import { drawBackground, inkOn } from "./background";
 import { wireCamera } from "./camera";
+import { phraseWeight } from "./type";
 import { STYLES } from "./styles";
 import { blockFor } from "./registry";
 import { injectMotionCss } from "./style";
@@ -37,6 +38,9 @@ export interface MotionHandle {
 	seek(t: number): Promise<void>;
 	destroy(): void;
 }
+
+/** Lo que sobra el fondo por cada lado cuando algo lo mueve, en `u` (la sacudida mueve 1 u y el paralaje hasta 4). */
+const BLEED = 6;
 
 /** Lo más que se espera a una imagen antes de seguir sin ella: una pieza que no llega no cuelga la grabación. */
 const IMAGE_WAIT_MS = 8000;
@@ -71,6 +75,11 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	camera.appendChild(hit);
 	stage.appendChild(camera);
 	const drawn = drawBackground(hit, style.background, doc.brand, u, photo);
+	// Si la cámara o el fondo se mueven, el fondo sobra por los cuatro lados: nunca asoma el borde del escenario.
+	const { camera: cam } = style;
+	if (cam.drift !== "none" || cam.hit !== "none" || style.background.motion === "drift") {
+		Object.assign(drawn.layer.style, { inset: "auto", left: `${-BLEED * u}px`, top: `${-BLEED * u}px`, width: `${W + 2 * BLEED * u}px`, height: `${H + 2 * BLEED * u}px` });
+	}
 	const background = { kind: drawn.kind, color: drawn.color };
 	const ink = inkOn(background, doc.brand);
 
@@ -141,7 +150,9 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 				});
 	// Las letras que usa el video se piden ya: `fonts.ready` sólo espera las que algo pidió, y el cuadro 0 tiene que llevarlas.
 	const fonts = (document as Document & { fonts?: FontFaceSet }).fonts;
-	const faces = [doc.brand.face, doc.brand.secondary].map((f) => `${f.weight} 32px ${font(f.family)}`);
+	// También al peso de las frases del estilo: si no, se miden con otra letra y no encogen (tarea 8, Impacto a 800).
+	const phrase = { ...doc.brand.face, weight: phraseWeight(style.type, doc.brand.face) };
+	const faces = [doc.brand.face, doc.brand.secondary, phrase].map((f) => `${f.weight} 32px ${font(f.family)}`);
 	const fontsIn = fonts ? Promise.all(faces.map((f) => fonts.load(f).catch(() => undefined))).then(() => fonts.ready) : Promise.resolve();
 	const ready = Promise.all([fontsIn, ...images().map(loaded)]).then(() => {
 		for (const fn of fitters) fn();

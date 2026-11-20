@@ -22,8 +22,8 @@ import { shrinkToFit, TEXT_MIN_U, textLayout } from "../layout";
 import { gsap } from "gsap";
 import { registerBlock } from "../registry";
 import type { Style } from "../styles";
+import { applyTypeStyle, phraseWeight, SCALE } from "../type";
 import type { TextParams } from "../types";
-import type { Face } from "../../video/compose";
 import { drawSceneImages } from "./scene-images";
 
 /** Cuándo entra cada grupo: en los golpes 0, 1, 2…; en un momento corto, más juntos. */
@@ -33,8 +33,6 @@ export function entryBeats(groups: number, beats: number): number[] {
 	return Array.from({ length: groups }, (_, i) => step * i);
 }
 
-/** El peso más grueso de una frase grande. */
-export const PHRASE_MAX_WEIGHT = 500;
 /** Cuánto se separan las palabras de un grupo al entrar, en segundos. */
 const WORD_STAGGER = 0.1;
 /** De qué gris parte cada palabra: la tinta llevada hacia el fondo. */
@@ -43,29 +41,8 @@ const WORD_GREY = 0.55;
 /** Blanco o tinta oscura, el que más se lea sobre `bg`. */
 export const readableOn = (bg: string) => (contrast("#ffffff", bg) >= contrast(DARK_INK, bg) ? "#ffffff" : DARK_INK);
 
-/* ── La letra del estilo (spec 2026-11-19-onview-estilos-y-referencias §5.2) ── */
-
-/** Cuánto crece la letra en cada escala del estilo: `m` es la de siempre. */
-export const SCALE: Record<Style["type"]["scale"], number> = { s: 0.55, m: 1, l: 1.25, xl: 1.7 };
-/** El espaciado de siempre (el de `.motion-text`): con él no se escribe nada en línea. */
-const BASE_TRACKING = -0.025;
-
-/** El peso que tiene la letra más cercano al pedido; en un empate, el más fino. Sin lista, el pedido. */
-export function nearestWeight(want: number, weights?: number[]): number {
-	if (!weights?.length) return want;
-	return [...weights].sort((a, b) => Math.abs(a - want) - Math.abs(b - want) || a - b)[0]!;
-}
-
-/** El peso de las frases: Arcade, el del kit hasta 500 (como siempre); un número, el del estilo que tenga la letra. */
-export function phraseWeight(type: Pick<Style["type"], "weight">, face: Face): number {
-	return type.weight === "kit-500" ? Math.min(face.weight, PHRASE_MAX_WEIGHT) : nearestWeight(type.weight, face.weights);
-}
-
-/** Pone en `box` lo que el estilo dice de la letra: mayúsculas y espaciado (sólo si cambian algo). */
-export function applyTypeStyle(box: HTMLElement, type: Style["type"]): void {
-	if (type.case === "upper") box.style.textTransform = "uppercase";
-	if (type.tracking !== BASE_TRACKING) box.style.letterSpacing = `${type.tracking}em`;
-}
+/* ── La letra del estilo (spec 2026-11-19-onview-estilos-y-referencias §5.2), en `../type.ts` ── */
+export { applyTypeStyle, nearestWeight, PHRASE_MAX_WEIGHT, phraseWeight, SCALE } from "../type";
 
 /** Dónde va la frase en el cuadro: en el centro (lo de siempre), en la esquina de abajo a la izquierda o en el tercio de abajo. */
 function place(fill: HTMLElement, text: HTMLElement, where: Style["type"]["place"], u: number): void {
@@ -193,6 +170,11 @@ registerBlock("text", (ctx) => {
 			const next = shrinkToFit(text, spans, (layout.widthPct / 100) * ctx.doc.width, TEXT_MIN_U * u);
 			if (next !== null && next <= TEXT_MIN_U * u + 0.01) for (const s of spans) s.style.whiteSpace = "normal";
 		});
+	// Aunque el grupo se parta entre palabras, una palabra sola más ancha que la columna sí encoge la frase (tarea 8 del
+	// plan 2026-11-19: «EVERYTHING.» de Impacto en vertical se cortaba).
+	// Se mide la línea (inline-block): partida entre palabras, sólo desborda si una palabra no cabe. Una palabra suelta
+	// (inline) no tiene ancho que medir en el navegador.
+	else ctx.onReady(() => void shrinkToFit(text, spans, (layout.widthPct / 100) * ctx.doc.width, TEXT_MIN_U * u));
 	// Las imágenes de la escena (las tarjetas de antes con logos), bajo el texto; dejan libre su franja.
 	if (moment.images.length) drawSceneImages(ctx, params.imagesLayout ?? "grid", params.imagesEntrance ?? "stagger", groups.length ? "center" : null);
 	el.appendChild(fill);

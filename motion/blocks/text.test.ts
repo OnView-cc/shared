@@ -216,3 +216,33 @@ describe("the style's type (spec 2026-11-19)", () => {
 		});
 	}
 });
+
+describe("a word that does not fit (task 8, Impact in 9:16)", () => {
+	it("in portrait, a single word wider than the column makes the phrase shrink", async () => {
+		// jsdom no mide; aquí, como en el navegador: una línea (inline-block, partida entre palabras) mide su palabra más
+		// ancha, una letra 0.62 de su tamaño; una palabra (inline) mide 0.
+		const desc = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollWidth");
+		const wordWidth = (el: HTMLElement, word: string) => Math.round(word.length * parseFloat(el.closest<HTMLElement>(".motion-text")?.style.fontSize ?? "0") * 0.62);
+		Object.defineProperty(HTMLElement.prototype, "scrollWidth", {
+			configurable: true,
+			get(this: HTMLElement) {
+				if (!this.classList.contains("motion-line")) return 0;
+				return Math.max(0, ...(this.textContent ?? "").split(/\s+/).map((w) => wordWidth(this, w)));
+			},
+		});
+		try {
+			const c = composeVideo({ format: "9:16", voiceVolume: 1, musicVolume: 0.35, musicFadeIn: 0, musicFadeOut: 1.5, closingLine: "", tempo: { bpm: 120, offset: 0 }, template: { id: "offer", voice: true }, shots: [shot("text", { lines: ["30% off", "everything."] }, 4)], music: null, sfx: [], brand, limits: { watermark: false } });
+			root = document.createElement("div");
+			document.body.appendChild(root);
+			const m = createMotion(root, { ...c, media: { watermark: null } }, { mode: "export", imageWaitMs: 10 });
+			await m.ready;
+			const text = root.querySelector<HTMLElement>(".motion-text")!;
+			const widest = Math.max(...[...root.querySelectorAll<HTMLElement>(".motion-word")].map((w) => wordWidth(w, w.textContent ?? "")));
+			expect(widest).toBeLessThanOrEqual(0.78 * 1080 + 1);
+			expect(parseFloat(text.style.fontSize)).toBeGreaterThan(0);
+		} finally {
+			if (desc) Object.defineProperty(HTMLElement.prototype, "scrollWidth", desc);
+			else Reflect.deleteProperty(HTMLElement.prototype, "scrollWidth");
+		}
+	});
+});

@@ -100,3 +100,40 @@ describe("the closing with the style", () => {
 		expect(root.querySelector<HTMLImageElement>(".motion-logo")!.getAttribute("src")).toBe("light.png");
 	});
 });
+
+describe("what the samples showed (task 8)", () => {
+	it("loads the font at the style's weight before measuring", async () => {
+		const asked: string[] = [];
+		Object.defineProperty(document, "fonts", { configurable: true, value: { load: (f: string) => (asked.push(f), Promise.resolve([])), ready: Promise.resolve() } });
+		try {
+			const m = mount([shot("text", { lines: ["Only this week."] }, 4)], "offer", null, { primary: { family: "inter", weight: 600, weights: [400, 600, 800] } });
+			await m.ready;
+			expect(asked.some((f) => f.startsWith("800 "))).toBe(true);
+		} finally {
+			Reflect.deleteProperty(document, "fonts");
+		}
+	});
+
+	it("when the camera moves, the background is larger than the frame (no edge shows)", () => {
+		mount([shot("text", { lines: ["Sale"] }, 4)], "offer");
+		const bg = root.querySelector<HTMLElement>(".motion-bg")!;
+		expect(parseFloat(bg.style.left)).toBeLessThan(0);
+		expect(parseFloat(bg.style.top)).toBeLessThan(0);
+	});
+
+	it("Arcade's background stays exactly the frame", () => {
+		mount([shot("text", { lines: ["Hi"] }, 4)], "software-launch");
+		expect(root.querySelector<HTMLElement>(".motion-bg")!.style.left).toBe("");
+	});
+
+	it("plinth keeps the photo and its base inside the frame", () => {
+		for (const p of [photo, [{ id: "t", src: "tall.png", width: 600, height: 1200 }]]) {
+			mount([shot("product", { lines: ["Hola"], move: "in" }, 4, 0, p)], "product");
+			const img = root.querySelector<HTMLElement>(".motion-product")!;
+			const base = root.querySelector<HTMLElement>(".motion-plinth")!;
+			expect(parseFloat(img.style.top)).toBeGreaterThanOrEqual(0);
+			expect(parseFloat(base.style.top) + parseFloat(base.style.height)).toBeLessThanOrEqual(1080);
+			root.remove();
+		}
+	});
+});

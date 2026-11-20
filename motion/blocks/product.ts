@@ -13,8 +13,11 @@
 import { gsap } from "gsap";
 import { registerBlock } from "../registry";
 import type { ProductParams } from "../types";
-import { applyTypeStyle, phraseWeight, SCALE } from "./text";
+import { applyTypeStyle, phraseWeight, SCALE } from "../type";
 import { fitContain } from "./ui";
+
+/** La parte de lo alto del área que ocupa la foto sobre la base (`plinth`); el resto es la base y su reflejo. */
+const PLINTH_ROOM = 0.8;
 
 /** El movimiento lento de la foto; `k` lo amplía (2 con `product.move: "wide"` del estilo). */
 const MOVES: Record<ProductParams["move"], (u: number, k: number) => { from: gsap.TweenVars; to: gsap.TweenVars }> = {
@@ -38,10 +41,10 @@ registerBlock("product", (ctx) => {
 	if (photo) {
 		const { frame, move: amount } = ctx.style.product;
 		// `bleed`: la foto llena su área (recortada), sin sombra; si no, se ve entera.
-		const r = frame === "bleed" ? { x: 0, y: 0, w: area.w, h: area.h } : fitContain(photo.width, photo.height, area.w, area.h, 7 * u);
-		// `plinth`: la foto se apoya en una base; deja sitio debajo para la base y su reflejo.
-		const lift = frame === "plinth" ? r.h * 0.12 : 0;
-		const top = area.y + r.y - lift;
+		// `plinth`: la foto se apoya en una base; se ajusta a lo alto que queda encima de la base y su reflejo.
+		const fitH = frame === "plinth" ? area.h * PLINTH_ROOM : area.h;
+		const r = frame === "bleed" ? { x: 0, y: 0, w: area.w, h: area.h } : fitContain(photo.width, photo.height, area.w, fitH, 7 * u);
+		const top = area.y + r.y;
 		const img = doc.createElement("img");
 		img.className = "motion-product";
 		img.alt = "";

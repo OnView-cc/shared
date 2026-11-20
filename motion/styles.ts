@@ -94,8 +94,8 @@ export const STYLES: Record<StyleId, Style> = {
 	showcase: style({
 		id: "showcase",
 		name: { en: "Showcase", es: "Escaparate", pt: "Vitrine" },
-		summary: "Showcase: editorial, dark or brand colour, the product photo on a plinth with a slow push-in, small uppercase words in a corner, 96 BPM, wipes",
-		background: { kind: "auto", motion: "still", saturate: 0 },
+		summary: "Showcase: editorial, near-black with a soft brand glow, the product photo on a plinth with a slow push-in, small uppercase words in a corner, 96 BPM, wipes",
+		background: { kind: "dark", motion: "still", saturate: 0 },
 		type: { scale: "s", weight: 400, case: "upper", tracking: 0.12, entry: "fade", place: "corner" },
 		tempo: { bpm: 96, min: 88, max: 104 },
 		transitions: { between: "wipe", close: "wipe" },
@@ -136,7 +136,7 @@ export const STYLES: Record<StyleId, Style> = {
 		tempo: { bpm: 128, min: 122, max: 134 },
 		transitions: { between: "punch", close: "punch" },
 		camera: { drift: "none", amount: "subtle", hit: "shake" },
-		product: { frame: "bleed", move: "subtle" },
+		product: { frame: "shadow", move: "subtle" },
 		music: { mood: "intense electronic, driving" },
 	}),
 	cinema: style({
