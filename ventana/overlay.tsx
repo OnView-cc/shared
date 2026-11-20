@@ -12,11 +12,13 @@
  * Materiales: sólo flota el panel. Las filas del menú son sólidas por diseño:
  * pintan su propio resaltado sobre el vidrio y nunca llevan `vn-glass`.
  *
- * `Tooltip` trae su propio `Provider` (400ms de espera, 300ms de ventana para abrir
- * el siguiente sin espera). Cada `Tooltip` tiene el suyo, así que esa ventana sólo
- * se comparte entre tooltips que cuelguen del mismo proveedor de Radix.
+ * `Tooltip` tiene dos modos. Dentro de un `TooltipGroup` usa el proveedor del grupo:
+ * 400ms de espera para el primero y, al pasar de uno a otro dentro de 300ms, ninguna.
+ * Fuera de un grupo trae su propio `Provider` y cada uno espera sus 400ms. Para que
+ * una barra de botones no espere en cada uno, monta un solo `TooltipGroup` a nivel
+ * de la app o de la barra.
  */
-import type { ReactElement, ReactNode } from "react";
+import { createContext, useContext, type ReactElement, type ReactNode } from "react";
 import { DropdownMenu as M, Popover as P, Tooltip as T } from "radix-ui";
 
 export interface MenuItem {
@@ -97,6 +99,18 @@ export function Popover({
 	);
 }
 
+/** Dice a los `Tooltip` de dentro que ya hay un proveedor de grupo montado. */
+const InGroup = createContext(false);
+
+/** Un solo proveedor de Radix para muchos `Tooltip`: comparten la ventana sin espera entre tooltips seguidos. */
+export function TooltipGroup({ children }: { children: ReactNode }) {
+	return (
+		<T.Provider delayDuration={400} skipDelayDuration={300}>
+			<InGroup.Provider value={true}>{children}</InGroup.Provider>
+		</T.Provider>
+	);
+}
+
 export function Tooltip({
 	label,
 	children,
@@ -107,18 +121,23 @@ export function Tooltip({
 	children: ReactElement;
 	side?: "top" | "bottom" | "left" | "right";
 }) {
+	const inGroup = useContext(InGroup);
+	const tip = (
+		<T.Root>
+			<T.Trigger asChild>{children}</T.Trigger>
+			<T.Portal>
+				<div className="vn" style={{ display: "contents" }}>
+					<T.Content side={side} sideOffset={8} collisionPadding={12} className="vn-tooltip vn-glass vn-glass--thick">
+						{label}
+					</T.Content>
+				</div>
+			</T.Portal>
+		</T.Root>
+	);
+	if (inGroup) return tip;
 	return (
 		<T.Provider delayDuration={400} skipDelayDuration={300}>
-			<T.Root>
-				<T.Trigger asChild>{children}</T.Trigger>
-				<T.Portal>
-					<div className="vn" style={{ display: "contents" }}>
-						<T.Content side={side} sideOffset={8} collisionPadding={12} className="vn-tooltip vn-glass vn-glass--thick">
-							{label}
-						</T.Content>
-					</div>
-				</T.Portal>
-			</T.Root>
+			{tip}
 		</T.Provider>
 	);
 }

@@ -8,7 +8,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { installRadixDom } from "../tests/helpers/radix-dom";
-import { Menu, Popover, Tooltip, type MenuItem } from "./overlay";
+import { Menu, Popover, Tooltip, TooltipGroup, type MenuItem } from "./overlay";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -64,6 +64,8 @@ describe("Menu de Ventana", () => {
 		const wrap = menu.closest(".vn") as HTMLElement;
 		expect(wrap.style.display).toBe("contents");
 		expect(menu.getAttribute("aria-label")).toBe("Acciones");
+		// Radix lo apuntaría al disparador y taparía `label`
+		expect(menu.hasAttribute("aria-labelledby")).toBe(false);
 	});
 
 	it("el panel es vidrio grueso y las filas nunca llevan vn-glass", async () => {
@@ -231,5 +233,91 @@ describe("Tooltip de Ventana", () => {
 		key(document.activeElement!, "Escape");
 		await flush();
 		expect(document.querySelector(".vn-tooltip")).toBeNull();
+	});
+});
+
+describe("TooltipGroup de Ventana", () => {
+	const hover = (el: Element) =>
+		act(() => {
+			// jsdom no trae PointerEvent: Radix sólo mira que el puntero no sea táctil.
+			el.dispatchEvent(new MouseEvent("pointermove", { bubbles: true }));
+		});
+	const tips = () => document.querySelectorAll(".vn-tooltip").length;
+	const buttons = () => document.querySelectorAll<HTMLButtonElement>("button[data-test=boton]");
+	const bar = (grouped: boolean) => {
+		const inner = (
+			<>
+				<Tooltip label="Uno">
+					<button data-test="boton">1</button>
+				</Tooltip>
+				<Tooltip label="Dos">
+					<button data-test="boton">2</button>
+				</Tooltip>
+			</>
+		);
+		return grouped ? <TooltipGroup>{inner}</TooltipGroup> : inner;
+	};
+
+	it("un Tooltip dentro de un grupo abre al enfocar con su texto dentro de .vn", async () => {
+		mount(
+			<TooltipGroup>
+				<Tooltip label="Copiar enlace">
+					<button data-test="disparador">Copiar</button>
+				</Tooltip>
+			</TooltipGroup>,
+		);
+		act(() => trigger().focus());
+		await flush();
+		const tip = document.querySelector(".vn-tooltip")!;
+		expect(tip.textContent).toContain("Copiar enlace");
+		expect(tip.closest(".vn")).toBeTruthy();
+	});
+
+	it("bajo un grupo, el segundo tooltip abre sin espera justo después de cerrar el primero", async () => {
+		vi.useFakeTimers();
+		try {
+			mount(bar(true));
+			hover(buttons()[0]);
+			expect(tips()).toBe(0);
+			await act(async () => {
+				await vi.advanceTimersByTimeAsync(400);
+			});
+			expect(tips()).toBe(1);
+			key(document.activeElement ?? buttons()[0], "Escape");
+			await act(async () => {
+				await vi.advanceTimersByTimeAsync(10);
+			});
+			expect(tips()).toBe(0);
+			hover(buttons()[1]);
+			expect(tips()).toBe(1);
+			expect(document.querySelector(".vn-tooltip")!.textContent).toContain("Dos");
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("sin grupo cada tooltip espera sus 400ms aunque venga de otro", async () => {
+		vi.useFakeTimers();
+		try {
+			mount(bar(false));
+			hover(buttons()[0]);
+			await act(async () => {
+				await vi.advanceTimersByTimeAsync(400);
+			});
+			expect(tips()).toBe(1);
+			key(document.activeElement ?? buttons()[0], "Escape");
+			await act(async () => {
+				await vi.advanceTimersByTimeAsync(10);
+			});
+			expect(tips()).toBe(0);
+			hover(buttons()[1]);
+			expect(tips()).toBe(0);
+			await act(async () => {
+				await vi.advanceTimersByTimeAsync(400);
+			});
+			expect(tips()).toBe(1);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });

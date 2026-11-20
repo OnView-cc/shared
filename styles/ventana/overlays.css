@@ -135,9 +135,9 @@
 	line-height: 1.35;
 	overflow-wrap: anywhere;
 	transform-origin: var(--radix-tooltip-content-transform-origin);
-	animation: vn-overlay-in 200ms var(--vn-spring-snap);
+	animation: vn-overlay-in var(--vn-spring-snap-ms) var(--vn-spring-snap);
 }
-/* Un tooltip que abre sin espera tras otro no repite la entrada */
+/* Dentro de un TooltipGroup, un tooltip que abre sin espera tras otro no repite la entrada */
 .vn .vn-tooltip[data-state="instant-open"] {
 	animation: none;
 }
