@@ -12,8 +12,14 @@ export interface Spring {
 	damping: number;
 }
 
+/**
+ * El suave (llegadas, hojas) casi no rebasa: una hoja pegada al borde de abajo que
+ * se pasa de largo deja ver una rendija bajo ella. Llega al 95 % en unos 280 ms
+ * (lo que se percibe como su duración; el resto, hasta los 500 ms, es asentarse).
+ * El vivo (presión, pulgar, menús) rebasa un 3 % y llega al 95 % en unos 180 ms.
+ */
 export const SPRINGS = {
-	soft: { response: 0.55, damping: 0.85 },
+	soft: { response: 0.42, damping: 0.92 },
 	snap: { response: 0.35, damping: 0.75 },
 } as const;
 

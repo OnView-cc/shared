@@ -19,12 +19,18 @@ ${tokens}
 	--vn-ease-out: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* Llegada: sube, se aclara y se enfoca con el muelle suave. \`--vn-i\` escalona 60ms por hermano. */
+/*
+ * Llegada: sube, se aclara y se enfoca con el muelle suave. \`--vn-i\` escalona 60ms por hermano.
+ * En reposo el filtro es \`none\`, no \`blur(0)\`: cualquier filtro (y la opacidad a medias de
+ * la entrada) hace del elemento la raíz del fondo de sus hijos, y un vidrio de dentro
+ * dejaría de ver el video. Por lo mismo, la clase va en la propia pieza de vidrio, no en
+ * un envoltorio que la contenga.
+ */
 .vn-arrive {
 	opacity: 1;
 	translate: 0 0;
 	scale: 1;
-	filter: blur(0);
+	filter: none;
 	transition:
 		opacity var(--vn-spring-soft-ms) var(--vn-ease-out),
 		translate var(--vn-spring-soft-ms) var(--vn-spring-soft),
@@ -47,10 +53,19 @@ ${tokens}
 	scale: 0.97;
 }
 
-/* Movimiento reducido: sólo opacidad */
+/* Las dos a la vez: \`.vn-press\` fija \`transition\` entera y pisaría la llegada. Aquí conviven; la escala usa el muelle vivo, que también sirve para llegar. */
+.vn-arrive.vn-press {
+	transition:
+		opacity var(--vn-spring-soft-ms) var(--vn-ease-out),
+		translate var(--vn-spring-soft-ms) var(--vn-spring-soft),
+		scale var(--vn-spring-snap-ms) var(--vn-spring-snap),
+		filter var(--vn-spring-soft-ms) var(--vn-ease-out);
+}
+
+/* Movimiento reducido: sólo opacidad, en un fundido corto (los 500 ms del muelle son para algo que se mueve) */
 @media (prefers-reduced-motion: reduce) {
 	.vn-arrive {
-		transition: opacity var(--vn-spring-snap-ms) linear;
+		transition: opacity 200ms linear;
 		transition-delay: 0ms;
 		@starting-style {
 			opacity: 0;
@@ -61,6 +76,9 @@ ${tokens}
 	}
 	.vn-press {
 		transition: none;
+	}
+	.vn-arrive.vn-press {
+		transition: opacity 200ms linear;
 	}
 	.vn-press:active {
 		scale: 1;
