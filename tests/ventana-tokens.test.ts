@@ -12,7 +12,8 @@ const tokens = read("../styles/ventana/tokens.css");
 const glass = read("../styles/ventana/glass.css");
 const type = read("../styles/ventana/type.css");
 const controls = read("../styles/ventana/controls.css");
-const all = tokens + glass + type + controls + read("../styles/ventana.css");
+const content = read("../styles/ventana/content.css");
+const all = tokens + glass + type + controls + content + read("../styles/ventana.css");
 const allVentanaCss = [
 	...readdirSync(new URL("../styles/ventana/", import.meta.url))
 		.filter((f) => f.endsWith(".css"))
@@ -229,7 +230,7 @@ describe("Ventana controles", () => {
 	 * Cualquier regla de controls.css (0,2,0 o más) que pueda caer sobre un botón de
 	 * vidrio y declare lo que el material posee, lo pisa en todos los casos.
 	 */
-	const rules = [...controls.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+	const rules = [...(controls + content).replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
 		selectors: m[1].split(",").map((x) => x.trim()),
 		body: m[2],
 	}));
@@ -254,6 +255,15 @@ describe("Ventana controles", () => {
 		"vn-switch__track",
 		"vn-switch__knob",
 		"vn-check__box",
+		// Chip sólido y sus botones internos (transparentes sobre el chip, nunca llevan vn-glass; hay prueba de marcado)
+		"vn-chip--solid",
+		"vn-chip__main",
+		"vn-chip__x",
+		// Etiquetas de estado sólidas (la «lista» es vidrio compuesto y NO va aquí) y marco de video
+		"vn-state--draft",
+		"vn-state--generating",
+		"vn-state--failed",
+		"vn-frame",
 	];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
 	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
@@ -318,7 +328,7 @@ describe("Ventana controles", () => {
 
 	it("la base no pinta fondo y son plain y danger quienes lo reinician", () => {
 		expect(ctl(".vn .vn-btn")).not.toMatch(owned);
-		const resets = rules.filter((r) => /background:\s*transparent/.test(r.body)).flatMap((r) => r.selectors);
+		const resets = rules.filter((r) => /background:\s*transparent/.test(r.body)).flatMap((r) => r.selectors).filter((sel) => sel.includes("vn-btn"));
 		expect(resets.some((sel) => sel.includes("--plain"))).toBe(true);
 		expect(resets.some((sel) => sel.includes("--danger"))).toBe(true);
 		expect(resets.every((sel) => targets(sel, OWN_BACKGROUND_BUTTONS))).toBe(true);
@@ -392,5 +402,120 @@ describe("Ventana controles", () => {
 	it("la perilla apagada y la marca se ven contra su fondo", () => {
 		expect(contrast(token("ink-2")!, token("raised")!)).toBeGreaterThanOrEqual(3);
 		expect(contrast(token("action-ink")!, token("ink")!)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	/** Cuerpo de la regla `selector { ... }` de content.css, a nivel raíz. */
+	const cnt = (selector: string) => content.match(new RegExp(`(?:^|\n)${esc(selector)} \\{([^}]*)\\}`))?.[1] ?? "";
+	const chipCss = controls.slice(controls.indexOf("* Chips."));
+
+	it("content.css entra por ventana.css y por la lista de todo el CSS de Ventana", () => {
+		expect(read("../styles/ventana.css")).toMatch(/@import "\.\/ventana\/content\.css";/);
+		expect(allVentanaCss.some((css) => css.includes(".vn-frame"))).toBe(true);
+	});
+
+	it("la base del chip y de la etiqueta de estado no declara material", () => {
+		expect(ctl(".vn .vn-chip")).not.toMatch(owned);
+		expect(cnt(".vn .vn-state")).not.toMatch(owned);
+		expect(ctl(".vn .vn-chip")).not.toMatch(/border-radius/);
+	});
+
+	it("el chip no trunca ni fija un ancho en px: el texto baja de línea", () => {
+		const body = ctl(".vn .vn-chip");
+		expect(body).toMatch(/white-space: normal;/);
+		expect(body).toMatch(/max-inline-size: 100%;/);
+		expect(body).not.toMatch(/text-overflow|(^|[^-])(width|max-width|max-inline-size):\s*\d+px/);
+		expect(body).not.toMatch(/(^|[^-])(block-size|height):/);
+	});
+
+	it("el chip sólido es raised con filete y, seleccionado, tinta con letra de acción; ambos se leen", () => {
+		const solid = ctl(".vn .vn-chip--solid");
+		expect(solid).toMatch(/background: var\(--vn-raised\);/);
+		expect(solid).toMatch(/border: 1px solid var\(--vn-line\);/);
+		const selected = ctl(".vn .vn-chip--solid.is-selected");
+		expect(selected).toMatch(/background: var\(--vn-ink\);/);
+		expect(selected).toMatch(/color: var\(--vn-action-ink\);/);
+		expect(contrast(token("ink")!, token("raised")!)).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("action-ink")!, token("ink")!)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("el chip de vidrio sólo se ajusta por variable y lleva tinta primaria, nunca secundaria", () => {
+		const glassRules = rules.filter((r) => r.selectors.some((sel) => /vn-chip--glass\b/.test(sel)));
+		expect(glassRules.length).toBeGreaterThan(2);
+		for (const r of glassRules) {
+			// Como en el análisis general: el anillo de foco es un estado y sustituye el brillo de borde mientras dura
+			const body = r.selectors.every((sel) => sel.includes(":focus-visible")) ? r.body.replace(/box-shadow:[^;]*;/g, "") : r.body;
+			expect(body, r.selectors.join(", ")).not.toMatch(owned);
+		}
+		expect(ctl(".vn .vn-chip--glass")).toMatch(/--vn-glass-shadow:/);
+		expect(ctl(".vn .vn-chip")).toMatch(/--vn-glass-r: var\(--vn-r-pill\);/);
+		for (const r of glassRules) expect(r.body, r.selectors.join(", ")).not.toMatch(/--vn-ink-[23]/);
+		const hover = rules.find((r) => r.selectors.some((sel) => /vn-chip--glass.*:hover/.test(sel)));
+		expect(hover?.body).toMatch(/--vn-glass-rim: var\(--vn-rim-top\);/);
+	});
+
+	it("el hover del chip sólo existe con puntero fino", () => {
+		const hovers = chipCss.match(/:hover/g)?.length ?? 0;
+		const media = chipCss.slice(chipCss.indexOf("@media (hover: hover) and (pointer: fine)"), chipCss.indexOf("/* Movimiento reducido"));
+		expect(hovers).toBeGreaterThan(0);
+		expect((media.match(/:hover/g) ?? []).length).toBe(hovers);
+	});
+
+	it("el aspa mide 20px y su área de toque 44px; el chip botón sube de 32 a 44", () => {
+		expect(ctl(".vn .vn-chip__x")).toMatch(/inline-size: 20px;[\s\S]*block-size: 20px;/);
+		expect(ctl(".vn .vn-chip__x::after")).toMatch(/inset: -12px;/);
+		expect(controls).toMatch(/\.vn \.vn-chip__main::after \{[^}]*inset-block: -6px;/);
+		expect(ctl(".vn .vn-chip")).toMatch(/min-block-size: 32px;/);
+	});
+
+	it("el foco del chip es el anillo de tinta", () => {
+		const focus = rules.filter((r) => r.selectors.some((sel) => /vn-chip.*:focus-visible/.test(sel)));
+		expect(focus.length).toBeGreaterThan(1);
+		expect(focus.some((r) => /box-shadow: var\(--vn-focus\)/.test(r.body))).toBe(true);
+	});
+
+	it("las etiquetas de estado: borrador con filete, generando en tinta, falló en danger, lista en vidrio fino", () => {
+		expect(cnt(".vn .vn-state--draft")).toMatch(/background: transparent;[\s\S]*border: 1px solid var\(--vn-line\);/);
+		const generating = cnt(".vn .vn-state--generating");
+		expect(generating).toMatch(/background: var\(--vn-action\);/);
+		expect(generating).toMatch(/color: var\(--vn-action-ink\);/);
+		const failed = cnt(".vn .vn-state--failed");
+		expect(failed).toMatch(/background: transparent;[\s\S]*border: 1px solid var\(--vn-danger\);/);
+		expect(failed).toMatch(/color: var\(--vn-danger\);/);
+		expect(contrast(token("danger")!, token("surface")!)).toBeGreaterThanOrEqual(4.5);
+		// «lista» compone vn-glass: sus reglas no declaran lo que el material posee
+		const ready = rules.filter((r) => r.selectors.some((sel) => /vn-state--ready\b/.test(sel)));
+		expect(ready.length).toBeGreaterThan(0);
+		for (const r of ready) expect(r.body, r.selectors.join(", ")).not.toMatch(owned);
+	});
+
+	it("el marco de video fija su formato, el radio de panel y es sólido", () => {
+		expect(cnt(".vn .vn-frame--9x16")).toMatch(/aspect-ratio: 9 \/ 16;/);
+		expect(cnt(".vn .vn-frame--1x1")).toMatch(/aspect-ratio: 1 \/ 1;/);
+		expect(cnt(".vn .vn-frame--16x9")).toMatch(/aspect-ratio: 16 \/ 9;/);
+		expect(cnt(".vn .vn-frame")).toMatch(/border-radius: var\(--vn-r-panel\);/);
+		expect(cnt(".vn .vn-frame")).toMatch(/overflow: hidden;/);
+	});
+
+	it("el rótulo se queda en el 20% inferior, en dos líneas, y su scrim mantiene el máximo hasta ahí", () => {
+		const cap = cnt(".vn .vn-frame__caption");
+		expect(cap).toMatch(/max-block-size: 20%;/);
+		expect(cap).toMatch(/-webkit-line-clamp: 2;/);
+		expect(cap).toMatch(/overflow: hidden;/);
+		const scrim = cnt(".vn .vn-frame > .vn-frame__scrim");
+		const height = Number(scrim.match(/height: (\d+)%;/)?.[1]);
+		const stops = [...scrim.matchAll(/rgba\(6, 6, 7, ([\d.]+)\) (\d+)%/g)].map((m) => ({ alpha: Number(m[1]), at: Number(m[2]) }));
+		// Los puntos del degradado son % del scrim; el rótulo llega al 20% del marco = 20/height del scrim
+		const captionTop = (20 / height) * 100;
+		const solidUntil = Math.max(...stops.filter((s) => s.alpha === 0.72).map((s) => s.at));
+		expect(solidUntil).toBeGreaterThanOrEqual(captionTop);
+		expect(contrast(token("ink")!, over("rgba(6,6,7,0.72)", "#ffffff"))).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("ningún texto nuevo baja de 0.75rem", () => {
+		for (const css of [chipCss, content]) {
+			const sizes = [...css.matchAll(/font-size: ([\d.]+)rem;/g)].map((m) => Number(m[1]));
+			expect(sizes.length).toBeGreaterThan(0);
+			for (const size of sizes) expect(size).toBeGreaterThanOrEqual(0.75);
+		}
 	});
 });
