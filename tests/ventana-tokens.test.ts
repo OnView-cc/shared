@@ -13,7 +13,8 @@ const glass = read("../styles/ventana/glass.css");
 const type = read("../styles/ventana/type.css");
 const controls = read("../styles/ventana/controls.css");
 const content = read("../styles/ventana/content.css");
-const all = tokens + glass + type + controls + content + read("../styles/ventana.css");
+const overlays = read("../styles/ventana/overlays.css");
+const all = tokens + glass + type + controls + content + overlays + read("../styles/ventana.css");
 const allVentanaCss = [
 	...readdirSync(new URL("../styles/ventana/", import.meta.url))
 		.filter((f) => f.endsWith(".css"))
@@ -230,7 +231,7 @@ describe("Ventana controles", () => {
 	 * Cualquier regla de controls.css (0,2,0 o más) que pueda caer sobre un botón de
 	 * vidrio y declare lo que el material posee, lo pisa en todos los casos.
 	 */
-	const rules = [...(controls + content).replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+	const rules = [...(controls + content + overlays).replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
 		selectors: m[1].split(",").map((x) => x.trim()),
 		body: m[2],
 	}));
@@ -249,6 +250,8 @@ describe("Ventana controles", () => {
 		"vn-select-trigger--field",
 		"vn-select-trigger--chip",
 		"vn-select-item",
+		// La fila del menú pinta su propio resaltado como la del desplegable (nunca lleva vn-glass, hay prueba) y vive dentro del panel de vidrio
+		"vn-menu-item",
 		"vn-seg",
 		"vn-seg-opt",
 		"vn-switch",
@@ -533,5 +536,91 @@ describe("Ventana controles", () => {
 			expect(sizes.length).toBeGreaterThan(0);
 			for (const size of sizes) expect(size).toBeGreaterThanOrEqual(0.75);
 		}
+	});
+});
+
+describe("Ventana flotantes: menú, popover y tooltip", () => {
+	const ovlRules = [...overlays.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+		selectors: m[1].split(",").map((x) => x.trim()),
+		body: m[2],
+	}));
+	/** Cuerpo de la regla que incluye `selector` entre sus selectores (también las de selector compuesto). */
+	const ovl = (selector: string) => ovlRules.find((r) => r.selectors.includes(selector))?.body ?? "";
+	const ownedByGlass = /(^|[;\s])(background(-color|-image)?|backdrop-filter|-webkit-backdrop-filter|border|border-color|box-shadow)\s*:/;
+	const thickBehind = () => over(token("sheen")!, over(token("smoke-thick")!, "#ffffff"));
+	const highlighted = () => over(token("hair")!, thickBehind());
+
+	it("overlays.css entra por ventana.css y por la lista de todo el CSS de Ventana", () => {
+		expect(read("../styles/ventana.css")).toMatch(/@import "\.\/ventana\/overlays\.css";/);
+		expect(allVentanaCss.some((css) => css.includes(".vn-tooltip"))).toBe(true);
+	});
+
+	it("los paneles son vidrio: sus reglas sólo ajustan el material por variable", () => {
+		const panels = ovlRules.filter((r) => r.selectors.some((sel) => /vn-(menu|popover|tooltip)(-(panel|sep|hint|icon|label))?\b/.test(sel) && !/vn-menu-item/.test(sel)));
+		expect(panels.length).toBeGreaterThan(5);
+		for (const r of panels) expect(r.body, r.selectors.join(", ")).not.toMatch(ownedByGlass);
+		expect(ovl(".vn .vn-menu")).toMatch(/--vn-glass-r: var\(--vn-r-panel\);/);
+		expect(ovl(".vn .vn-popover")).toMatch(/--vn-glass-r: var\(--vn-r-panel\);/);
+		expect(ovl(".vn .vn-tooltip")).toMatch(/--vn-glass-r: var\(--vn-r-thumb\);/);
+		for (const sel of [".vn .vn-menu", ".vn .vn-popover", ".vn .vn-tooltip"]) expect(ovl(sel), sel).toMatch(/--vn-glass-shadow:/);
+	});
+
+	it("entran desde su disparador con el resorte y salen en 120ms con la curva de salida", () => {
+		expect(ovl(".vn .vn-menu")).toMatch(/transform-origin: var\(--radix-dropdown-menu-content-transform-origin\);/);
+		expect(ovl(".vn .vn-popover")).toMatch(/transform-origin: var\(--radix-popover-content-transform-origin\);/);
+		expect(ovl(".vn .vn-tooltip")).toMatch(/transform-origin: var\(--radix-tooltip-content-transform-origin\);/);
+		expect(overlays).toMatch(/animation: vn-overlay-in var\(--vn-spring-snap-ms\) var\(--vn-spring-snap\)/);
+		expect(overlays).toMatch(/animation: vn-overlay-out 120ms var\(--vn-ease-out\) forwards/);
+		// En movimiento reducido: sólo opacidad, de entrada y de salida
+		const reduced = overlays.slice(overlays.indexOf("@media (prefers-reduced-motion: reduce)"));
+		expect(reduced).toMatch(/vn-overlay-fade-in/);
+		expect(reduced).toMatch(/vn-overlay-fade-out/);
+		expect(reduced).not.toMatch(/scale|translate/);
+	});
+
+	it("el tooltip no repite la animación cuando abre sin espera tras otro", () => {
+		expect(overlays).toMatch(/\.vn-tooltip\[data-state="instant-open"\] \{[^}]*animation: none;/);
+	});
+
+	it("la fila del menú: tinta primaria, 44px, resaltado con hair y toda su letra en tinta al resaltarse", () => {
+		expect(ovl(".vn .vn-menu-item")).toMatch(/color: var\(--vn-ink\);/);
+		expect(ovl(".vn .vn-menu-item")).toMatch(/min-block-size: 44px;/);
+		expect(ovl(".vn .vn-menu-item[data-highlighted]")).toMatch(/background: var\(--vn-hair\);/);
+		expect(ovl(".vn .vn-menu-hint")).toMatch(/color: var\(--vn-ink-2-glass\);/);
+		expect(ovl(".vn .vn-menu-item[data-highlighted] .vn-menu-hint")).toMatch(/color: var\(--vn-ink\);/);
+		expect(ovl(".vn .vn-menu-item--danger")).toMatch(/color: var\(--vn-danger\);/);
+		expect(ovl(".vn .vn-menu-item--danger[data-highlighted]")).toMatch(/color: var\(--vn-ink\);/);
+		expect(ovl(".vn .vn-menu-item[data-highlighted] .vn-menu-icon")).toMatch(/color: var\(--vn-ink\);/);
+	});
+
+	it("la tinta sobre una fila resaltada del vidrio grueso, con blanco puro detrás, pasa AA", () => {
+		expect(contrast(token("ink")!, highlighted())).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("el texto secundario del menú, sin resaltar, pasa AA sobre el vidrio grueso", () => {
+		expect(contrast(token("ink-2-glass")!, thickBehind())).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("el ítem peligroso se lee sobre su sólido de respaldo", () => {
+		expect(contrast(token("danger")!, token("solid-thick")!)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("el icono peligroso llega a 3:1 sobre vidrio grueso con blanco puro detrás (el texto no llega a 4.5: ver informe)", () => {
+		// --vn-danger no se toca desde esta tarea: medido 3.57:1 con ese fondo, bajo el 4.5 del texto, sobre el 3 del icono.
+		const ratio = contrast(token("danger")!, thickBehind());
+		expect(ratio).toBeGreaterThanOrEqual(3);
+	});
+
+	it("el texto del tooltip va en tinta primaria con el tamaño pequeño, nunca en tinta secundaria", () => {
+		const body = ovl(".vn .vn-tooltip");
+		expect(body).toMatch(/color: var\(--vn-ink\);/);
+		expect(body).toMatch(/font-size: 0\.8125rem;/);
+		expect(overlays).not.toMatch(/\.vn-tooltip[^{]*\{[^}]*--vn-ink-[23]/);
+	});
+
+	it("ningún texto de los flotantes baja de 0.75rem", () => {
+		const sizes = [...overlays.matchAll(/font-size: ([\d.]+)rem/g)].map((m) => Number(m[1]));
+		expect(sizes.length).toBeGreaterThan(0);
+		for (const size of sizes) expect(size).toBeGreaterThanOrEqual(0.75);
 	});
 });

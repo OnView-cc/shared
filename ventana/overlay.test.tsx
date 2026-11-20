@@ -1,0 +1,235 @@
+// @vitest-environment jsdom
+/**
+ * Menú, popover y tooltip de Ventana sobre Radix: contenido dentro de `.vn`,
+ * vidrio grueso en el panel (nunca en las filas), teclado, ítems apagados,
+ * separador, nombre accesible y disparador sin envoltorio.
+ */
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { installRadixDom } from "../tests/helpers/radix-dom";
+import { Menu, Popover, Tooltip, type MenuItem } from "./overlay";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+let root: Root | undefined;
+let host: HTMLElement | undefined;
+
+beforeAll(() => installRadixDom());
+
+function mount(node: React.ReactElement): HTMLElement {
+	host = document.createElement("div");
+	document.body.append(host);
+	root = createRoot(host);
+	act(() => root!.render(node));
+	return host;
+}
+
+afterEach(() => {
+	act(() => root?.unmount());
+	host?.remove();
+	root = host = undefined;
+	document.body.innerHTML = "";
+});
+
+const key = (el: Element, k: string) =>
+	act(() => {
+		el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+	});
+
+/** Radix enfoca y devuelve el foco en la cola de tareas: se deja correr. */
+const flush = () =>
+	act(async () => {
+		await new Promise((r) => setTimeout(r, 50));
+	});
+
+const trigger = () => document.querySelector<HTMLButtonElement>("button[data-test=disparador]")!;
+
+function items(onSelect: Record<string, () => void> = {}): (MenuItem | "separator")[] {
+	return [
+		{ key: "a", label: "Renombrar", hint: "F2", onSelect: onSelect.a ?? (() => {}) },
+		{ key: "b", label: "Duplicar", icon: <svg data-test="ico" />, onSelect: onSelect.b ?? (() => {}) },
+		"separator",
+		{ key: "c", label: "Archivar", disabled: true, onSelect: onSelect.c ?? (() => {}) },
+		{ key: "d", label: "Borrar", danger: true, onSelect: onSelect.d ?? (() => {}) },
+	];
+}
+
+describe("Menu de Ventana", () => {
+	it("abre con Enter y su contenido vive dentro de un .vn con display: contents", () => {
+		mount(<Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items()} />);
+		key(trigger(), "Enter");
+		const menu = document.querySelector("[role=menu]")!;
+		expect(menu).toBeTruthy();
+		const wrap = menu.closest(".vn") as HTMLElement;
+		expect(wrap.style.display).toBe("contents");
+		expect(menu.getAttribute("aria-label")).toBe("Acciones");
+	});
+
+	it("el panel es vidrio grueso y las filas nunca llevan vn-glass", async () => {
+		mount(<Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items()} />);
+		key(trigger(), "Enter");
+		await flush();
+		const panel = document.querySelector("[role=menu]")!;
+		expect(panel.className).toContain("vn-glass");
+		expect(panel.className).toContain("vn-glass--thick");
+		const rows = document.querySelectorAll("[role=menuitem]");
+		expect(rows.length).toBe(4);
+		for (const r of rows) expect(r.className).not.toContain("vn-glass");
+	});
+
+	it("el disparador es el elemento que se pasa, sin envoltorio", () => {
+		const h = mount(<Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items()} />);
+		expect(h.firstElementChild).toBe(trigger());
+		expect(h.children.length).toBe(1);
+		expect(trigger().getAttribute("aria-haspopup")).toBe("menu");
+	});
+
+	it("flecha abajo y Enter eligen el segundo ítem, llaman su onSelect y cierran", async () => {
+		const b = vi.fn();
+		const a = vi.fn();
+		mount(<Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items({ a, b })} />);
+		key(trigger(), "Enter");
+		await flush();
+		const active = () => document.activeElement as HTMLElement;
+		expect(active().getAttribute("role")).toBe("menuitem");
+		key(active(), "ArrowDown");
+		await flush();
+		// jsdom no convierte Enter en clic: el ítem de Radix hace su propio click() al recibir Enter.
+		key(active(), "Enter");
+		await flush();
+		expect(b).toHaveBeenCalledTimes(1);
+		expect(a).not.toHaveBeenCalled();
+		expect(document.querySelector("[role=menu]")).toBeNull();
+	});
+
+	it("un ítem disabled lleva aria-disabled y no se elige ni con clic", async () => {
+		const c = vi.fn();
+		mount(<Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items({ c })} />);
+		key(trigger(), "Enter");
+		await flush();
+		const disabled = [...document.querySelectorAll<HTMLElement>("[role=menuitem]")].find((r) => r.textContent?.includes("Archivar"))!;
+		expect(disabled.getAttribute("aria-disabled")).toBe("true");
+		act(() => disabled.click());
+		await flush();
+		expect(c).not.toHaveBeenCalled();
+		expect(document.querySelector("[role=menu]")).toBeTruthy();
+	});
+
+	it("Escape cierra y el foco vuelve al disparador", async () => {
+		mount(<Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items()} />);
+		key(trigger(), "Enter");
+		await flush();
+		expect(document.querySelector("[role=menu]")).toBeTruthy();
+		key(document.activeElement!, "Escape");
+		await flush();
+		expect(document.querySelector("[role=menu]")).toBeNull();
+		expect(document.activeElement).toBe(trigger());
+	});
+
+	it('"separator" pinta un role="separator" y no cuenta como ítem', async () => {
+		mount(<Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items()} />);
+		key(trigger(), "Enter");
+		await flush();
+		expect(document.querySelectorAll("[role=separator]").length).toBe(1);
+		expect(document.querySelectorAll("[role=menuitem]").length).toBe(4);
+	});
+
+	it("pinta icono y hint del ítem y marca el peligroso con su clase", async () => {
+		mount(<Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items()} />);
+		key(trigger(), "Enter");
+		await flush();
+		const rows = [...document.querySelectorAll<HTMLElement>("[role=menuitem]")];
+		expect(rows[0].querySelector(".vn-menu-hint")?.textContent).toBe("F2");
+		expect(rows[1].querySelector("[data-test=ico]")).toBeTruthy();
+		expect(rows[3].className).toContain("vn-menu-item--danger");
+		expect(rows[0].className).not.toContain("vn-menu-item--danger");
+	});
+});
+
+describe("Popover de Ventana", () => {
+	it("abre con clic, lleva aria-label y vive dentro de un .vn con vidrio grueso", async () => {
+		mount(
+			<Popover trigger={<button data-test="disparador">Ajustes</button>} label="Ajustes del video">
+				<p>Contenido</p>
+			</Popover>,
+		);
+		act(() => trigger().click());
+		await flush();
+		const dialog = document.querySelector("[role=dialog]")!;
+		expect(dialog).toBeTruthy();
+		expect(dialog.getAttribute("aria-label")).toBe("Ajustes del video");
+		expect((dialog.closest(".vn") as HTMLElement).style.display).toBe("contents");
+		expect(dialog.className).toContain("vn-glass--thick");
+		expect(dialog.textContent).toContain("Contenido");
+	});
+
+	it("el disparador es el elemento pasado, sin envoltorio", () => {
+		const h = mount(
+			<Popover trigger={<button data-test="disparador">Ajustes</button>} label="Ajustes">
+				<p>x</p>
+			</Popover>,
+		);
+		expect(h.firstElementChild).toBe(trigger());
+		expect(h.children.length).toBe(1);
+	});
+
+	it("Escape cierra y el foco vuelve al disparador", async () => {
+		mount(
+			<Popover trigger={<button data-test="disparador">Ajustes</button>} label="Ajustes">
+				<button>Dentro</button>
+			</Popover>,
+		);
+		act(() => trigger().click());
+		await flush();
+		expect(document.querySelector("[role=dialog]")).toBeTruthy();
+		key(document.activeElement!, "Escape");
+		await flush();
+		expect(document.querySelector("[role=dialog]")).toBeNull();
+		expect(document.activeElement).toBe(trigger());
+	});
+});
+
+describe("Tooltip de Ventana", () => {
+	it("aparece al enfocar su hijo y su texto está dentro de .vn con vidrio grueso", async () => {
+		mount(
+			<Tooltip label="Copiar enlace">
+				<button data-test="disparador">Copiar</button>
+			</Tooltip>,
+		);
+		expect(document.querySelector("[role=tooltip]")).toBeNull();
+		act(() => trigger().focus());
+		await flush();
+		const tip = document.querySelector(".vn-tooltip")!;
+		expect(tip).toBeTruthy();
+		expect(tip.textContent).toContain("Copiar enlace");
+		expect((tip.closest(".vn") as HTMLElement).style.display).toBe("contents");
+		expect(tip.className).toContain("vn-glass--thick");
+		expect(document.querySelector("[role=tooltip]")).toBeTruthy();
+		expect(trigger().getAttribute("aria-describedby")).toBeTruthy();
+	});
+
+	it("el hijo es el disparador, sin envoltorio", () => {
+		const h = mount(
+			<Tooltip label="Copiar enlace">
+				<button data-test="disparador">Copiar</button>
+			</Tooltip>,
+		);
+		expect(h.firstElementChild).toBe(trigger());
+		expect(h.children.length).toBe(1);
+	});
+
+	it("Escape lo cierra", async () => {
+		mount(
+			<Tooltip label="Copiar enlace">
+				<button data-test="disparador">Copiar</button>
+			</Tooltip>,
+		);
+		act(() => trigger().focus());
+		await flush();
+		expect(document.querySelector(".vn-tooltip")).toBeTruthy();
+		key(document.activeElement!, "Escape");
+		await flush();
+		expect(document.querySelector(".vn-tooltip")).toBeNull();
+	});
+});

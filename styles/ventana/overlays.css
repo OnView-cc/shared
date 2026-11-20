@@ -1,0 +1,186 @@
+/*
+ * Ventana: lo que flota. Menú, popover y tooltip son vidrio grueso: cada panel
+ * compone `vn-glass vn-glass--thick` en el propio `Content` y estas reglas sólo
+ * lo afinan por variable (`--vn-glass-r`, `--vn-glass-shadow`). Ninguna regla que
+ * pueda caer sobre un panel declara fondo, desenfoque, borde ni sombra: pesan más
+ * que `.vn-glass` y anularían sus respaldos.
+ *
+ * La fila del menú es sólida por diseño (`vn-menu-item`, nunca lleva `vn-glass`):
+ * su resaltado aclara el relleno bajo la letra, así que al resaltarse TODO su
+ * texto pasa a `--vn-ink`, el `hint` incluido. El separador es una raya de borde
+ * en un elemento que nunca es vidrio.
+ *
+ * Entran desde su disparador (`transform-origin` de Radix) con el resorte
+ * `--vn-spring-snap` y salen en 120ms con `--vn-ease-out`. Con movimiento
+ * reducido, sólo opacidad, de entrada y de salida.
+ */
+
+/* Menú */
+.vn .vn-menu {
+	--vn-glass-r: var(--vn-r-panel);
+	--vn-glass-shadow: 0 16px 48px rgba(0, 0, 0, 0.42);
+	z-index: 60;
+	box-sizing: border-box;
+	min-inline-size: 12rem;
+	max-inline-size: min(var(--radix-dropdown-menu-content-available-width), 22rem);
+	max-block-size: var(--radix-dropdown-menu-content-available-height);
+	overflow-y: auto;
+	padding: 6px;
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	transform-origin: var(--radix-dropdown-menu-content-transform-origin);
+	animation: vn-overlay-in var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+
+.vn .vn-menu-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	box-sizing: border-box;
+	min-block-size: 44px;
+	padding: 10px 12px;
+	border-radius: var(--vn-r-field);
+	color: var(--vn-ink);
+	font-size: 0.9375rem;
+	line-height: 1.25rem;
+	cursor: pointer;
+	outline: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+.vn .vn-menu-icon {
+	display: inline-flex;
+	flex: none;
+	color: var(--vn-ink);
+}
+.vn .vn-menu-icon > svg {
+	inline-size: 18px;
+	block-size: 18px;
+}
+.vn .vn-menu-label {
+	min-inline-size: 0;
+	flex: 1 1 auto;
+}
+.vn .vn-menu-hint {
+	margin-inline-start: auto;
+	color: var(--vn-ink-2-glass);
+	font-size: 0.8125rem;
+}
+.vn .vn-menu-item--danger,
+.vn .vn-menu-item--danger .vn-menu-icon {
+	color: var(--vn-danger);
+}
+
+/* Resaltada (teclado o puntero): el relleno se aclara, así que toda la letra va en tinta */
+.vn .vn-menu-item[data-highlighted] {
+	background: var(--vn-hair);
+}
+.vn .vn-menu-item[data-highlighted] .vn-menu-hint,
+.vn .vn-menu-item[data-highlighted] .vn-menu-icon {
+	color: var(--vn-ink);
+}
+.vn .vn-menu-item--danger[data-highlighted] {
+	color: var(--vn-ink);
+}
+.vn .vn-menu-item[data-disabled] {
+	opacity: 0.45;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+.vn .vn-menu-sep {
+	margin: 6px 8px;
+	border-block-start: 1px solid var(--vn-hair);
+}
+
+/* Popover */
+.vn .vn-popover {
+	--vn-glass-r: var(--vn-r-panel);
+	--vn-glass-shadow: 0 16px 48px rgba(0, 0, 0, 0.42);
+	z-index: 60;
+	box-sizing: border-box;
+	max-inline-size: min(var(--radix-popover-content-available-width), 24rem);
+	max-block-size: var(--radix-popover-content-available-height);
+	overflow: auto;
+	padding: 16px;
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	transform-origin: var(--radix-popover-content-transform-origin);
+	animation: vn-overlay-in var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn .vn-popover:focus-visible {
+	outline: none;
+}
+
+/* Tooltip: una frase corta en tinta primaria (sobre vidrio no hay tinta secundaria fina) */
+.vn .vn-tooltip {
+	--vn-glass-r: var(--vn-r-thumb);
+	--vn-glass-shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
+	z-index: 70;
+	box-sizing: border-box;
+	max-inline-size: min(var(--radix-tooltip-content-available-width), 18rem);
+	padding: 6px 10px;
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	line-height: 1.35;
+	overflow-wrap: anywhere;
+	transform-origin: var(--radix-tooltip-content-transform-origin);
+	animation: vn-overlay-in 200ms var(--vn-spring-snap);
+}
+/* Un tooltip que abre sin espera tras otro no repite la entrada */
+.vn .vn-tooltip[data-state="instant-open"] {
+	animation: none;
+}
+
+/* Salida: rápida y con la curva de salida */
+.vn .vn-menu[data-state="closed"],
+.vn .vn-popover[data-state="closed"],
+.vn .vn-tooltip[data-state="closed"] {
+	animation: vn-overlay-out 120ms var(--vn-ease-out) forwards;
+}
+@keyframes vn-overlay-in {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+}
+@keyframes vn-overlay-out {
+	to {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+}
+
+/* Movimiento reducido: sólo opacidad, de entrada y de salida */
+@media (prefers-reduced-motion: reduce) {
+	.vn .vn-menu,
+	.vn .vn-popover,
+	.vn .vn-tooltip {
+		animation: vn-overlay-fade-in 140ms linear;
+	}
+	.vn .vn-menu[data-state="closed"],
+	.vn .vn-popover[data-state="closed"],
+	.vn .vn-tooltip[data-state="closed"] {
+		animation: vn-overlay-fade-out 120ms linear forwards;
+	}
+	@keyframes vn-overlay-fade-in {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes vn-overlay-fade-out {
+		to {
+			opacity: 0;
+		}
+	}
+}
+
+/* Contraste alto: la fila resaltada se lee por su contorno, no sólo por el relleno */
+@media (prefers-contrast: more) {
+	.vn .vn-menu-item[data-highlighted] {
+		outline: 2px solid var(--vn-ink);
+		outline-offset: -2px;
+	}
+}
