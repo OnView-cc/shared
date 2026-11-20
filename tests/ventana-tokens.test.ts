@@ -247,6 +247,21 @@ describe("Ventana controles", () => {
 		}
 	});
 
+	it("el vidrio toma sombra y filete de variables con los tokens de siempre como valor por defecto", () => {
+		const body = glass.match(/\n\.vn-glass \{([^}]*)\}/)?.[1] ?? "";
+		expect(body).toMatch(/border: 1px solid var\(--vn-glass-rim, var\(--vn-rim\)\);/);
+		expect(body).toMatch(/box-shadow: inset 0 1px 0 var\(--vn-rim-top\), var\(--vn-glass-shadow, 0 12px 40px rgba\(0, 0, 0, 0\.35\)\);/);
+		expect(body).not.toMatch(/--vn-glass-(fill|smoke-alpha)/);
+	});
+
+	it("los botones de vidrio ajustan la sombra y, con puntero fino, el filete, sólo por variable", () => {
+		const shadow = rules.find((r) => r.selectors.includes(".vn .vn-btn.vn-glass") && /--vn-glass-shadow:/.test(r.body));
+		expect(shadow).toBeTruthy();
+		const hover = rules.find((r) => r.selectors.includes(".vn .vn-btn.vn-glass:hover"));
+		expect(hover?.body).toMatch(/--vn-glass-rim: var\(--vn-rim-top\);/);
+		expect(controls.indexOf(".vn .vn-btn.vn-glass:hover")).toBeGreaterThan(controls.indexOf("@media (hover: hover) and (pointer: fine)"));
+	});
+
 	it("la base no pinta fondo y son plain y danger quienes lo reinician", () => {
 		expect(ctl(".vn .vn-btn")).not.toMatch(owned);
 		const resets = rules.filter((r) => /background:\s*transparent/.test(r.body)).flatMap((r) => r.selectors);

@@ -98,6 +98,11 @@
 	color: var(--vn-danger);
 }
 
+/* El vidrio de un control es chico: sombra corta y cercana, por variable (nunca box-shadow) */
+.vn .vn-btn.vn-glass {
+	--vn-glass-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+}
+
 /* Foco visible: anillo de tinta de 2px con 2px de separación */
 .vn .vn-btn:focus-visible {
 	outline: none;
@@ -117,6 +122,10 @@
 	}
 	.vn .vn-btn--danger:hover {
 		background: rgba(255, 143, 126, 0.12);
+	}
+	/* El vidrio sube el filete; el relleno no se toca (el contraste se calcula sobre él) */
+	.vn .vn-btn.vn-glass:hover {
+		--vn-glass-rim: var(--vn-rim-top);
 	}
 }
 
