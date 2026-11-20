@@ -66,6 +66,20 @@ describe("Button", () => {
 		expect(el.getAttribute("aria-disabled")).toBe("true");
 	});
 
+	it("un a deshabilitado no reacciona a clic ni a teclado", () => {
+		let calls = 0;
+		const el = mount(
+			<Button href="/app" disabled onClick={() => calls++} onKeyDown={() => calls++}>
+				No
+			</Button>,
+		);
+		act(() => {
+			el.click();
+			el.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+		});
+		expect(calls).toBe(0);
+	});
+
 	it("glass compone el vidrio fino y sm cambia el tamaño", () => {
 		const el = mount(
 			<Button variant="glass" size="sm" className="extra">

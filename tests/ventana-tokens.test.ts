@@ -202,7 +202,11 @@ describe("Ventana controles", () => {
 		const body = ctl(".vn .vn-btn--primary");
 		expect(body).toMatch(/background: var\(--vn-action\);/);
 		expect(body).toMatch(/color: var\(--vn-action-ink\);/);
-		expect(contrast(token("action-ink")!, token("ink")!)).toBeGreaterThanOrEqual(4.5);
+		const resolve = (value: string): string => {
+			const ref = value.match(/^var\(--vn-([\w-]+)\)$/);
+			return ref ? resolve(token(ref[1])!) : value;
+		};
+		expect(contrast(token("action-ink")!, resolve(token("action")!))).toBeGreaterThanOrEqual(4.5);
 	});
 
 	it("el hover sólo existe con puntero fino y el área de toque llega a 44px", () => {
@@ -218,5 +222,36 @@ describe("Ventana controles", () => {
 
 	it("el danger se lee sobre el suelo", () => {
 		expect(contrast(token("danger")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	/*
+	 * El material del vidrio (`.vn-glass`, 0,1,0) y sus respaldos viven en glass.css.
+	 * Cualquier regla de controls.css (0,2,0 o más) que pueda caer sobre un botón de
+	 * vidrio y declare lo que el material posee, lo pisa en todos los casos.
+	 */
+	const rules = [...controls.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({
+		selectors: m[1].split(",").map((x) => x.trim()),
+		body: m[2],
+	}));
+	const owned = /(^|[;\s])(background(-color|-image)?|backdrop-filter|-webkit-backdrop-filter|border|border-color|box-shadow)\s*:/;
+	const noMaterial = /--(plain|danger|primary)\b/;
+
+	it("ninguna regla que alcance un botón de vidrio declara lo que el material posee", () => {
+		const reaching = rules.filter((r) => r.selectors.some((sel) => !noMaterial.test(sel)));
+		expect(reaching.length).toBeGreaterThan(3);
+		for (const r of reaching) {
+			let body = r.body;
+			// El anillo de foco es un estado: sustituye el brillo de borde sólo mientras hay foco
+			if (r.selectors.every((sel) => sel.includes(":focus-visible"))) body = body.replace(/box-shadow:[^;]*;/g, "");
+			expect(body, r.selectors.join(", ")).not.toMatch(owned);
+		}
+	});
+
+	it("la base no pinta fondo y son plain y danger quienes lo reinician", () => {
+		expect(ctl(".vn .vn-btn")).not.toMatch(owned);
+		const resets = rules.filter((r) => /background:\s*transparent/.test(r.body)).flatMap((r) => r.selectors);
+		expect(resets.some((sel) => sel.includes("--plain"))).toBe(true);
+		expect(resets.some((sel) => sel.includes("--danger"))).toBe(true);
+		expect(resets.every((sel) => noMaterial.test(sel))).toBe(true);
 	});
 });

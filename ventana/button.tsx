@@ -37,8 +37,10 @@ function render(
 	if (href !== undefined) {
 		const Tag = "a" as ElementType;
 		// Un enlace no se deshabilita: sin href deja de ser enlace y se anuncia como inactivo.
+		// Tampoco deja pasar teclado ni ratón: un enlace inactivo no reacciona.
+		const inert = Object.fromEntries(Object.entries(rest).filter(([key]) => !/^on[A-Z]/.test(key)));
 		return disabled ? (
-			<Tag {...rest} className={cls} aria-disabled="true" tabIndex={-1}>
+			<Tag {...inert} className={cls} aria-disabled="true" tabIndex={-1}>
 				{content}
 			</Tag>
 		) : (
