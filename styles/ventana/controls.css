@@ -261,3 +261,198 @@
 		border-color: var(--vn-ink-2);
 	}
 }
+
+/*
+ * Desplegable. El disparador es sólido, como un campo (`field`) o una cápsula
+ * (`chip`): pinta su propio fondo y borde y nunca lleva `vn-glass`. La lista es
+ * vidrio grueso (`vn-glass vn-glass--thick` en el propio elemento): sus reglas
+ * sólo ajustan el material por variable y no declaran fondo, desenfoque, borde
+ * ni sombra. Texto secundario sobre el vidrio grueso: `--vn-ink-2-glass`.
+ */
+.vn .vn-select-trigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	box-sizing: border-box;
+	min-block-size: 44px;
+	max-inline-size: 100%;
+	padding: 10px 14px;
+	background: var(--vn-ground);
+	border: 1px solid var(--vn-line);
+	border-radius: var(--vn-r-field);
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	font-size: 1rem;
+	line-height: 1.5rem;
+	text-align: start;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+	transition:
+		border-color 140ms ease-out,
+		box-shadow 140ms ease-out,
+		opacity 140ms ease-out;
+}
+.vn .vn-select-trigger--field {
+	display: flex;
+	inline-size: 100%;
+	justify-content: space-between;
+}
+.vn .vn-select-trigger--chip {
+	background: var(--vn-raised);
+	border-radius: var(--vn-r-pill);
+	padding-inline: 16px;
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+.vn .vn-select-value {
+	min-inline-size: 0;
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.vn .vn-select-trigger[data-placeholder] .vn-select-value {
+	color: var(--vn-ink-2);
+}
+.vn .vn-select-chevron {
+	flex: none;
+	inline-size: 16px;
+	block-size: 16px;
+	color: var(--vn-ink-2);
+	transition: rotate var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn .vn-select-trigger[data-state="open"] .vn-select-chevron {
+	rotate: 180deg;
+}
+.vn .vn-select-trigger:focus-visible {
+	outline: none;
+	border-color: var(--vn-ink);
+	box-shadow: var(--vn-focus);
+}
+.vn .vn-select-trigger:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+/* El panel: el material viene de .vn-glass; aquí sólo radio, tamaño y entrada */
+.vn .vn-select-panel {
+	--vn-glass-r: var(--vn-r-panel);
+	z-index: 60;
+	box-sizing: border-box;
+	min-inline-size: var(--radix-select-trigger-width);
+	max-inline-size: min(var(--radix-select-content-available-width), 24rem);
+	max-block-size: min(var(--radix-select-content-available-height), 22rem);
+	overflow: hidden;
+	color: var(--vn-ink);
+	font-family: var(--vn-font);
+	transform-origin: var(--radix-select-content-transform-origin);
+	animation: vn-select-in var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn .vn-select-panel[data-state="closed"] {
+	animation: vn-select-out 120ms ease-out forwards;
+}
+@keyframes vn-select-in {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+}
+@keyframes vn-select-out {
+	to {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+}
+.vn .vn-select-viewport {
+	padding: 6px;
+}
+
+.vn .vn-select-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	box-sizing: border-box;
+	min-block-size: 44px;
+	padding: 10px 40px 10px 12px;
+	border-radius: var(--vn-r-field);
+	color: var(--vn-ink);
+	font-size: 0.9375rem;
+	line-height: 1.25rem;
+	cursor: pointer;
+	outline: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+.vn .vn-select-item[data-highlighted] {
+	background: var(--vn-hair);
+}
+.vn .vn-select-item[data-disabled] {
+	opacity: 0.45;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+.vn .vn-select-hint {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-inline-start: auto;
+	color: var(--vn-ink-2-glass);
+	font-size: 0.8125rem;
+}
+.vn .vn-select-lock {
+	inline-size: 12px;
+	block-size: 12px;
+}
+.vn .vn-select-check {
+	position: absolute;
+	inset-inline-end: 12px;
+	display: inline-flex;
+	color: var(--vn-ink);
+}
+.vn .vn-select-check > svg {
+	inline-size: 16px;
+	block-size: 16px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-select-trigger:hover:not(:focus-visible):not(:disabled) {
+		border-color: var(--vn-ink-3);
+	}
+}
+
+/* Movimiento reducido: sólo opacidad, sin escala ni giro */
+@media (prefers-reduced-motion: reduce) {
+	.vn .vn-select-trigger {
+		transition:
+			border-color 140ms linear,
+			opacity 140ms linear;
+	}
+	.vn .vn-select-chevron {
+		transition: none;
+	}
+	.vn .vn-select-panel {
+		animation: vn-select-fade 140ms linear;
+	}
+	.vn .vn-select-panel[data-state="closed"] {
+		animation: vn-select-fade-out 100ms linear forwards;
+	}
+	@keyframes vn-select-fade {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes vn-select-fade-out {
+		to {
+			opacity: 0;
+		}
+	}
+}
+
+/* Contraste alto: el filete del disparador se vuelve firme */
+@media (prefers-contrast: more) {
+	.vn .vn-select-trigger {
+		border-color: var(--vn-ink-2);
+	}
+}

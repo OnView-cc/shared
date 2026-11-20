@@ -240,7 +240,8 @@ describe("Ventana controles", () => {
 	 * pieza sólida nueva añade aquí una línea; olvidarla hace fallar el análisis,
 	 * que es el lado seguro.
 	 */
-	const SOLID_PIECES = ["vn-input", "vn-input--area"];
+	/** Los disparadores del desplegable son sólidos; la fila pinta su propio resaltado (nunca lleva vn-glass, hay prueba) y vive dentro del panel de vidrio. */
+	const SOLID_PIECES = ["vn-input", "vn-input--area", "vn-select-trigger", "vn-select-trigger--field", "vn-select-trigger--chip", "vn-select-item"];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
 	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
 
@@ -332,5 +333,25 @@ describe("Ventana controles", () => {
 	it("el texto del campo y su ayuda se leen sobre el suelo", () => {
 		expect(contrast(token("ink")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);
 		expect(contrast(token("ink-2")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);
+	});
+
+	it("el panel del desplegable es vidrio: sus reglas sólo ajustan el material por variable", () => {
+		const panel = rules.filter((r) => r.selectors.some((sel) => /vn-select-(panel|viewport|hint|check|lock)\b/.test(sel)));
+		expect(panel.length).toBeGreaterThan(5);
+		for (const r of panel) expect(r.body, r.selectors.join(", ")).not.toMatch(owned);
+		expect(ctl(".vn .vn-select-panel")).toMatch(/--vn-glass-r: var\(--vn-r-panel\);/);
+		expect(ctl(".vn .vn-select-panel")).toMatch(/transform-origin: var\(--radix-select-content-transform-origin\);/);
+		expect(controls).toMatch(/animation: vn-select-in var\(--vn-spring-snap-ms\) var\(--vn-spring-snap\)/);
+	});
+
+	it("el texto secundario de la lista usa la tinta de vidrio grueso, no la sólida", () => {
+		expect(ctl(".vn .vn-select-hint")).toMatch(/color: var\(--vn-ink-2-glass\);/);
+		expect(ctl(".vn .vn-select-item")).toMatch(/min-block-size: 44px;/);
+	});
+
+	it("el disparador es sólido: campo en suelo, cápsula en raised, ambos con filete", () => {
+		expect(ctl(".vn .vn-select-trigger")).toMatch(/background: var\(--vn-ground\);/);
+		expect(ctl(".vn .vn-select-trigger")).toMatch(/border: 1px solid var\(--vn-line\);/);
+		expect(ctl(".vn .vn-select-trigger--chip")).toMatch(/background: var\(--vn-raised\);/);
 	});
 });
