@@ -6,6 +6,7 @@
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { AI_SPECTRUM } from "../ventana/ai-mark";
 
 const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8");
 const tokens = read("../styles/ventana/tokens.css");
@@ -289,6 +290,10 @@ describe("Ventana controles", () => {
 		"vn-acc__trigger",
 		"vn-monogram",
 		"vn-monogram--mark",
+		// El símbolo de Iris: aro de espectro (en línea, nunca en una hoja) y núcleo; pinta su fondo y nunca lleva vn-glass (hay prueba de marcado)
+		"vn-ai",
+		"vn-ai__ring",
+		"vn-ai__core",
 	];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
 	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
@@ -619,7 +624,7 @@ describe("Ventana controles", () => {
 	});
 
 	it("esqueleto, progreso y acordeón no animan nada con movimiento reducido", () => {
-		const reduced = content.slice(content.lastIndexOf("@media (prefers-reduced-motion: reduce)"));
+		const reduced = content.slice(content.indexOf("@media (prefers-reduced-motion: reduce)"));
 		expect(reduced).toMatch(/\.vn-skel__block \{\s*animation: none;/);
 		expect(reduced).toMatch(/\.vn-progress__bar,[\s\S]*transition: none;/);
 		expect(reduced).toMatch(/\.vn-acc__content\[data-state="open"\],[\s\S]*animation: none;/);
@@ -924,5 +929,27 @@ describe("Ventana barra de navegación", () => {
 		expect(reduced).toMatch(/\.vn\.vn-nav-sheet\[open\] \{\s*translate: none;/);
 		expect(reduced).toMatch(/opacity 150ms linear/);
 		expect(reduced).toMatch(/@starting-style \{\s*\.vn\.vn-nav-sheet\[open\] \{\s*translate: none;/);
+	});
+});
+
+describe("Ventana: las marcas", () => {
+	it("el espectro es sólo de Iris: ninguna hoja de Ventana contiene uno de sus colores", () => {
+		const css = allVentanaCss.join("\n").toLowerCase();
+		for (const c of AI_SPECTRUM) expect(css, c).not.toContain(c);
+		expect(css).not.toContain("conic-gradient");
+	});
+
+	it("el aro de Iris se pinta con la variable en línea, se enmascara a aro y deja de girar con movimiento reducido", () => {
+		expect(content).toMatch(/\.vn \.vn-ai__ring \{[^}]*background: var\(--vn-ai-spectrum\);[^}]*mask: radial-gradient/);
+		expect(content).toMatch(/\.vn-ai--thinking \.vn-ai__ring \{\s*animation: vn-ai-spin 3s linear infinite;/);
+		const reduced = content.slice(content.lastIndexOf("@media (prefers-reduced-motion: reduce)"));
+		expect(reduced).toMatch(/\.vn-ai--thinking \.vn-ai__ring \{\s*animation: none;/);
+	});
+
+	it("el logotipo usa 650, −0.02em y 44px de alto", () => {
+		const body = content.match(/\n\.vn \.vn-wordmark \{([^}]*)\}/)?.[1] ?? "";
+		expect(body).toMatch(/font-weight: 650;/);
+		expect(body).toMatch(/letter-spacing: -0\.02em;/);
+		expect(body).toMatch(/min-block-size: 44px;/);
 	});
 });

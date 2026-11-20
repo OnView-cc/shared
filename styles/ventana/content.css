@@ -558,6 +558,9 @@
 	.vn .vn-skel__block {
 		animation: none;
 	}
+	.vn .vn-ai--thinking .vn-ai__ring {
+		animation: none;
+	}
 	.vn .vn-row--action,
 	.vn .vn-tabs__tab,
 	.vn .vn-progress__bar,
@@ -572,4 +575,73 @@
 	.vn .vn-acc__content[data-state="closed"] {
 		animation: none;
 	}
+}
+
+/*
+ * Marcas. La de OnView («Dos capas») es un svg plano; la de Iris («El prisma»)
+ * es un aro de espectro con un núcleo. El espectro NO se escribe en ninguna hoja:
+ * `AiMark` lo trae en línea en `--vn-ai-spectrum` (degradado cónico hecho en
+ * JavaScript con `AI_SPECTRUM`) y aquí sólo se enmascara a aro. Sólidas: pintan
+ * su fondo y nunca llevan `vn-glass`.
+ */
+.vn .vn-mark,
+.vn .vn-ai-mono {
+	display: block;
+	inline-size: 1.5rem;
+	block-size: 1.5rem;
+	flex: none;
+}
+
+.vn .vn-ai {
+	position: relative;
+	display: inline-block;
+	inline-size: 1.5rem;
+	block-size: 1.5rem;
+	flex: none;
+	vertical-align: middle;
+}
+
+/* Aro: de 55 % a 82 % del radio (6.6 a 9.8 en el lienzo de 24), con borde de 1 % para no serrar */
+.vn .vn-ai__ring {
+	position: absolute;
+	inset: 0;
+	border-radius: 50%;
+	background: var(--vn-ai-spectrum);
+	-webkit-mask: radial-gradient(circle closest-side, transparent 54.5%, #000 55.5%, #000 81.5%, transparent 82.5%);
+	mask: radial-gradient(circle closest-side, transparent 54.5%, #000 55.5%, #000 81.5%, transparent 82.5%);
+}
+
+/* Núcleo: radio 4.2 de 12 = 35 % del radio, es decir inset de 32.5 % */
+.vn .vn-ai__core {
+	position: absolute;
+	inset: 32.5%;
+	border-radius: 50%;
+	background: var(--vn-ink);
+}
+.vn .vn-ai--paper .vn-ai__core {
+	background: var(--vn-ground);
+}
+
+.vn .vn-ai--thinking .vn-ai__ring {
+	animation: vn-ai-spin 3s linear infinite;
+}
+
+@keyframes vn-ai-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.vn .vn-wordmark {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-block-size: 44px;
+	color: var(--vn-ink);
+	font-weight: 650;
+	letter-spacing: -0.02em;
+	text-decoration: none;
+}
+.vn .vn-wordmark--paper {
+	color: var(--vn-ground);
 }
