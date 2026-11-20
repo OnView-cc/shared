@@ -456,3 +456,235 @@
 		border-color: var(--vn-ink-2);
 	}
 }
+
+/*
+ * Segmentado. El riel es sólido (superficie con filete) y el único vidrio es el
+ * pulgar: claro, porque no lleva texto (las etiquetas son los botones, encima).
+ * El pulgar compone `vn-glass vn-glass--clear` y sólo se afina por variables: ni
+ * fondo, ni borde, ni sombra aquí, o se perderían los respaldos del material.
+ * Posición y ancho salen de `--vn-seg-x` y `--vn-seg-w`, medidos del botón elegido.
+ * Los botones no fijan ancho: la etiqueta larga manda, y puede partirse en dos líneas.
+ */
+.vn .vn-seg {
+	position: relative;
+	isolation: isolate;
+	display: inline-flex;
+	align-items: stretch;
+	box-sizing: border-box;
+	max-inline-size: 100%;
+	min-block-size: 44px;
+	background: var(--vn-surface);
+	border: 1px solid var(--vn-hair);
+	border-radius: var(--vn-r-pill);
+	font-family: var(--vn-font);
+}
+.vn .vn-seg-opt {
+	position: relative;
+	z-index: 1;
+	flex: 1 1 auto;
+	min-inline-size: 0;
+	min-block-size: 42px;
+	padding: 6px 18px;
+	background: none;
+	border: 0;
+	border-radius: var(--vn-r-pill);
+	color: var(--vn-ink-2);
+	font: inherit;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	line-height: 1.2;
+	text-align: center;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+	transition: color 160ms ease-out;
+}
+.vn .vn-seg-opt[aria-checked="true"] {
+	color: var(--vn-ink);
+}
+.vn .vn-seg-opt:focus-visible {
+	outline: none;
+	box-shadow: var(--vn-focus);
+}
+.vn .vn-seg-thumb {
+	--vn-glass-r: var(--vn-r-pill);
+	--vn-glass-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+	position: absolute;
+	z-index: 0;
+	inset-block: 2px;
+	inset-inline-start: 0;
+	inline-size: calc(var(--vn-seg-w, 0px) - 4px);
+	translate: calc(var(--vn-seg-x, 0px) + 2px) 0;
+	pointer-events: none;
+}
+.vn .vn-seg-thumb[data-hidden] {
+	opacity: 0;
+}
+/* Sólo se desliza cuando ya hubo una primera medida pintada */
+.vn .vn-seg-thumb[data-ready] {
+	transition:
+		translate var(--vn-spring-snap-ms) var(--vn-spring-snap),
+		inline-size var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn .vn-seg-thumb[data-still] {
+	transition: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-seg-opt[aria-checked="false"]:hover {
+		color: var(--vn-ink);
+	}
+}
+
+/*
+ * Interruptor, 51 x 31px a la vista como en iOS; el botón mide 44px de alto para
+ * el toque. Sólido: apagado en `raised`, encendido en tinta con perilla oscura.
+ */
+.vn .vn-switch {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	inline-size: 51px;
+	block-size: 44px;
+	padding: 0;
+	background: none;
+	border: 0;
+	cursor: pointer;
+	outline: none;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+}
+.vn .vn-switch__track {
+	position: relative;
+	box-sizing: border-box;
+	inline-size: 51px;
+	block-size: 31px;
+	background: var(--vn-raised);
+	border: 1px solid var(--vn-line);
+	border-radius: var(--vn-r-pill);
+	transition: background-color 200ms ease-out;
+}
+.vn .vn-switch__knob {
+	position: absolute;
+	inset-block-start: 1px;
+	inset-inline-start: 1px;
+	inline-size: 27px;
+	block-size: 27px;
+	background: var(--vn-ink-2);
+	border-radius: var(--vn-r-pill);
+	transition:
+		translate var(--vn-spring-snap-ms) var(--vn-spring-snap),
+		background-color 200ms ease-out;
+}
+.vn .vn-switch[aria-checked="true"] .vn-switch__track {
+	background: var(--vn-ink);
+	border-color: var(--vn-ink);
+}
+.vn .vn-switch[aria-checked="true"] .vn-switch__knob {
+	background: var(--vn-action-ink);
+	translate: 20px 0;
+}
+.vn .vn-switch:focus-visible .vn-switch__track {
+	box-shadow: var(--vn-focus);
+}
+.vn .vn-switch:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+/*
+ * Casilla: la nativa queda accesible pero invisible; el cuadro de al lado la
+ * representa. La etiqueta entera es el área de toque (44px de alto como mínimo).
+ */
+.vn .vn-check {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+	min-block-size: 44px;
+	cursor: pointer;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+.vn .vn-check[data-disabled] {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+.vn .vn-check__control {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+}
+.vn .vn-check__input {
+	position: absolute;
+	inline-size: 1px;
+	block-size: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+.vn .vn-check__box {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	inline-size: 22px;
+	block-size: 22px;
+	background: var(--vn-surface);
+	border: 1px solid var(--vn-line);
+	border-radius: 7px;
+	color: var(--vn-action-ink);
+	transition:
+		background-color 160ms ease-out,
+		border-color 160ms ease-out;
+}
+.vn .vn-check__tick {
+	inline-size: 14px;
+	block-size: 14px;
+}
+.vn .vn-check__input:checked + .vn-check__box {
+	background: var(--vn-ink);
+	border-color: var(--vn-ink);
+}
+.vn .vn-check__input:focus-visible + .vn-check__box {
+	box-shadow: var(--vn-focus);
+}
+.vn .vn-check__text {
+	min-inline-size: 0;
+	color: var(--vn-ink-2);
+	font-family: var(--vn-font);
+	font-size: 0.9375rem;
+	line-height: 1.35;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-check:not([data-disabled]):hover .vn-check__input:not(:checked) + .vn-check__box {
+		border-color: var(--vn-ink-3);
+	}
+}
+
+/* Movimiento reducido: la perilla salta y sólo cambia el color */
+@media (prefers-reduced-motion: reduce) {
+	.vn .vn-seg-thumb[data-ready] {
+		transition: none;
+	}
+	.vn .vn-switch__knob {
+		transition: background-color 140ms linear;
+	}
+	.vn .vn-seg-opt,
+	.vn .vn-check__box {
+		transition-duration: 140ms;
+		transition-timing-function: linear;
+	}
+}
+
+/* Contraste alto: filetes firmes en riel, interruptor y casilla */
+@media (prefers-contrast: more) {
+	.vn .vn-seg,
+	.vn .vn-switch__track,
+	.vn .vn-check__box {
+		border-color: var(--vn-ink-2);
+	}
+}

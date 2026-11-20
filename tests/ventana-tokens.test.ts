@@ -241,7 +241,20 @@ describe("Ventana controles", () => {
 	 * que es el lado seguro.
 	 */
 	/** Los disparadores del desplegable son sólidos; la fila pinta su propio resaltado (nunca lleva vn-glass, hay prueba) y vive dentro del panel de vidrio. */
-	const SOLID_PIECES = ["vn-input", "vn-input--area", "vn-select-trigger", "vn-select-trigger--field", "vn-select-trigger--chip", "vn-select-item"];
+	const SOLID_PIECES = [
+		"vn-input",
+		"vn-input--area",
+		"vn-select-trigger",
+		"vn-select-trigger--field",
+		"vn-select-trigger--chip",
+		"vn-select-item",
+		"vn-seg",
+		"vn-seg-opt",
+		"vn-switch",
+		"vn-switch__track",
+		"vn-switch__knob",
+		"vn-check__box",
+	];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
 	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
 
@@ -353,5 +366,31 @@ describe("Ventana controles", () => {
 		expect(ctl(".vn .vn-select-trigger")).toMatch(/background: var\(--vn-ground\);/);
 		expect(ctl(".vn .vn-select-trigger")).toMatch(/border: 1px solid var\(--vn-line\);/);
 		expect(ctl(".vn .vn-select-trigger--chip")).toMatch(/background: var\(--vn-raised\);/);
+	});
+
+	it("el pulgar del segmentado es vidrio: sus reglas sólo ajustan el material por variable", () => {
+		const thumb = rules.filter((r) => r.selectors.some((sel) => /vn-seg-thumb\b/.test(sel)));
+		expect(thumb.length).toBeGreaterThan(2);
+		for (const r of thumb) expect(r.body, r.selectors.join(", ")).not.toMatch(owned);
+		expect(ctl(".vn .vn-seg-thumb")).toMatch(/--vn-glass-r: var\(--vn-r-pill\);/);
+		expect(controls).toMatch(/var\(--vn-seg-x/);
+		expect(controls).toMatch(/var\(--vn-seg-w/);
+	});
+
+	it("el riel, el interruptor y la casilla son sólidos y de tinta, sin acento", () => {
+		expect(ctl(".vn .vn-seg")).toMatch(/background: var\(--vn-surface\);/);
+		expect(ctl(".vn .vn-seg")).toMatch(/border: 1px solid var\(--vn-hair\);/);
+		expect(ctl(".vn .vn-switch__track")).toMatch(/background: var\(--vn-raised\);/);
+		expect(ctl('.vn .vn-switch[aria-checked="true"] .vn-switch__track')).toMatch(/background: var\(--vn-ink\);/);
+		expect(ctl('.vn .vn-switch[aria-checked="true"] .vn-switch__knob')).toMatch(/background: var\(--vn-action-ink\);/);
+		expect(ctl(".vn .vn-switch__track")).toMatch(/inline-size: 51px;[\s\S]*block-size: 31px;/);
+		expect(ctl(".vn .vn-switch")).toMatch(/block-size: 44px;/);
+		expect(ctl(".vn .vn-check__input:checked + .vn-check__box")).toMatch(/background: var\(--vn-ink\);/);
+		expect(ctl(".vn .vn-check")).toMatch(/min-block-size: 44px;/);
+	});
+
+	it("la perilla apagada y la marca se ven contra su fondo", () => {
+		expect(contrast(token("ink-2")!, token("raised")!)).toBeGreaterThanOrEqual(3);
+		expect(contrast(token("action-ink")!, token("ink")!)).toBeGreaterThanOrEqual(4.5);
 	});
 });
