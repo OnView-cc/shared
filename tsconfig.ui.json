@@ -20,7 +20,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["ui", "lib", "hooks", "components", "sky", "video", "motion", "ventana"],
-  // Las pruebas de CSS leen archivos con node:fs y el paquete no trae @types/node
-  "exclude": ["ventana/**/*.test.ts"]
+  "include": ["ui", "lib", "hooks", "components", "sky", "video", "motion", "ventana"]
 }
