@@ -19,6 +19,7 @@ import { gsap } from "gsap";
 import { WATERMARK } from "../video/compose";
 import { beatSeconds as beatOf } from "./fit";
 import { drawBackground, inkOn } from "./background";
+import { wireCamera } from "./camera";
 import { STYLES } from "./styles";
 import { blockFor } from "./registry";
 import { injectMotionCss } from "./style";
@@ -62,7 +63,14 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	// Un plan de antes de los estilos no trae `style`: es Arcade, el aspecto de entonces.
 	const style = doc.style ?? STYLES.arcade;
 	const photo = doc.moments.find((m) => m.block === "product" && m.images[0])?.images[0]?.src ?? null;
-	const drawn = drawBackground(stage, style.background, doc.brand, u, photo);
+	// La cámara (`camera.ts`): dos envolturas con el fondo y las capas dentro; la marca de agua queda fuera.
+	const camera = document.createElement("div");
+	camera.className = "motion-camera";
+	const hit = document.createElement("div");
+	hit.className = "motion-hit";
+	camera.appendChild(hit);
+	stage.appendChild(camera);
+	const drawn = drawBackground(hit, style.background, doc.brand, u, photo);
 	const background = { kind: drawn.kind, color: drawn.color };
 	const ink = inkOn(background, doc.brand);
 
@@ -73,10 +81,11 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 		el.className = "motion-layer";
 		el.dataset.moment = String(i);
 		el.dataset.block = moment.block;
-		stage.appendChild(el);
+		hit.appendChild(el);
 		return el;
 	});
 	wireTransitions(tl, layers, doc.moments, beat);
+	wireCamera(tl, { camera, hit, background: drawn.layer }, style, { total: doc.total, beatSeconds: beat, offset: doc.tempo.offset, u });
 	doc.moments.forEach((moment, i) => {
 		blockFor(moment.block)?.({
 			el: layers[i]!,

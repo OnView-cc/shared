@@ -7,6 +7,7 @@
  */
 export const MOTION_CSS = `
 .motion-stage { position: absolute; left: 0; top: 0; overflow: hidden; transform-origin: 0 0; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; contain: strict; }
+.motion-camera, .motion-hit { position: absolute; inset: 0; }
 .motion-bg { position: absolute; inset: 0; }
 .motion-blob { position: absolute; border-radius: 50%; }
 .motion-layer { position: absolute; inset: 0; overflow: hidden; }
