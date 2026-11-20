@@ -271,6 +271,8 @@ describe("Ventana controles", () => {
 		"vn-frame__caption",
 		// Sólo su `::backdrop` (la cortina de la hoja, que no es el vidrio): ninguna otra regla lleva esta clase (hay prueba)
 		"vn-sheet-scrim",
+		// El enlace de la barra pinta una píldora MÁS OSCURA para la página actual (nunca más clara: bajaría el contraste del texto) y un borde; nunca lleva vn-glass (hay prueba de marcado); la cápsula sí es vidrio
+		"vn-nav-link",
 	];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
 	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
@@ -738,29 +740,54 @@ describe("Ventana barra de navegación", () => {
 	const thickBehind = () => over(token("sheen")!, over(token("smoke-thick")!, "#ffffff"));
 
 	it("las reglas de la barra y de su hoja no declaran lo que posee el vidrio", () => {
-		const mine = all.filter((r) => r.selectors.some((s) => /vn-nav/.test(s)));
+		// El enlace (vn-nav-link) es sólido por diseño: va en SOLID_PIECES y se prueba aparte
+		const mine = all.filter((r) => r.selectors.some((s) => /vn-nav/.test(s)) && !r.selectors.some((s) => /vn-nav-link/.test(s)));
 		expect(mine.length).toBeGreaterThan(10);
 		for (const r of mine) expect(r.body, r.selectors.join(", ")).not.toMatch(ownedByGlass);
 	});
 
-	it("el enlace en reposo usa un color fijo que llega a 4.5:1 sobre vidrio fino con blanco detrás, y la tinta entera también sobre el grueso del modo compacto", () => {
-		expect(rule(".vn .vn-nav-link")).toMatch(/color: var\(--vn-ink-nav\);/);
-		expect(rule(".vn .vn-nav-link")).not.toMatch(/opacity/);
-		// El «78 %» del brief no pasa: se deja constancia de por qué hay un color fijo
-		const ink78 = over(token("ink")!.replace(/^#(..)(..)(..)$/, (_, r, g, b) => `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, 0.78)`), thinBehind());
+	it("el enlace va en tinta entera sin opacidad: el 78 % no llega a 4.5:1, la tinta sí, sobre vidrio fino y sobre el grueso del modo compacto", () => {
+		expect(rule(".vn .vn-nav-link")).toContain("color: var(--vn-ink);");
+		expect(rule(".vn .vn-nav-link")).not.toContain("opacity");
+		// El «78 %» del brief no pasa: se deja constancia de por qué no se tomó al pie de la letra
+		const [r, g, b] = [1, 3, 5].map((i) => parseInt(token("ink")!.slice(i, i + 2), 16));
+		const ink78 = over(`rgba(${r}, ${g}, ${b}, 0.78)`, thinBehind());
 		expect(contrast(ink78, thinBehind())).toBeLessThan(4.5);
-		expect(contrast(token("ink-nav")!, thinBehind())).toBeGreaterThanOrEqual(4.5);
-		expect(contrast(token("ink-nav")!, thickBehind())).toBeGreaterThanOrEqual(4.5);
 		expect(contrast(token("ink")!, thinBehind())).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink")!, thickBehind())).toBeGreaterThanOrEqual(4.5);
+		expect(token("ink-nav")).toBeUndefined();
 	});
 
-	it("hover sólo con puntero fino; foco, hover y página actual dan tinta entera, y la actual además pesa 600", () => {
-		expect(overlays).toMatch(/@media \(hover: hover\) and \(pointer: fine\) \{\s*\.vn \.vn-nav-link:hover \{\s*color: var\(--vn-ink\);/);
-		expect(rule(".vn .vn-nav-link:focus-visible")).toMatch(/color: var\(--vn-ink\);/);
-		expect(rule(".vn .vn-nav-link:focus-visible")).toMatch(/outline: 2px solid var\(--vn-ink\);/);
-		expect(rule('.vn .vn-nav-link[aria-current="page"]')).toMatch(/color: var\(--vn-ink\);/);
-		expect(rule('.vn .vn-nav-link[aria-current="page"]')).toMatch(/font-weight: 600;/);
-		expect(rule(".vn .vn-nav-link")).toMatch(/min-block-size: 44px;/);
+	it("la página actual lleva una píldora más oscura con borde, que sube el contraste de la tinta, y peso 600", () => {
+		const current = rule('.vn .vn-nav-link[aria-current="page"]');
+		expect(current).toContain("background-color: rgba(6, 6, 7, 0.32);");
+		expect(current).toContain("box-shadow: inset 0 0 0 1px var(--vn-line);");
+		expect(current).toContain("font-weight: 600;");
+		const pill = "rgba(6, 6, 7, 0.32)";
+		expect(contrast(token("ink")!, over(pill, thinBehind()))).toBeGreaterThan(contrast(token("ink")!, thinBehind()));
+		expect(contrast(token("ink")!, over(pill, thickBehind()))).toBeGreaterThan(contrast(token("ink")!, thickBehind()));
+	});
+
+	it("hover (sólo con puntero fino) y foco marcan el borde, no el relleno; el foco además lleva su anillo", () => {
+		const media = overlays.indexOf("@media (hover: hover) and (pointer: fine) {\n\t.vn .vn-nav-link:hover {");
+		expect(media).toBeGreaterThan(0);
+		expect(overlays.slice(media, media + 160)).toContain("box-shadow: inset 0 0 0 1px var(--vn-line);");
+		// Fuera de ese @media no hay regla :hover del enlace
+		expect(overlays.split(".vn .vn-nav-link:hover").length - 1).toBe(1);
+		const focus = rule(".vn .vn-nav-link:focus-visible");
+		expect(focus).toContain("box-shadow: inset 0 0 0 1px var(--vn-line);");
+		expect(focus).toContain("outline: 2px solid var(--vn-ink);");
+		expect(focus).not.toContain("background");
+		// El reposo reserva el borde transparente: el cambio sólo anima y no mueve nada
+		expect(rule(".vn .vn-nav-link")).toContain("box-shadow: inset 0 0 0 1px transparent;");
+		expect(rule(".vn .vn-nav-link")).toContain("var(--vn-ease-out)");
+	});
+
+	it("el enlace mide 36px (44px en la hoja) y su área de toque llega a 44px con un pseudoelemento, así que no desborda la barra compacta", () => {
+		expect(rule(".vn .vn-nav-link")).toContain("--vn-link-h: 36px;");
+		expect(rule(".vn .vn-nav-link")).toContain("block-size: var(--vn-link-h);");
+		expect(rule(".vn .vn-nav-link::after")).toContain("inset-block: calc((44px - var(--vn-link-h)) / -2);");
+		expect(rule(".vn .vn-nav__links--stack .vn-nav-link")).toContain("--vn-link-h: 44px;");
 	});
 
 	it("la cápsula: radio de píldora por variable, 52px y 44px compacta con el resorte rápido, sin transicionar el material", () => {
@@ -786,10 +813,24 @@ describe("Ventana barra de navegación", () => {
 	});
 
 	it("con movimiento reducido la barra y la hoja sólo cambian de opacidad", () => {
-		const start = overlays.indexOf(".vn.vn-nav__bar {\n\t\ttransition: none;");
+		// El bloque @media completo, hallado por sus llaves (no por un número fijo de caracteres)
+		const inner = overlays.indexOf(".vn.vn-nav__bar {\n\t\ttransition: none;");
+		const start = overlays.lastIndexOf("@media (prefers-reduced-motion: reduce) {", inner);
+		expect(inner).toBeGreaterThan(0);
 		expect(start).toBeGreaterThan(0);
-		const reduced = overlays.slice(start, start + 700);
+		let depth = 0;
+		let end = -1;
+		for (let i = overlays.indexOf("{", start); i < overlays.length; i++) {
+			if (overlays[i] === "{") depth++;
+			if (overlays[i] === "}" && --depth === 0) {
+				end = i;
+				break;
+			}
+		}
+		expect(end).toBeGreaterThan(inner);
+		const reduced = overlays.slice(start, end + 1);
 		expect(reduced).toMatch(/\.vn\.vn-nav-sheet\[open\] \{\s*translate: none;/);
 		expect(reduced).toMatch(/opacity 150ms linear/);
+		expect(reduced).toMatch(/@starting-style \{\s*\.vn\.vn-nav-sheet\[open\] \{\s*translate: none;/);
 	});
 });

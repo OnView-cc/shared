@@ -57,10 +57,10 @@ const resize = (isNarrow: boolean) =>
 function bar(props: Partial<React.ComponentProps<typeof NavBar>> = {}) {
 	return (
 		<NavBar label="Principal" brand={<span data-test="marca">OnView</span>} menuLabel="Abrir menú" closeLabel="Cerrar menú" end={<button data-test="entrar">Entrar</button>} {...props}>
-			<a href="/precios" data-test="precios" aria-current="page">
+			<a href="/precios" className="vn-nav-link" data-test="precios" aria-current="page">
 				Precios
 			</a>
-			<a href="/ejemplos" data-test="ejemplos">
+			<a href="/ejemplos" className="vn-nav-link" data-test="ejemplos">
 				Ejemplos
 			</a>
 		</NavBar>
@@ -123,6 +123,14 @@ describe("NavBar ancha", () => {
 		expect(nav().hasAttribute("data-compact")).toBe(true);
 		expect(nav().classList.contains("vn-glass--thick")).toBe(true);
 		expect(nav().classList.contains("vn-glass--thin")).toBe(false);
+	});
+
+	it("los enlaces de la barra nunca llevan vn-glass: pintan su propio fondo oscuro (SOLID_PIECES)", () => {
+		stubViewport(false);
+		mount(bar());
+		const links = nav().querySelectorAll(".vn-nav-link");
+		expect(links.length).toBe(2);
+		for (const l of links) expect(l.className).not.toMatch(/vn-glass/);
 	});
 
 	it("sin compact no hay data-compact", () => {
@@ -190,6 +198,32 @@ describe("NavBar estrecha", () => {
 		expect(document.activeElement).toBe(b);
 	});
 
+	it("con la hoja abierta los enlaces viven en su propio nav con el nombre de la barra y no llevan vn-glass", () => {
+		stubViewport(true);
+		mount(bar());
+		act(() => menuButton()!.click());
+		const inner = dialog()!.querySelector("nav")!;
+		expect(inner.getAttribute("aria-label")).toBe("Principal");
+		expect(inner.querySelector("[data-test=precios]")).toBeTruthy();
+		for (const l of dialog()!.querySelectorAll(".vn-nav-link")) expect(l.className).not.toMatch(/vn-glass/);
+	});
+
+	it("un clic con modificador, con otro botón o en un enlace de pestaña nueva no la cierra", () => {
+		stubViewport(true);
+		mount(bar());
+		act(() => menuButton()!.click());
+		const link = dialog()!.querySelector<HTMLAnchorElement>("[data-test=ejemplos]")!;
+		link.addEventListener("click", (e) => e.preventDefault());
+		const click = (init: MouseEventInit) => act(() => void link.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ...init })));
+		for (const init of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) click(init);
+		link.target = "_blank";
+		click({});
+		expect(close).not.toHaveBeenCalled();
+		link.target = "";
+		click({});
+		expect(close).toHaveBeenCalledTimes(1);
+	});
+
 	it("un clic en algo que no es enlace (la acción) no la cierra", () => {
 		stubViewport(true);
 		mount(bar());
@@ -227,6 +261,8 @@ describe("NavBar estrecha", () => {
 		expect(menuButton()).toBeNull();
 		expect(nav().querySelector("[data-test=precios]")).toBeTruthy();
 		expect(count("[data-test=precios]")).toBe(1);
+		// El botón ya no existe: el foco no se pierde en body, va a la cápsula
+		expect(document.activeElement).toBe(nav());
 		// Y al volver a estrecharse no reaparece abierta
 		resize(true);
 		expect(menuButton()!.getAttribute("aria-expanded")).toBe("false");

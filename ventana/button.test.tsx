@@ -141,3 +141,21 @@ describe("IconButton", () => {
 		expect(node).toBeTruthy();
 	});
 });
+
+describe("ref de los botones", () => {
+	it("Button e IconButton entregan su elemento al ref", () => {
+		const a = { current: null as HTMLButtonElement | null };
+		const b = { current: null as HTMLButtonElement | null };
+		mount(
+			<div>
+				<Button ref={a}>Ok</Button>
+				<IconButton ref={b} label="Menú">
+					<svg />
+				</IconButton>
+			</div>,
+		);
+		expect(a.current?.tagName).toBe("BUTTON");
+		expect(a.current?.textContent).toBe("Ok");
+		expect(b.current?.getAttribute("aria-label")).toBe("Menú");
+	});
+});

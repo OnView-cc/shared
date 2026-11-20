@@ -12,7 +12,7 @@
  * sabe de Escape y deja inerte la página de detrás. Elegir un enlace, Escape, el aspa o
  * un clic en el fondo la cierran y el foco vuelve al botón. Si la ventana crece con la
  * hoja abierta, se cierra. Los enlaces se montan una sola vez: en la cápsula si es
- * ancha, en la hoja si es estrecha (y sólo mientras está abierta o saliendo).
+ * ancha, en la hoja (dentro de su propio `<nav>`) si es estrecha (y sólo mientras está abierta o saliendo).
  *
  * `compact` (`data-compact`) la encoge de 52px a 44px, y lo decide quien la monta
  * (por ejemplo al bajar la página). Su capa oscura sube a la del grueso cambiando la
@@ -54,6 +54,8 @@ export function NavBar({
 	const panelId = useId();
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const navRef = useRef<HTMLElement>(null);
+	const menuRef = useRef<HTMLButtonElement>(null);
+	const wasOpen = useRef(false);
 	const [open, setOpen] = useState(false);
 	// Saliendo: `open` acaba de pasar a falso y la hoja aún se desvanece. Se deduce al
 	// renderizar (no en un efecto) para que el contenido no se desmonte ni un instante.
@@ -76,18 +78,21 @@ export function NavBar({
 	// De maquetado: abre antes de que corran los efectos del contenido
 	useLayoutEffect(() => {
 		const dialog = dialogRef.current;
-		if (!dialog) return;
-		if (open && !dialog.open) dialog.showModal();
-		if (!open && dialog.open) {
-			dialog.close();
-			// El botón es de `IconButton` (sin ref): se busca por su clase dentro de la cápsula
-			navRef.current?.querySelector<HTMLElement>(".vn-nav__menu")?.focus();
+		if (open && dialog && !dialog.open) dialog.showModal();
+		if (!open) {
+			if (dialog?.open) dialog.close();
+			// Al cerrar el foco vuelve al botón; si la ventana creció y el botón ya no existe, a la cápsula
+			if (wasOpen.current) (menuRef.current ?? navRef.current)?.focus();
 		}
+		wasOpen.current = open;
 	}, [open]);
 
 	const stack = (
 		<div className="vn-nav__stack">
-			<div className="vn-nav__links vn-nav__links--stack">{children}</div>
+			{/* El punto de referencia de navegación sigue ahí mientras la hoja está abierta */}
+			<nav aria-label={label} className="vn-nav__links vn-nav__links--stack">
+				{children}
+			</nav>
 			{end && <div className="vn-nav__end vn-nav__end--stack">{end}</div>}
 		</div>
 	);
@@ -96,12 +101,14 @@ export function NavBar({
 		<header className="vn-nav">
 			<nav
 				ref={navRef}
+				tabIndex={-1}
 				aria-label={label}
 				data-compact={compact ? "" : undefined}
 				className={`vn vn-glass ${compact ? "vn-glass--thick" : "vn-glass--thin"} vn-nav__bar`}>
 				<div className="vn-nav__brand">{brand}</div>
 				{narrow ? (
 					<IconButton
+						ref={menuRef}
 						label={menuLabel}
 						variant="plain"
 						className="vn-nav__menu"
@@ -132,8 +139,12 @@ export function NavBar({
 						if (exiting && e.target === e.currentTarget && e.propertyName === "opacity") setExiting(false);
 					}}
 					onClick={(e) => {
-						// Un clic en el propio diálogo es un clic en el fondo; dentro, sólo un enlace la cierra
-						if (e.target === e.currentTarget || (e.target as HTMLElement).closest("a[href]")) setOpen(false);
+						// Un clic en el propio diálogo es un clic en el fondo; dentro, sólo un clic simple en un
+						// enlace la cierra (no con modificadores, ni otro botón, ni en pestaña nueva)
+						if (e.target === e.currentTarget) return setOpen(false);
+						const link = (e.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
+						if (!link || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || link.target === "_blank") return;
+						setOpen(false);
 					}}>
 					<div className="vn-nav-sheet__inner">
 						<div className="vn-nav-sheet__head">

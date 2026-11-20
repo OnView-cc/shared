@@ -462,10 +462,12 @@
  * aquí sólo van el radio por variable, la altura y la maqueta. El alto cambia con
  * el resorte rápido; el material no transiciona.
  *
- * Texto: sólo tinta primaria (el vidrio fino no lleva secundaria). El enlace en reposo
- * no usa opacidad: el 78 % de la tinta queda en 3.6:1 con blanco detrás, así que usa
- * el color fijo `--vn-ink-nav` (4.6:1). La página actual se distingue además por el
- * peso, no sólo por el color.
+ * Texto: sólo tinta primaria (el vidrio fino no lleva secundaria). El enlace no usa
+ * opacidad: el 78 % de la tinta queda en 3.6:1 con blanco detrás, así que va en tinta
+ * entera. Como la tinta ya es la máxima, lo que marca el estado no es el color: la
+ * página actual lleva una píldora MÁS OSCURA con borde fino (y peso 600); pasar el
+ * puntero y el foco, sólo el borde. Una píldora clara bajaría el contraste del texto;
+ * una oscura sólo lo sube. El enlace no es vidrio (lo es la cápsula): pinta su fondo.
  */
 .vn-nav {
 	display: flex;
@@ -520,32 +522,46 @@
 }
 
 .vn .vn-nav-link {
+	--vn-link-h: 36px;
+	position: relative;
 	display: inline-flex;
 	align-items: center;
-	min-block-size: 44px;
+	block-size: var(--vn-link-h);
 	padding-inline: 14px;
 	border-radius: var(--vn-r-pill);
-	color: var(--vn-ink-nav);
+	background-color: transparent;
+	box-shadow: inset 0 0 0 1px transparent;
+	color: var(--vn-ink);
 	font-size: 0.9375rem;
 	font-weight: 500;
 	line-height: 1;
 	text-decoration: none;
 	white-space: nowrap;
 	-webkit-tap-highlight-color: transparent;
-	transition: color 140ms ease-out;
+	transition:
+		background-color 160ms var(--vn-ease-out),
+		box-shadow 160ms var(--vn-ease-out);
+}
+/* Área de toque de 44px aunque el enlace mida 36 (en la hoja mide 44 y no sobresale) */
+.vn .vn-nav-link::after {
+	content: "";
+	position: absolute;
+	inset-block: calc((44px - var(--vn-link-h)) / -2);
+	inset-inline: 0;
 }
 @media (hover: hover) and (pointer: fine) {
 	.vn .vn-nav-link:hover {
-		color: var(--vn-ink);
+		box-shadow: inset 0 0 0 1px var(--vn-line);
 	}
 }
 .vn .vn-nav-link:focus-visible {
-	color: var(--vn-ink);
+	box-shadow: inset 0 0 0 1px var(--vn-line);
 	outline: 2px solid var(--vn-ink);
 	outline-offset: 2px;
 }
 .vn .vn-nav-link[aria-current="page"] {
-	color: var(--vn-ink);
+	background-color: rgba(6, 6, 7, 0.32);
+	box-shadow: inset 0 0 0 1px var(--vn-line);
 	font-weight: 600;
 }
 
@@ -597,7 +613,8 @@
 		translate: 0 calc(-100% - 24px);
 	}
 }
-.vn.vn-nav-sheet:focus-visible {
+.vn.vn-nav-sheet:focus-visible,
+.vn.vn-nav__bar:focus-visible {
 	outline: none;
 }
 .vn .vn-nav-sheet__inner {
@@ -623,6 +640,7 @@
 	gap: 2px;
 }
 .vn .vn-nav__links--stack .vn-nav-link {
+	--vn-link-h: 44px;
 	padding-inline: 12px;
 	font-size: 1.125rem;
 }

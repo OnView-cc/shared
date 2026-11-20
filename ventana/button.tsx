@@ -5,7 +5,7 @@
  * así los respaldos (transparencia reducida, contraste alto, sin backdrop-filter)
  * siguen funcionando.
  */
-import type { ButtonHTMLAttributes, ElementType, ReactElement, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ElementType, ReactElement, ReactNode, Ref } from "react";
 
 export type ButtonVariant = "primary" | "glass" | "plain" | "danger";
 /** 44px y 36px de alto; el área de toque del pequeño sigue siendo de 44px. */
@@ -15,6 +15,8 @@ type BaseProps = {
 	size?: ButtonSize;
 	href?: string;
 	className?: string;
+	/** Llega al elemento que se pinta (el `<button>`, o el `<a>` si hay `href`). */
+	ref?: Ref<HTMLButtonElement>;
 	children: ReactNode;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
