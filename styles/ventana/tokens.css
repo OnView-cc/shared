@@ -113,12 +113,17 @@
  * (en Chrome no ve el fondo, sólo a su padre, así que el filtro no lo protegería);
  * lo que flota sobre un marco de video (el video es de la persona: no lo
  * controlamos); y el pulgar del segmentado, que va sobre su riel sólido y no
- * sobre el fondo de la zona.
+ * sobre el fondo de la zona. El vidrio dentro de otro se escribe dos veces (la
+ * clase del ámbito puede ir en el propio vidrio de fuera), y la barra de
+ * navegación de dentro de una raíz `.vn` se nombra aparte: el ámbito la alcanza
+ * por su nombre, así que la isla la recupera por el suyo.
  */
 .vn,
 .vn-lit .vn-glass .vn-glass,
+.vn-lit.vn-glass .vn-glass,
 .vn-lit .vn-frame,
-.vn-lit .vn-seg {
+.vn-lit .vn-seg,
+.vn-lit .vn .vn-nav__bar {
 	--vn-smoke-clear: rgba(58, 58, 64, 0.64);
 	--vn-smoke-thin: rgba(44, 44, 50, 0.74);
 	--vn-smoke-thick: rgba(32, 32, 37, 0.84);

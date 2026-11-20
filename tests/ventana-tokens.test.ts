@@ -368,11 +368,21 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 		// Hojas, avisos y paneles en portal llevan la raíz `.vn`; el vidrio anidado no ve el fondo en Chrome (sólo a su
 		// padre) y el filtro no lo protegería; el marco enseña el video de una persona, que no controlamos; y el pulgar
 		// del segmentado va sobre su riel sólido, no sobre el fondo de la zona: marca la opción elegida igual en todas partes.
-		expect(liveSelectors).toEqual([".vn", ".vn-lit .vn-glass .vn-glass", ".vn-lit .vn-frame", ".vn-lit .vn-seg"]);
+		expect(liveSelectors).toEqual([
+			".vn",
+			".vn-lit .vn-glass .vn-glass",
+			// La clase del ámbito puesta en el propio vidrio: lo de dentro también es un vidrio dentro de otro
+			".vn-lit.vn-glass .vn-glass",
+			".vn-lit .vn-frame",
+			".vn-lit .vn-seg",
+			// La barra dentro de una raíz `.vn` que alguien puso para dejar ahumada esa parte: el ámbito la nombra, la isla la recupera
+			".vn-lit .vn .vn-nav__bar",
+		]);
 		// El riel es una pieza sólida (pinta su fondo): la isla sólo le cambia variables
 		expect(controls).toMatch(/\n\.vn \.vn-seg \{[^}]*background: var\(--vn-surface\);/);
-		// El vidrio anidado gana al ámbito aunque sea la propia barra de navegación
-		expect(classCount(".vn-lit .vn-glass .vn-glass")).toBeGreaterThan(Math.max(...scope!.selectors.map(classCount)));
+		// El vidrio anidado gana al ámbito aunque sea la propia barra de navegación, y la barra de una isla gana a la del ámbito
+		const scopeWeight = Math.max(...scope!.selectors.map(classCount));
+		for (const island of [".vn-lit .vn-glass .vn-glass", ".vn-lit.vn-glass .vn-glass", ".vn-lit .vn .vn-nav__bar"]) expect(classCount(island), island).toBeGreaterThan(scopeWeight);
 		// Y en una isla el vidrio vuelve a llevar su garantía sobre blanco puro, lo vea o no el filtro
 		for (const grade of GRADES) expect(passesOnGlass("#ffffff", grade, "smoked"), grade).toBe(true);
 	});

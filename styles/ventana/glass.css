@@ -12,7 +12,7 @@
  * tinta si está elegida). Nada más aclara el relleno: ni la luz del borde ni la
  * línea de luz de dentro (1px) caen bajo el texto.
  *
- * El contraste del texto sale sólo del humo y del brillo: no depende del
+ * En el ahumado el contraste del texto sale sólo del humo y del brillo: no depende del
  * `backdrop-filter` (un vidrio dentro de otro, o un navegador que no lo aplique,
  * se lee igual). El filtro desenfoca y satura; su último paso, `brightness`, vale
  * 1 (no hace nada) salvo en una zona luminosa (más abajo, `.vn-lit`).
@@ -98,8 +98,8 @@
  * `.vn` (hojas, avisos y todo lo que Radix monta en un portal, que además vive
  * fuera de la página), un vidrio dentro de otro vidrio, lo que flota sobre un
  * marco de video y el pulgar del segmentado (va sobre su riel sólido). La barra
- * de navegación también es raíz `.vn`, pero es justo lo
- * que flota sobre el fondo de la página: el ámbito la nombra para alcanzarla.
+ * de navegación también es raíz `.vn`, pero es justo lo que flota sobre el fondo
+ * de la página: el ámbito la nombra para alcanzarla.
  */
 .vn-lit,
 .vn-lit .vn-nav__bar {
