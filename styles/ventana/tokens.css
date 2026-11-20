@@ -18,6 +18,8 @@
 	--vn-action: var(--vn-ink);
 	--vn-action-ink: #060607;
 	--vn-danger: #ff8f7e;
+	/* El peligro para texto sobre vidrio grueso: --vn-danger sólo llega a unos 3.6:1 ahí con blanco puro detrás */
+	--vn-danger-glass: #ffb8ad;
 
 	/* Filetes */
 	--vn-hair: rgba(255, 255, 255, 0.08);

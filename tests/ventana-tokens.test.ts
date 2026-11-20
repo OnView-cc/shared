@@ -588,7 +588,7 @@ describe("Ventana flotantes: menú, popover y tooltip", () => {
 		expect(ovl(".vn .vn-menu-item[data-highlighted]")).toMatch(/background: var\(--vn-hair\);/);
 		expect(ovl(".vn .vn-menu-hint")).toMatch(/color: var\(--vn-ink-2-glass\);/);
 		expect(ovl(".vn .vn-menu-item[data-highlighted] .vn-menu-hint")).toMatch(/color: var\(--vn-ink\);/);
-		expect(ovl(".vn .vn-menu-item--danger")).toMatch(/color: var\(--vn-danger\);/);
+		expect(ovl(".vn .vn-menu-item--danger")).toMatch(/color: var\(--vn-danger-glass\);/);
 		expect(ovl(".vn .vn-menu-item--danger[data-highlighted]")).toMatch(/color: var\(--vn-ink\);/);
 		expect(ovl(".vn .vn-menu-item[data-highlighted] .vn-menu-icon")).toMatch(/color: var\(--vn-ink\);/);
 	});
@@ -605,10 +605,18 @@ describe("Ventana flotantes: menú, popover y tooltip", () => {
 		expect(contrast(token("danger")!, token("solid-thick")!)).toBeGreaterThanOrEqual(4.5);
 	});
 
-	it("el icono peligroso llega a 3:1 sobre vidrio grueso con blanco puro detrás (el texto no llega a 4.5: ver informe)", () => {
-		// --vn-danger no se toca desde esta tarea: medido 3.57:1 con ese fondo, bajo el 4.5 del texto, sobre el 3 del icono.
-		const ratio = contrast(token("danger")!, thickBehind());
-		expect(ratio).toBeGreaterThanOrEqual(3);
+	it("el peligro para texto sobre vidrio grueso tiene su propio color y llega a 4.5:1 con blanco puro detrás", () => {
+		expect(contrast(token("danger-glass")!, thickBehind())).toBeGreaterThanOrEqual(4.5);
+		expect(ovl(".vn .vn-menu-item--danger")).toMatch(/color: var\(--vn-danger-glass\);/);
+		expect(ovl(".vn .vn-menu-item--danger .vn-menu-icon")).toMatch(/color: var\(--vn-danger-glass\);/);
+	});
+
+	it("el icono peligroso sigue en danger-glass al resaltarse y llega a 3:1 sobre la fila resaltada; el texto resaltado va en tinta", () => {
+		expect(ovl(".vn .vn-menu-item--danger[data-highlighted] .vn-menu-icon")).toMatch(/color: var\(--vn-danger-glass\);/);
+		expect(ovl(".vn .vn-menu-item--danger[data-highlighted]")).toMatch(/color: var\(--vn-ink\);/);
+		expect(contrast(token("danger-glass")!, highlighted())).toBeGreaterThanOrEqual(3);
+		// --vn-danger (el sólido) sigue valiendo para el icono sobre vidrio grueso: 3:1
+		expect(contrast(token("danger")!, thickBehind())).toBeGreaterThanOrEqual(3);
 	});
 
 	it("el texto del tooltip va en tinta primaria con el tamaño pequeño, nunca en tinta secundaria", () => {
