@@ -20,28 +20,34 @@ ${tokens}
 }
 
 /*
- * Llegada: sube, se aclara y se enfoca con el muelle suave. \`--vn-i\` escalona 60ms por hermano.
- * En reposo el filtro es \`none\`, no \`blur(0)\`: cualquier filtro (y la opacidad a medias de
- * la entrada) hace del elemento la raíz del fondo de sus hijos, y un vidrio de dentro
- * dejaría de ver el video. Por lo mismo, la clase va en la propia pieza de vidrio, no en
- * un envoltorio que la contenga.
+ * Llegada: sube, crece y se enfoca con el muelle suave. \`--vn-i\` escalona 60ms por hermano.
+ *
+ * La regla, en todas partes: \`vn-arrive\` va en la propia pieza, NUNCA en un envoltorio que
+ * contenga un vidrio. Mientras llega, la opacidad a medias y el desenfoque hacen del elemento
+ * la raíz del fondo de sus hijos: un vidrio de dentro dejaría de ver el video. En la propia
+ * pieza de vidrio eso no pasa (lo que se aclara es el vidrio entero, con su fondo).
+ *
+ * Es una animación de fotogramas y no una transición: no choca con la \`transition\` de ninguna
+ * pieza (\`.vn-press\`, \`.vn-btn\`, \`.vn-chip--solid\`, la barra de navegación), así que va en un
+ * botón, un chip o la barra igual que en un panel, y convive con \`vn-press\`. Llena hacia
+ * atrás (\`backwards\`: durante el escalonado ya está en su punto de partida) y no hacia
+ * delante: al acabar no deja ni filtro ni opacidad y la pieza vuelve a sus valores.
  */
 .vn-arrive {
-	opacity: 1;
-	translate: 0 0;
-	scale: 1;
-	filter: none;
-	transition:
-		opacity var(--vn-spring-soft-ms) var(--vn-ease-out),
-		translate var(--vn-spring-soft-ms) var(--vn-spring-soft),
-		scale var(--vn-spring-soft-ms) var(--vn-spring-soft),
-		filter var(--vn-spring-soft-ms) var(--vn-ease-out);
-	transition-delay: calc(var(--vn-i, 0) * 60ms);
-	@starting-style {
+	animation: vn-arrive var(--vn-spring-soft-ms) var(--vn-spring-soft) backwards;
+	animation-delay: calc(var(--vn-i, 0) * 60ms);
+}
+@keyframes vn-arrive {
+	from {
 		opacity: 0;
 		translate: 0 10px;
 		scale: 0.96;
 		filter: blur(6px);
+	}
+}
+@keyframes vn-arrive-fade {
+	from {
+		opacity: 0;
 	}
 }
 
@@ -53,32 +59,14 @@ ${tokens}
 	scale: 0.97;
 }
 
-/* Las dos a la vez: \`.vn-press\` fija \`transition\` entera y pisaría la llegada. Aquí conviven; la escala usa el muelle vivo, que también sirve para llegar. */
-.vn-arrive.vn-press {
-	transition:
-		opacity var(--vn-spring-soft-ms) var(--vn-ease-out),
-		translate var(--vn-spring-soft-ms) var(--vn-spring-soft),
-		scale var(--vn-spring-snap-ms) var(--vn-spring-snap),
-		filter var(--vn-spring-soft-ms) var(--vn-ease-out);
-}
-
-/* Movimiento reducido: sólo opacidad, en un fundido corto (los 500 ms del muelle son para algo que se mueve) */
+/* Movimiento reducido: la llegada es sólo un fundido corto y sin escalonado (los 500 ms del muelle son para algo que se mueve) */
 @media (prefers-reduced-motion: reduce) {
 	.vn-arrive {
-		transition: opacity 200ms linear;
-		transition-delay: 0ms;
-		@starting-style {
-			opacity: 0;
-			translate: none;
-			scale: 1;
-			filter: none;
-		}
+		animation: vn-arrive-fade 200ms linear backwards;
+		animation-delay: 0ms;
 	}
 	.vn-press {
 		transition: none;
-	}
-	.vn-arrive.vn-press {
-		transition: opacity 200ms linear;
 	}
 	.vn-press:active {
 		scale: 1;
