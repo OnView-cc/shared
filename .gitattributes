@@ -1,0 +1,4 @@
+# El árbol de trabajo va siempre con LF, también en Windows: las pruebas que leen
+# las hojas de estilo y los scripts con shebang dependen de ello, y con
+# core.autocrlf un cambio de rama los reescribía con CRLF.
+* text=auto eol=lf
