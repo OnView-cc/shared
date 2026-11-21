@@ -9,7 +9,9 @@
  * con `--vn-seg-x` y `--vn-seg-w`, medidos del botón elegido y vueltos a medir
  * con `ResizeObserver`. No anima al primer pintado: la transición se habilita
  * (`data-ready`) cuando ya hubo una medida pintada; con movimiento reducido
- * lleva `data-still` y no se desliza.
+ * lleva `data-still` y no se desliza. Una medida de 0 (dentro de una `Sheet`, el
+ * segmentado se mide antes de que el diálogo se abra) no cuenta: el pulgar espera
+ * oculto a la primera de verdad, que llega con el `ResizeObserver`.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../sky/hooks";
@@ -35,7 +37,9 @@ export function Segmented<T extends string>({
 	const measure = useCallback(() => {
 		const el = selected >= 0 ? refs.current[selected] : null;
 		setBox((prev) => {
-			if (!el) return prev === null ? prev : null;
+			// Sin opción elegida, o dentro de algo que aún no se pinta (una `Sheet` cerrada mide 0):
+			// no hay medida. El pulgar sigue oculto y la primera medida de verdad no se desliza.
+			if (!el || el.offsetWidth === 0) return prev === null ? prev : null;
 			const next = { x: el.offsetLeft, w: el.offsetWidth };
 			return prev && prev.x === next.x && prev.w === next.w ? prev : next;
 		});

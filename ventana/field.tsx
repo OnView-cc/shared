@@ -6,7 +6,7 @@
  * (etiqueta con `for`, `aria-invalid`, `aria-describedby`), con clases `vn-*`.
  * `className` va en el propio campo, como en sky, no en el envoltorio.
  */
-import { useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 
 type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "id" | "value" | "onChange">;
@@ -137,6 +137,8 @@ const LINE_FALLBACK_PX = 22;
 /**
  * La variante de varias líneas: crece con el texto hasta `maxRows` líneas y
  * entonces se desplaza. No reserva línea de aviso si no hay ayuda ni error que dar.
+ * Vuelve a medirse cuando cambia su ancho (`ResizeObserver`, donde lo hay): dentro
+ * de una `Sheet` se corrige al abrirse la hoja.
  */
 export function TextArea({
 	id,
@@ -163,7 +165,7 @@ export function TextArea({
 	const invalid = describedBy(id, undefined, error) !== undefined;
 
 	// Mide con el alto automático y fija el resultado, con tope en maxRows líneas.
-	useLayoutEffect(() => {
+	const measure = useCallback(() => {
 		const el = ref.current;
 		if (!el) return;
 		const css = getComputedStyle(el);
@@ -175,7 +177,27 @@ export function TextArea({
 		const cap = Math.max(1, maxRows) * line + chrome;
 		el.style.height = `${Math.min(wanted, cap)}px`;
 		el.style.overflowY = wanted > cap ? "auto" : "hidden";
-	}, [value, maxRows]);
+	}, [maxRows]);
+
+	useLayoutEffect(measure, [measure, value]);
+
+	// Vuelve a medir cuando cambia el ancho: dentro de una `Sheet` la primera medida se
+	// hace con el diálogo cerrado (`display: none`, todo a 0) y se corrige al abrirse; y
+	// el texto parte en más o menos líneas si la ventana cambia. Sólo el ancho: el alto
+	// lo pone esta misma medida, y volver a medir por él no cambiaría nada.
+	useEffect(() => {
+		const el = ref.current;
+		if (!el || typeof ResizeObserver === "undefined") return;
+		let width = -1;
+		const ro = new ResizeObserver((entries) => {
+			const next = entries[entries.length - 1]?.contentRect.width ?? 0;
+			if (next === width) return;
+			width = next;
+			measure();
+		});
+		ro.observe(el);
+		return () => ro.disconnect();
+	}, [measure]);
 
 	return (
 		<Shell id={id} label={label} hint={hint} error={error} reserve={hint !== undefined || error !== undefined}>

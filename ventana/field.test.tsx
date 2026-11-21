@@ -5,7 +5,7 @@
  */
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TextArea, TextField } from "./field";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -167,6 +167,92 @@ describe("TextArea", () => {
 		expect(h.querySelector("textarea")!.className).toBe("vn-input vn-input--area ancho");
 		expect(h.firstElementChild!.classList.contains("ancho")).toBe(false);
 		expect(h.innerHTML).not.toContain("vn-glass");
+	});
+
+	/*
+	 * Dentro de una hoja el textarea se mide la primera vez con el diálogo cerrado
+	 * (`display: none`, todo a 0). Un `ResizeObserver` vuelve a medir cuando su caja
+	 * cambia de ancho: al abrirse la hoja y al cambiar el ancho de la ventana.
+	 */
+	describe("con ResizeObserver", () => {
+		const observers: { cb: ResizeObserverCallback; targets: Element[]; disconnected: boolean }[] = [];
+		const original = (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+		beforeEach(() => {
+			observers.length = 0;
+			(globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+				entry: (typeof observers)[number];
+				constructor(cb: ResizeObserverCallback) {
+					this.entry = { cb, targets: [], disconnected: false };
+					observers.push(this.entry);
+				}
+				observe(el: Element) {
+					this.entry.targets.push(el);
+				}
+				unobserve() {}
+				disconnect() {
+					this.entry.disconnected = true;
+				}
+			};
+		});
+		afterEach(() => {
+			(globalThis as { ResizeObserver?: unknown }).ResizeObserver = original;
+		});
+		/** El observador dice que el textarea mide ahora `width` de ancho. */
+		const resize = (area: HTMLTextAreaElement, width: number) =>
+			act(() => {
+				for (const o of observers.filter((x) => x.targets.includes(area) && !x.disconnected)) {
+					o.cb([{ target: area, contentRect: { width } } as unknown as ResizeObserverEntry], {} as ResizeObserver);
+				}
+			});
+
+		it("al cambiar de ancho vuelve a medir: la hoja que se abre corrige el alto medido con todo a 0", () => {
+			const h = mount(<TextArea id="n" label="Notas" value={"uno\ndos\ntres"} onChange={() => {}} style={{ lineHeight: "20px" }} />);
+			const area = h.querySelector("textarea")!;
+			// La primera medida, con la hoja cerrada: nada mide nada
+			expect(area.style.height).toBe("0px");
+			const box = { h: 60 };
+			spy(area, box);
+			resize(area, 320);
+			expect(area.style.height).toBe("60px");
+			// Más estrecho, más líneas
+			box.h = 100;
+			resize(area, 200);
+			expect(area.style.height).toBe("100px");
+		});
+
+		it("si sólo cambia el alto (el que pone él mismo) no vuelve a medir", () => {
+			const h = mount(<TextArea id="n" label="Notas" value="uno" onChange={() => {}} style={{ lineHeight: "20px" }} />);
+			const area = h.querySelector("textarea")!;
+			const box = { h: 40 };
+			spy(area, box);
+			resize(area, 320);
+			expect(area.style.height).toBe("40px");
+			box.h = 80;
+			resize(area, 320);
+			expect(area.style.height).toBe("40px");
+		});
+
+		it("deja de observar al desmontarse", () => {
+			mount(<TextArea id="n" label="Notas" value="uno" onChange={() => {}} />);
+			expect(observers.length).toBe(1);
+			act(() => root?.unmount());
+			root = undefined;
+			expect(observers[0].disconnected).toBe(true);
+		});
+	});
+
+	it("sin ResizeObserver (un entorno que no lo tiene) sigue midiendo con el texto", () => {
+		const original = (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+		delete (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+		try {
+			const h = mount(<Controlled />);
+			const area = h.querySelector("textarea")!;
+			spy(area, { h: 40 });
+			type(area, "x");
+			expect(area.style.height).toBe("40px");
+		} finally {
+			(globalThis as { ResizeObserver?: unknown }).ResizeObserver = original;
+		}
 	});
 
 	it("maxRows vale 10 por defecto", () => {

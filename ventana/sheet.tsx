@@ -14,7 +14,9 @@
  * pegada abajo; desde 40rem, un diálogo centrado. El movimiento y el fondo son CSS
  * puro (`styles/ventana/overlays.css`).
  *
- * El contenido y el pie se montan junto con `open` (sus efectos corren después de `showModal`)
+ * El contenido y el pie se montan junto con `open` (sus efectos corren después de `showModal`;
+ * sus efectos de maquetado, ANTES, con el diálogo aún en `display: none`: lo que se mide ahí,
+ * como `TextArea` o `Segmented`, se vuelve a medir con un `ResizeObserver` al abrirse)
  * y siguen montados mientras la hoja sale: se desmontan cuando acaba la transición de salida
  * del propio `<dialog>` (opacidad) o, si el navegador no la emite (jsdom, sin movimiento),
  * a los `EXIT_FALLBACK_MS`. Reabrir durante la salida los conserva.

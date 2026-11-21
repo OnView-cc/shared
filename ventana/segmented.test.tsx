@@ -14,16 +14,18 @@ import { Segmented } from "./segmented";
 
 let root: Root | undefined;
 let host: HTMLElement | undefined;
+/** Falso mientras el segmentado está en algo que no se pinta (una hoja cerrada: `display: none`): todo mide 0. */
+let laidOut = true;
 
 beforeAll(() => {
 	installRadixDom();
 	// jsdom no calcula diseño: cada botón mide 100px y se coloca por su posición.
 	const index = (el: HTMLElement) => Array.from(el.parentElement?.children ?? []).filter((c) => c.getAttribute("role") === "radio").indexOf(el);
-	Object.defineProperty(HTMLElement.prototype, "offsetWidth", { configurable: true, get: () => 100 });
+	Object.defineProperty(HTMLElement.prototype, "offsetWidth", { configurable: true, get: () => (laidOut ? 100 : 0) });
 	Object.defineProperty(HTMLElement.prototype, "offsetLeft", {
 		configurable: true,
 		get(this: HTMLElement) {
-			return this.getAttribute("role") === "radio" ? index(this) * 100 : 0;
+			return laidOut && this.getAttribute("role") === "radio" ? index(this) * 100 : 0;
 		},
 	});
 });
@@ -186,6 +188,50 @@ describe("Segmented", () => {
 			await new Promise((r) => setTimeout(r, 60));
 		});
 		expect(thumb.hasAttribute("data-ready")).toBe(true);
+	});
+
+	/*
+	 * Dentro de una `Sheet` el segmentado se monta (y se mide) antes de que el diálogo
+	 * se abra: todo mide 0. Esa medida no cuenta; la primera de verdad llega con el
+	 * `ResizeObserver` al abrirse, y el pulgar aparece ahí, sin deslizarse desde 0.
+	 */
+	it("dentro de algo que aún no se pinta (una hoja cerrada) no se coloca en 0: espera a la primera medida de verdad y no se desliza a ella", async () => {
+		setReducedMotion(false);
+		const callbacks: ResizeObserverCallback[] = [];
+		const original = (globalThis as { ResizeObserver?: unknown }).ResizeObserver;
+		(globalThis as { ResizeObserver?: unknown }).ResizeObserver = class {
+			constructor(cb: ResizeObserverCallback) {
+				callbacks.push(cb);
+			}
+			observe() {}
+			unobserve() {}
+			disconnect() {}
+		};
+		laidOut = false;
+		try {
+			mount(<Harness start="h" />);
+			const thumb = document.querySelector<HTMLElement>(".vn-seg-thumb")!;
+			await act(async () => {
+				await new Promise((r) => setTimeout(r, 60));
+			});
+			// Con todo a 0 el pulgar sigue oculto y sin transición: no hay nada desde donde deslizarse
+			expect(thumb.hasAttribute("data-hidden")).toBe(true);
+			expect(thumb.hasAttribute("data-ready")).toBe(false);
+			// Se abre la hoja: el observador avisa con las medidas de verdad
+			laidOut = true;
+			act(() => callbacks.forEach((cb) => cb([], {} as ResizeObserver)));
+			expect(thumb.hasAttribute("data-hidden")).toBe(false);
+			expect(thumb.style.getPropertyValue("--vn-seg-x")).toBe("100px");
+			// Llega a su sitio sin transición; ésta se habilita después
+			expect(thumb.hasAttribute("data-ready")).toBe(false);
+			await act(async () => {
+				await new Promise((r) => setTimeout(r, 60));
+			});
+			expect(thumb.hasAttribute("data-ready")).toBe(true);
+		} finally {
+			laidOut = true;
+			(globalThis as { ResizeObserver?: unknown }).ResizeObserver = original;
+		}
 	});
 
 	it("con movimiento reducido el pulgar lleva data-still", () => {
