@@ -9,7 +9,9 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { installRadixDom } from "../tests/helpers/radix-dom";
 import { NavBar } from "./nav-bar";
+import { Menu } from "./overlay";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -282,5 +284,24 @@ describe("NavBar estrecha", () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+});
+
+describe("NavBar estrecha: paneles de Radix dentro de la hoja", () => {
+	it("un menú abierto desde la hoja del menú monta su panel dentro del <dialog> (la hoja es modal y deja inerte lo de fuera)", async () => {
+		installRadixDom();
+		stubViewport(true);
+		mount(bar({ end: <Menu trigger={<button data-test="cuenta">Cuenta</button>} label="Cuenta" items={[{ key: "salir", label: "Salir", onSelect: () => {} }]} /> }));
+		// Un <button> nativo: el clic es su activación
+		act(() => menuButton()!.click());
+		act(() => {
+			document.querySelector("[data-test=cuenta]")!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+		});
+		await act(async () => {
+			await new Promise((r) => setTimeout(r, 50));
+		});
+		const panel = document.querySelector(".vn-menu");
+		expect(panel).toBeTruthy();
+		expect(dialog()!.contains(panel)).toBe(true);
 	});
 });

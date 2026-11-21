@@ -21,10 +21,17 @@
  *
  * `[data-autofocus]` lleva el foco a donde el consumidor diga (un diálogo que
  * confirma lleva el foco a «Cancelar», el lado que no hace nada).
+ *
+ * Los paneles de Radix de dentro (`Select`, `Menu`, `Popover`, `Tooltip`) se montan
+ * dentro del propio `<dialog>` (`PortalHost`, `portal-host.ts`): en `body` quedarían
+ * debajo de la capa superior e inertes. Por eso el diálogo no recorta (`overflow`
+ * visible: un panel puede salir de la hoja) y lo que recorta, con las esquinas del
+ * diálogo, es el marco de dentro (`vn-sheet__frame`).
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { X } from "lucide-react";
 import { IconButton } from "./button";
+import { PortalHost } from "./portal-host";
 
 /** Algo más que la salida más larga (240ms) de `overlays.css`. */
 const EXIT_FALLBACK_MS = 400;
@@ -50,6 +57,9 @@ export function Sheet({
 	footer?: ReactNode;
 }): ReactElement {
 	const ref = useRef<HTMLDialogElement>(null);
+	// El diálogo existe siempre (sólo su contenido se monta con `open`): se toma una vez, al montarse
+	const [host, setHost] = useState<HTMLDialogElement | undefined>(undefined);
+	useLayoutEffect(() => setHost(ref.current ?? undefined), []);
 	const titleId = useId();
 	const descId = useId();
 	// Saliendo: `open` acaba de pasar a falso y la hoja aún se desvanece. Se deduce al renderizar
@@ -98,25 +108,29 @@ export function Sheet({
 			onClick={(e) => {
 				if (dismissable && e.target === e.currentTarget) onClose();
 			}}>
-			<div className="vn-sheet__head">
-				<div className="vn-sheet__titles">
-					<h2 id={titleId} className="vn-title-2 vn-sheet__title">
-						{title}
-					</h2>
-					{description && (
-						<p id={descId} className="vn-body vn-sheet__desc">
-							{description}
-						</p>
-					)}
+			<PortalHost.Provider value={host}>
+				<div className="vn-sheet__frame">
+					<div className="vn-sheet__head">
+						<div className="vn-sheet__titles">
+							<h2 id={titleId} className="vn-title-2 vn-sheet__title">
+								{title}
+							</h2>
+							{description && (
+								<p id={descId} className="vn-body vn-sheet__desc">
+									{description}
+								</p>
+							)}
+						</div>
+						{dismissable && (
+							<IconButton label={closeLabel} onClick={onClose} className="vn-sheet__close">
+								<X size={18} strokeWidth={1.75} aria-hidden="true" />
+							</IconButton>
+						)}
+					</div>
+					{children && <div className="vn-sheet__body">{mounted && children}</div>}
+					{footer && mounted && <div className="vn-sheet__foot">{footer}</div>}
 				</div>
-				{dismissable && (
-					<IconButton label={closeLabel} onClick={onClose} className="vn-sheet__close">
-						<X size={18} strokeWidth={1.75} aria-hidden="true" />
-					</IconButton>
-				)}
-			</div>
-			{children && <div className="vn-sheet__body">{mounted && children}</div>}
-			{footer && mounted && <div className="vn-sheet__foot">{footer}</div>}
+			</PortalHost.Provider>
 		</dialog>
 	);
 }

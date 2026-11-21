@@ -9,6 +9,9 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { toast } from "sonner";
+import { installRadixDom } from "../tests/helpers/radix-dom";
+import { Menu, Popover, Tooltip } from "./overlay";
+import { Select } from "./select";
 import { Sheet } from "./sheet";
 import { Toaster } from "./toast";
 
@@ -28,6 +31,7 @@ const close = vi.fn(function (this: HTMLDialogElement) {
 beforeAll(() => {
 	HTMLDialogElement.prototype.showModal = showModal;
 	HTMLDialogElement.prototype.close = close;
+	installRadixDom();
 });
 
 function mount(node: React.ReactElement): HTMLElement {
@@ -207,6 +211,86 @@ describe("Sheet de Ventana", () => {
 		} finally {
 			vi.useRealTimers();
 		}
+	});
+});
+
+/*
+ * Un `<dialog>` modal vive en la capa superior y deja inerte el resto: un panel de
+ * Radix montado en `body` quedaría debajo y sin responder. jsdom no tiene capa
+ * superior, así que se prueba la estructura: dentro de una hoja abierta el panel se
+ * monta DENTRO del `<dialog>`; fuera, en `body` como siempre.
+ */
+describe("Paneles de Radix dentro de una hoja", () => {
+	const key = (el: Element, k: string) =>
+		act(() => {
+			el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+		});
+	const flush = () =>
+		act(async () => {
+			await new Promise((r) => setTimeout(r, 50));
+		});
+	const OPTIONS = [
+		{ value: "a", label: "Alfa" },
+		{ value: "b", label: "Beta" },
+	];
+	const pieces = {
+		Select: {
+			node: <Select value="a" onChange={() => {}} options={OPTIONS} label="Voz" />,
+			open: () => key(document.querySelector("button[role=combobox]")!, "Enter"),
+			panel: () => document.querySelector(".vn-select-panel"),
+		},
+		Menu: {
+			node: <Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={[{ key: "a", label: "Renombrar", onSelect: () => {} }]} />,
+			open: () => key(document.querySelector("[data-test=disparador]")!, "Enter"),
+			panel: () => document.querySelector(".vn-menu"),
+		},
+		Popover: {
+			node: (
+				<Popover trigger={<button data-test="disparador">Detalles</button>} label="Detalles">
+					<p>Contenido</p>
+				</Popover>
+			),
+			// Un <button> nativo: el clic es su activación
+			open: () => act(() => document.querySelector<HTMLButtonElement>("[data-test=disparador]")!.click()),
+			panel: () => document.querySelector(".vn-popover"),
+		},
+		Tooltip: {
+			node: (
+				<Tooltip label="Copiar enlace">
+					<button data-test="disparador">Copiar</button>
+				</Tooltip>
+			),
+			open: () => act(() => document.querySelector<HTMLButtonElement>("[data-test=disparador]")!.focus()),
+			panel: () => document.querySelector(".vn-tooltip"),
+		},
+	};
+
+	it.each(Object.keys(pieces) as (keyof typeof pieces)[])("%s abierto dentro de una hoja monta su panel dentro del <dialog>", async (name) => {
+		const piece = pieces[name];
+		mount(
+			<Sheet open onClose={() => {}} title="Renombrar" closeLabel="Cerrar">
+				{piece.node}
+			</Sheet>,
+		);
+		piece.open();
+		await flush();
+		const panel = piece.panel();
+		expect(panel, name).toBeTruthy();
+		expect(dialog().contains(panel), name).toBe(true);
+		// Con su envoltorio `.vn` de siempre, ahora dentro del diálogo
+		expect((panel!.closest(".vn") as HTMLElement).style.display, name).toBe("contents");
+	});
+
+	it.each(Object.keys(pieces) as (keyof typeof pieces)[])("%s fuera de una hoja sigue montando su panel en body", async (name) => {
+		const piece = pieces[name];
+		mount(piece.node);
+		piece.open();
+		await flush();
+		const panel = piece.panel();
+		expect(panel, name).toBeTruthy();
+		expect(panel!.closest("dialog"), name).toBeNull();
+		expect(host!.contains(panel), name).toBe(false);
+		expect(document.body.contains(panel), name).toBe(true);
 	});
 });
 

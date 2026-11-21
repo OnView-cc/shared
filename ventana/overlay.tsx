@@ -17,9 +17,13 @@
  * Fuera de un grupo trae su propio `Provider` y cada uno espera sus 400ms. Para que
  * una barra de botones no espere en cada uno, monta un solo `TooltipGroup` a nivel
  * de la app o de la barra.
+ *
+ * Dentro de una `Sheet` o de la hoja de `NavBar` el panel se monta dentro de su
+ * `<dialog>` (`usePortalHost`): en `body` quedaría bajo la capa superior e inerte.
  */
 import { createContext, useContext, type ReactElement, type ReactNode } from "react";
 import { DropdownMenu as M, Popover as P, Tooltip as T } from "radix-ui";
+import { usePortalHost } from "./portal-host";
 
 export interface MenuItem {
 	key: string;
@@ -46,10 +50,11 @@ export function Menu({
 	items: (MenuItem | "separator")[];
 	align?: "start" | "end";
 }) {
+	const host = usePortalHost();
 	return (
 		<M.Root>
 			<M.Trigger asChild>{trigger}</M.Trigger>
-			<M.Portal>
+			<M.Portal container={host}>
 				<div className="vn" style={{ display: "contents" }}>
 					{/* aria-labelledby se anula: Radix lo apunta al disparador y taparía `label` */}
 					<M.Content aria-label={label} aria-labelledby={undefined} side="bottom" align={align} sideOffset={6} collisionPadding={12} className="vn-menu vn-glass vn-glass--thick">
@@ -85,10 +90,11 @@ export function Popover({
 	side?: "top" | "bottom";
 	align?: "start" | "center" | "end";
 }) {
+	const host = usePortalHost();
 	return (
 		<P.Root>
 			<P.Trigger asChild>{trigger}</P.Trigger>
-			<P.Portal>
+			<P.Portal container={host}>
 				<div className="vn" style={{ display: "contents" }}>
 					<P.Content aria-label={label} side={side} align={align} sideOffset={8} collisionPadding={12} className="vn-popover vn-glass vn-glass--thick">
 						{children}
@@ -122,10 +128,11 @@ export function Tooltip({
 	side?: "top" | "bottom" | "left" | "right";
 }) {
 	const inGroup = useContext(InGroup);
+	const host = usePortalHost();
 	const tip = (
 		<T.Root>
 			<T.Trigger asChild>{children}</T.Trigger>
-			<T.Portal>
+			<T.Portal container={host}>
 				<div className="vn" style={{ display: "contents" }}>
 					<T.Content side={side} sideOffset={8} collisionPadding={12} className="vn-tooltip vn-glass vn-glass--thick">
 						{label}

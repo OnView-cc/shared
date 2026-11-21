@@ -20,11 +20,17 @@
  *
  * Todo texto visible llega por props. Diferencia con `Sheet`: la cortina es la misma
  * clase (`vn-sheet-scrim`), pero no hay título (la hoja se nombra con `label`).
+ *
+ * Como en `Sheet`, los paneles de Radix que se abren desde la hoja (un `Menu` de la
+ * cuenta en `end`, por ejemplo) se montan dentro de su `<dialog>` (`PortalHost`):
+ * la hoja es modal y lo de fuera queda inerte. El diálogo no recorta; recorta su
+ * interior (`vn-nav-sheet__inner`), con las esquinas del diálogo.
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
 import { useNarrow } from "../sky/hooks";
 import { IconButton } from "./button";
+import { PortalHost } from "./portal-host";
 
 /** Algo más que la salida más larga (240ms) de `overlays.css`. */
 const EXIT_FALLBACK_MS = 400;
@@ -53,6 +59,9 @@ export function NavBar({
 	const narrow = useNarrow();
 	const panelId = useId();
 	const dialogRef = useRef<HTMLDialogElement>(null);
+	// La hoja sólo existe en estrecho: se toma cada vez que aparece o desaparece
+	const [host, setHost] = useState<HTMLDialogElement | undefined>(undefined);
+	useLayoutEffect(() => setHost(dialogRef.current ?? undefined), [narrow]);
 	const navRef = useRef<HTMLElement>(null);
 	const menuRef = useRef<HTMLButtonElement>(null);
 	const wasOpen = useRef(false);
@@ -146,14 +155,16 @@ export function NavBar({
 						if (!link || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || link.target === "_blank") return;
 						setOpen(false);
 					}}>
-					<div className="vn-nav-sheet__inner">
-						<div className="vn-nav-sheet__head">
-							<IconButton label={closeLabel} variant="plain" onClick={() => setOpen(false)}>
-								<X size={20} strokeWidth={1.75} aria-hidden="true" />
-							</IconButton>
+					<PortalHost.Provider value={host}>
+						<div className="vn-nav-sheet__inner">
+							<div className="vn-nav-sheet__head">
+								<IconButton label={closeLabel} variant="plain" onClick={() => setOpen(false)}>
+									<X size={20} strokeWidth={1.75} aria-hidden="true" />
+								</IconButton>
+							</div>
+							{mounted && stack}
 						</div>
-						{mounted && stack}
-					</div>
+					</PortalHost.Provider>
 				</dialog>
 			)}
 		</header>

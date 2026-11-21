@@ -1330,6 +1330,22 @@ describe("Ventana hoja y avisos", () => {
 		expect(wide).toMatch(/scale: 0\.96;/);
 	});
 
+	it("los diálogos no recortan (un panel de Radix montado dentro puede salir de la hoja); recorta su interior con las esquinas heredadas", () => {
+		for (const sel of [".vn.vn-sheet", ".vn.vn-nav-sheet"]) {
+			expect(rule(sel), sel).toMatch(/overflow: visible;/);
+			expect(rule(sel), sel).not.toMatch(/overflow: hidden/);
+		}
+		const frame = rule(".vn .vn-sheet__frame");
+		expect(frame).toMatch(/overflow: hidden;/);
+		expect(frame).toMatch(/min-block-size: 0;/);
+		const inner = rule(".vn .vn-nav-sheet__inner");
+		expect(inner).toMatch(/overflow-y: auto;/);
+		for (const [name, body] of [["marco", frame], ["interior", inner]]) {
+			expect(body, name).toMatch(/border-radius: inherit;/);
+			expect(body, name).toMatch(/corner-shape: inherit;/);
+		}
+	});
+
 	it("las esquinas de la hoja: rectas abajo sólo en el teléfono; desde 40rem las cuatro son las del vidrio, también con corner-shape", () => {
 		// La base no toca los radios: los pone el material (radio ×1.35 con superelipse donde la hay)
 		expect(rule(".vn.vn-sheet")).not.toMatch(/radius/);

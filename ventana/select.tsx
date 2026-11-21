@@ -15,10 +15,14 @@
  *
  * Materiales: el disparador es sólido (nunca `vn-glass`); sólo flota la lista.
  * `className` va en el disparador, como en sky.
+ *
+ * Dentro de una `Sheet` o de la hoja de `NavBar` la lista se monta dentro de su
+ * `<dialog>` (`usePortalHost`): en `body` quedaría bajo la capa superior e inerte.
  */
 import type { ReactNode } from "react";
 import { Check, ChevronDown, Lock } from "lucide-react";
 import { Select as S } from "radix-ui";
+import { usePortalHost } from "./portal-host";
 
 export interface Option {
 	value: string;
@@ -69,6 +73,7 @@ export function Select({
 	const enc = (v: string) => (v === "" ? EMPTY : v);
 	const dec = (v: string) => (v === EMPTY ? "" : v);
 	const current = options.find((o) => o.value === value);
+	const host = usePortalHost();
 	return (
 		<S.Root value={enc(value)} onValueChange={(v) => onChange(dec(v))} disabled={disabled} name={name}>
 			<S.Trigger id={id} aria-label={label} aria-describedby={describedBy} className={`vn-select-trigger vn-select-trigger--${variant} ${className}`.trim()}>
@@ -80,7 +85,7 @@ export function Select({
 					<ChevronDown className="vn-select-chevron" strokeWidth={2} aria-hidden="true" />
 				</S.Icon>
 			</S.Trigger>
-			<S.Portal>
+			<S.Portal container={host}>
 				<div className="vn" style={{ display: "contents" }}>
 					<S.Content position="popper" side="bottom" align="start" sideOffset={6} collisionPadding={12} className="vn-select-panel vn-glass vn-glass--thick">
 						<S.Viewport className="vn-select-viewport">

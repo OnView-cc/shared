@@ -200,7 +200,8 @@
 	inline-size: 100%;
 	max-inline-size: none;
 	max-block-size: min(88dvh, 44rem);
-	overflow: hidden;
+	/* No recorta: los paneles de Radix de dentro se montan en el diálogo y pueden salir de la hoja. Recorta el marco */
+	overflow: visible;
 	color: var(--vn-ink);
 	font-family: var(--vn-font);
 	opacity: 0;
@@ -268,6 +269,17 @@
 	.vn-sheet-scrim[open]::backdrop {
 		opacity: 0;
 	}
+}
+
+/* El marco: lo que recorta el contenido, con las esquinas del diálogo (hereda radio y forma) */
+.vn .vn-sheet__frame {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-block-size: 0;
+	overflow: hidden;
+	border-radius: inherit;
+	corner-shape: inherit;
 }
 
 .vn .vn-sheet__head {
@@ -645,7 +657,8 @@
 	inline-size: calc(100% - 24px);
 	max-inline-size: none;
 	max-block-size: calc(100dvh - 24px);
-	overflow: hidden;
+	/* No recorta (los paneles de Radix de dentro se montan aquí); recorta su interior */
+	overflow: visible;
 	color: var(--vn-ink);
 	font-family: var(--vn-font);
 	opacity: 0;
@@ -684,6 +697,8 @@
 	box-sizing: border-box;
 	max-block-size: calc(100dvh - 24px);
 	overflow-y: auto;
+	border-radius: inherit;
+	corner-shape: inherit;
 	padding: 8px 12px 20px;
 }
 .vn .vn-nav-sheet__head {
