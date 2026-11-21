@@ -109,6 +109,8 @@
 
 .vn .vn-link:focus-visible {
 	text-decoration-line: underline;
-	outline: none;
+	/* El anillo es una sombra; el contorno transparente es el que pintan los colores forzados */
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	box-shadow: var(--vn-focus);
 }

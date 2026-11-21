@@ -1023,6 +1023,59 @@ describe("Ventana controles", () => {
 	});
 });
 
+describe("Ventana foco", () => {
+	/*
+	 * Un solo mecanismo que no desaparece: con colores forzados (Windows) el sistema
+	 * quita las sombras, así que un anillo hecho sólo con `box-shadow` se pierde.
+	 * Donde el anillo es una sombra, la pieza lleva además un `outline` transparente:
+	 * invisible normalmente, y el sistema lo pinta con su color en colores forzados.
+	 */
+	const focusRules = everyRule.filter((r) => r.selectors.some((s) => s.includes(":focus-visible")));
+	const outlineOf = (body: string) => declarations(body).filter(([p]) => p === "outline" || p === "outline-style");
+
+	it("ninguna regla de foco de Ventana quita el contorno", () => {
+		expect(focusRules.length).toBeGreaterThan(15);
+		for (const r of focusRules) for (const [, v] of outlineOf(r.body)) expect(v, r.selectors.join(", ")).not.toMatch(/^(none|0)\b/);
+	});
+
+	it("donde el anillo es una sombra, también hay un contorno transparente que los colores forzados pintan", () => {
+		const shadowRings = focusRules.filter((r) => /box-shadow:[^;]*(var\(--vn-focus\)|inset 0 0 0 2px var\(--vn-ink\))/.test(r.body));
+		expect(shadowRings.length).toBeGreaterThan(10);
+		// La única excepción: el anillo del chip seleccionable y quitable rodea al padre (`:has`); el contorno va en el botón enfocado
+		const onParent = shadowRings.filter((r) => r.selectors.every((s) => /:has\([^)]*:focus-visible\)/.test(s)));
+		expect(onParent.flatMap((r) => r.selectors)).toEqual([".vn .vn-chip--split:has(.vn-chip__main:focus-visible)"]);
+		expect(focusRules.find((x) => x.selectors.includes(".vn .vn-chip__main:focus-visible"))?.body).toMatch(/outline: 2px solid transparent;/);
+		for (const r of shadowRings.filter((x) => !onParent.includes(x))) {
+			const name = r.selectors.join(", ");
+			expect(r.body, name).toMatch(/outline: 2px solid transparent;/);
+			// Fuera, a 2px como el anillo; dentro de una lista con desplazamiento, por dentro (el de fuera se recortaría)
+			expect(r.body, name).toMatch(/outline-offset: (2px|-2px);/);
+			if (/inset 0 0 0 2px/.test(r.body)) expect(r.body, name).toMatch(/outline-offset: -2px;/);
+		}
+	});
+
+	it("las piezas que antes quitaban el contorno lo dejan transparente: hoja, hoja del menú, barra, panel, enlace y fila", () => {
+		for (const sel of [".vn.vn-sheet:focus-visible", ".vn.vn-nav-sheet:focus-visible", ".vn.vn-nav__bar:focus-visible", ".vn .vn-popover:focus-visible", ".vn .vn-link:focus-visible", ".vn .vn-row--action:focus-visible", ".vn .vn-chip__main:focus-visible"]) {
+			const r = focusRules.find((x) => x.selectors.includes(sel));
+			expect(r?.body, sel).toMatch(/outline: 2px solid transparent;/);
+		}
+	});
+
+	it("el logotipo, que es un enlace, lleva el anillo", () => {
+		const r = focusRules.find((x) => x.selectors.includes(".vn .vn-wordmark:focus-visible"));
+		expect(r?.body).toMatch(/box-shadow: var\(--vn-focus\);/);
+		expect(r?.body).toMatch(/outline: 2px solid transparent;/);
+	});
+
+	it("las filas del menú y del desplegable, que se marcan con un relleno, llevan un contorno transparente al resaltarse", () => {
+		// El relleno es un fondo y los colores forzados lo quitan: el contorno es lo que queda
+		for (const sel of [".vn .vn-menu-item[data-highlighted]", ".vn .vn-select-item[data-highlighted]"]) {
+			const r = everyRule.find((x) => x.selectors.includes(sel) && /background: var\(--vn-hair\);/.test(x.body));
+			expect(r?.body, sel).toMatch(/outline: 2px solid transparent;\s*outline-offset: -2px;/);
+		}
+	});
+});
+
 describe("Ventana CSS: transform-origin", () => {
 	it("ninguna hoja declara transform-origin con una palabra lógica (la propiedad no las admite)", () => {
 		const logical = /transform-origin:[^;]*\b(inline-start|inline-end|block-start|block-end)\b/;

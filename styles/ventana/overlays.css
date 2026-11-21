@@ -81,9 +81,15 @@
 	color: var(--vn-danger-glass);
 }
 
-/* Resaltada (teclado o puntero): el relleno se aclara, así que toda la letra va en tinta */
+/*
+ * Resaltada (teclado o puntero): el relleno se aclara, así que toda la letra va en tinta.
+ * Los colores forzados quitan el relleno: el contorno transparente, por dentro, es lo
+ * que el sistema pinta entonces.
+ */
 .vn .vn-menu-item[data-highlighted] {
 	background: var(--vn-hair);
+	outline: 2px solid transparent;
+	outline-offset: -2px;
 }
 .vn .vn-menu-item[data-highlighted] .vn-menu-hint,
 .vn .vn-menu-item[data-highlighted] .vn-menu-icon {
@@ -121,8 +127,10 @@
 	transform-origin: var(--radix-popover-content-transform-origin);
 	animation: vn-overlay-in var(--vn-spring-snap-ms) var(--vn-spring-snap);
 }
+/* El panel recibe el foco al abrir si no tiene nada enfocable: sin anillo a la vista, pero con el contorno transparente que pintan los colores forzados */
 .vn .vn-popover:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 }
 
 /* Tooltip: una frase corta en tinta primaria (sobre vidrio no hay tinta secundaria fina) */
@@ -229,7 +237,8 @@
 }
 
 .vn.vn-sheet:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 }
 
 /* La cortina: un literal, porque `::backdrop` no hereda las variables de `.vn` en todos los navegadores */
@@ -657,9 +666,11 @@
 		translate: 0 calc(-100% - 24px);
 	}
 }
+/* La barra recibe el foco por programa (al cerrar la hoja si el botón ya no está): sin anillo a la vista, con el contorno de los colores forzados */
 .vn.vn-nav-sheet:focus-visible,
 .vn.vn-nav__bar:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 }
 .vn .vn-nav-sheet__inner {
 	box-sizing: border-box;

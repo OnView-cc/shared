@@ -208,8 +208,10 @@
 	appearance: none;
 	transition: background-color 120ms var(--vn-ease-out);
 }
+/* El anillo es una sombra; el contorno transparente es el que pintan los colores forzados (que quitan las sombras) */
 .vn .vn-row--action:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	background: var(--vn-surface);
 	box-shadow: var(--vn-focus);
 }
@@ -390,12 +392,14 @@
 }
 /* El foco de la pestaña es un anillo INTERIOR: la lista desplaza (overflow) y recortaría uno exterior. */
 .vn .vn-tabs__tab:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: -2px;
 	box-shadow: inset 0 0 0 2px var(--vn-ink);
 	border-radius: var(--vn-r-thumb);
 }
 .vn .vn-tabs__panel:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	box-shadow: var(--vn-focus);
 	border-radius: var(--vn-r-thumb);
 }
@@ -456,7 +460,8 @@
 	cursor: pointer;
 }
 .vn .vn-acc__trigger:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	box-shadow: var(--vn-focus);
 	border-radius: var(--vn-r-thumb);
 }
@@ -647,4 +652,11 @@
 }
 .vn .vn-wordmark--paper {
 	color: var(--vn-ground);
+}
+/* El logotipo es un enlace: el anillo de siempre, con su contorno transparente para los colores forzados */
+.vn .vn-wordmark:focus-visible {
+	outline: 2px solid transparent;
+	outline-offset: 2px;
+	box-shadow: var(--vn-focus);
+	border-radius: var(--vn-r-thumb);
 }

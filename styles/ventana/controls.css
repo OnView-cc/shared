@@ -109,9 +109,14 @@
 	--vn-glass-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
 }
 
-/* Foco visible: anillo de tinta de 2px con 2px de separación */
+/*
+ * Foco visible: anillo de tinta de 2px con 2px de separación. Es una sombra, y los
+ * colores forzados (Windows) quitan las sombras: el contorno transparente es el que
+ * el sistema pinta entonces con su color. Normalmente no se ve.
+ */
 .vn .vn-btn:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	box-shadow: var(--vn-focus);
 }
 /*
@@ -231,7 +236,8 @@
 
 /* Foco: el borde del campo en tinta y el anillo de siempre */
 .vn .vn-input:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	border-color: var(--vn-ink);
 	box-shadow: var(--vn-focus);
 }
@@ -344,7 +350,8 @@
 	rotate: 180deg;
 }
 .vn .vn-select-trigger:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	border-color: var(--vn-ink);
 	box-shadow: var(--vn-focus);
 }
@@ -404,9 +411,15 @@
 	user-select: none;
 	-webkit-tap-highlight-color: transparent;
 }
-/* Resaltada: el relleno se aclara, así que toda la letra va en tinta (la pista incluida) */
+/*
+ * Resaltada: el relleno se aclara, así que toda la letra va en tinta (la pista incluida).
+ * El relleno es un fondo y los colores forzados lo quitan: el contorno transparente,
+ * por dentro, es lo que el sistema pinta entonces.
+ */
 .vn .vn-select-item[data-highlighted] {
 	background: var(--vn-hair);
+	outline: 2px solid transparent;
+	outline-offset: -2px;
 }
 .vn .vn-select-item[data-highlighted] .vn-select-hint {
 	color: var(--vn-ink);
@@ -526,7 +539,8 @@
 	color: var(--vn-ink);
 }
 .vn .vn-seg-opt:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	box-shadow: var(--vn-focus);
 }
 .vn .vn-seg-thumb {
@@ -611,6 +625,8 @@
 	translate: 20px 0;
 }
 .vn .vn-switch:focus-visible .vn-switch__track {
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	box-shadow: var(--vn-focus);
 }
 .vn .vn-switch:disabled {
@@ -674,6 +690,8 @@
 	border-color: var(--vn-ink);
 }
 .vn .vn-check__input:focus-visible + .vn-check__box {
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 	box-shadow: var(--vn-focus);
 }
 /* La etiqueta de una casilla es texto que se lee y se decide: tinta primaria (en gris parecería desactivada) */
@@ -858,15 +876,24 @@
 	cursor: pointer;
 }
 
-/* Foco visible: anillo de tinta de 2px con 2px de separación */
+/* Foco visible: anillo de tinta de 2px con 2px de separación, con su contorno transparente para los colores forzados */
 .vn button.vn-chip--action:focus-visible,
-.vn .vn-chip__x:focus-visible,
+.vn .vn-chip__x:focus-visible {
+	outline: 2px solid transparent;
+	outline-offset: 2px;
+	box-shadow: var(--vn-focus);
+}
+/*
+ * Seleccionable y quitable: el anillo rodea el chip entero (el `span`), y el contorno
+ * transparente va en el botón que tiene el foco, que ocupa casi todo el chip: con
+ * colores forzados el sistema lo pinta ahí.
+ */
 .vn .vn-chip--split:has(.vn-chip__main:focus-visible) {
-	outline: none;
 	box-shadow: var(--vn-focus);
 }
 .vn .vn-chip__main:focus-visible {
-	outline: none;
+	outline: 2px solid transparent;
+	outline-offset: 2px;
 }
 /* Sobre vidrio: anillo en `outline` y la sombra del material intacta (ver el botón) */
 .vn button.vn-chip--action.vn-glass:focus-visible,
