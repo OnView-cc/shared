@@ -46,7 +46,17 @@ La tinta es `--vn-ink` (#f5f5f7). La secundaria `--vn-ink-2` (#a1a1a6) es sólo
 para fondo sólido; sobre vidrio grueso se usa `--vn-ink-2-glass` (#c7c7cc) y el
 peligro va en `--vn-danger-glass` (`--vn-danger` es para sólido); sobre vidrio
 fino no hay texto secundario. Lo elegido o actual sobre vidrio se marca
-oscureciendo o con filete, nunca aclarando el relleno bajo el texto.
+oscureciendo o con filete, nunca aclarando el relleno bajo el texto. Las piezas
+del sistema dentro de un vidrio (el pie de un campo en una hoja, una pestaña, un
+botón de peligro) no tienen que elegir: cada grado reasigna `--vn-ink-2` y
+`--vn-danger` por cascada (ver `decisiones.md`). Sobre vidrio fino el peligro sólo
+vale para un icono.
+
+**La garantía del luminoso pide que el vidrio vea su fondo.** Un antepasado entre
+el vidrio y el fondo con `opacity` menor que 1, `filter`, `mask`, `clip-path` o
+`mix-blend-mode` (o `will-change` de alguna) le quita la atenuación. Anima la
+propia pieza, nunca un envoltorio; o envuelve ese contenido en `.vn`, que vuelve
+al ahumado.
 
 ### Las dos densidades
 
@@ -109,6 +119,38 @@ que entre tooltips seguidos no haya espera. Todo lo que Radix monta en un portal
 va envuelto en `<div className="vn" style={{ display: "contents" }}>` (las
 piezas de aquí ya lo hacen; hazlo con las tuyas).
 
+**Lo que tiene que ganar a una hoja ajena sin capa lleva `!important`.** Con la
+hoja en `@layer components`, cualquier declaración normal SIN capa le gana, pese a
+la especificidad: es el caso de sonner, que inyecta su CSS sin capa. Una
+`!important` con capa gana a una normal sin capa (y sigue valiendo si alguien
+importa la hoja sin capa). En Ventana son sólo tres, las del aviso (el contorno y
+la sombra del foco y el color de la descripción); `tests/ventana-tokens.test.ts`
+lee la hoja de sonner y las enumera. Una pieza nueva sobre otra librería con CSS
+sin capa hace lo mismo y lo prueba igual.
+
+**Nunca montes una raíz `.vn` dentro de `.sk` o `.site`.** Las reglas del mundo
+viejo no tienen capa y ganan a las de Ventana: `.sk :focus-visible` y
+`.site.sk :focus-visible` (en `styles/sky.css`) le ponen a toda pieza enfocada el
+contorno de tinta de Feed vertical y su radio de 2px (`--sk-radius`), encima del
+anillo propio y cambiando el contorno de las de vidrio; `.sk a` le cambia la
+distancia y el grosor del subrayado a todo enlace (`vn-link`, `vn-nav-link`,
+`Wordmark`, un `Button` con `href`); y en `onview` `.sk input, .sk textarea,
+.sk select` (`src/index.css`, bajo 1024px) le fija a los campos la letra en 16px.
+Una pantalla pasa a Ventana cambiando su raíz (`.vn` en lugar de `.sk`), no
+metiendo piezas nuevas dentro de la vieja.
+
+**Qué sirve de disparador** de `Menu`, `Popover` y `Tooltip`: algo que acepte un
+`ref` y reparta sus props en el elemento que pinta, porque Radix le pasa los
+suyos (`asChild`). Un `Button`, un `IconButton` o un elemento nativo (`<button>`,
+`<a>`). Un `Chip` no.
+
+**Dentro de una hoja.** `Sheet` y la hoja estrecha de `NavBar` son `<dialog>`
+modales (capa superior, el resto inerte). Dan su diálogo por un contexto
+(`ventana/portal-host.ts`) y los paneles de `Select`, `Menu`, `Popover` y
+`Tooltip` se montan dentro de él, no en `body`. Una pieza tuya sobre Radix que
+pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
+`Portal`.
+
 ### Las piezas
 
 | Pieza | Archivo | Qué es |
@@ -120,7 +162,8 @@ piezas de aquí ya lo hacen; hazlo con las tuyas).
 | `Segmented` | `ventana/segmented.tsx` | control segmentado con pulgar que se desliza |
 | `Switch`, `Check` | `ventana/toggle.tsx` | interruptor y casilla |
 | `Chip`, `StateChip` | `ventana/chip.tsx` | chip elegible o etiqueta; etiqueta de estado de una toma |
-| `Menu`, `Popover`, `Tooltip`, `TooltipGroup` | `ventana/overlay.tsx` | lo que flota junto a un botón (vidrio grueso, sobre Radix) |
+| `Menu`, `Popover`, `Tooltip`, `TooltipGroup` | `ventana/overlay.tsx` | lo que flota junto a un botón (vidrio grueso, sobre Radix); `Menu` y `Popover` admiten `open` y `onOpenChange` |
+| `PortalHost`, `usePortalHost` | `ventana/portal-host.ts` | el `<dialog>` de la hoja que contiene una pieza, para montar ahí sus paneles de Radix |
 | `Sheet` | `ventana/sheet.tsx` | hoja y diálogo sobre `<dialog>` nativo: sube en el teléfono, escala en escritorio |
 | `Toaster` | `ventana/toast.tsx` | avisos con `sonner` y el estilo del sistema |
 | `NavBar` | `ventana/nav-bar.tsx` | la barra flotante en cápsula |
@@ -135,8 +178,10 @@ piezas de aquí ya lo hacen; hazlo con las tuyas).
 El CSS: `tokens.css` (tokens `--vn-*` y valores vivos del vidrio), `type.css`
 (la escala: `vn-display`, `vn-title-1`, `vn-title-2`, `vn-title-3`, `vn-body`,
 `vn-small`, `vn-label`, `vn-num`, `vn-wrap`, `vn-link`, `vn-prose`), `glass.css`,
-`motion.css` (`vn-arrive` y `vn-press`: la llegada va en un envoltorio, no en una
-pieza con su propia transición), `controls.css`, `content.css` y `overlays.css`.
+`motion.css` (`vn-arrive` y `vn-press`: la llegada es una animación de fotogramas
+y va **en la propia pieza, nunca en un envoltorio de un vidrio**; convive con
+`vn-press` y con la transición de cualquier pieza), `controls.css`, `content.css`
+y `overlays.css`.
 El espectro de Iris es lo único con color propio de la interfaz y no aparece en
 ninguna hoja de estilos: el aro se arma en JavaScript desde `AI_SPECTRUM`.
 
