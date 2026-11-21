@@ -1220,12 +1220,23 @@ describe("Ventana hoja y avisos", () => {
 	it("bajo 40rem es una hoja pegada abajo con esquinas inferiores rectas y área segura; desde 40rem, centrada", () => {
 		const body = rule(".vn.vn-sheet");
 		expect(body).toMatch(/margin-block: auto 0;/);
-		expect(body).toMatch(/border-end-start-radius: 0;/);
-		expect(body).toMatch(/border-end-end-radius: 0;/);
 		expect(overlays).toMatch(/env\(safe-area-inset-bottom, 0px\)/);
 		const wide = overlays.slice(overlays.indexOf("@media (min-width: 40rem)"));
 		expect(wide).toMatch(/max-inline-size: 32rem/);
 		expect(wide).toMatch(/scale: 0\.96;/);
+	});
+
+	it("las esquinas de la hoja: rectas abajo sólo en el teléfono; desde 40rem las cuatro son las del vidrio, también con corner-shape", () => {
+		// La base no toca los radios: los pone el material (radio ×1.35 con superelipse donde la hay)
+		expect(rule(".vn.vn-sheet")).not.toMatch(/radius/);
+		const narrowStart = overlays.indexOf("@media (max-width: 39.99rem) {");
+		expect(narrowStart).toBeGreaterThan(-1);
+		const narrow = overlays.slice(narrowStart, overlays.indexOf("\n}", narrowStart));
+		expect(narrow).toMatch(/\.vn\.vn-sheet \{\s*border-end-start-radius: 0;\s*border-end-end-radius: 0;\s*\}/);
+		// Ninguna otra regla de la hoja declara un radio: en escritorio no hay un «restaurar» que deje las de abajo a 28 frente a las de arriba a 28 × 1.35
+		const sheetRadii = all.filter((r) => r.selectors.some((s) => /\.vn-sheet(\[open\])?$/.test(s)) && /radius/.test(r.body));
+		expect(sheetRadii).toHaveLength(1);
+		expect(glass).toMatch(/@supports \(corner-shape: superellipse\(1\.5\)\) \{\s*\.vn-glass \{\s*corner-shape: superellipse\(1\.5\);\s*border-radius: calc\(var\(--vn-glass-r, var\(--vn-r-panel\)\) \* 1\.35\);/);
 	});
 
 	it("el pie de la hoja pone las acciones en fila con aire: repartidas en el teléfono, a la derecha desde 40rem", () => {

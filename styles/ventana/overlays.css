@@ -203,8 +203,6 @@
 	overflow: hidden;
 	color: var(--vn-ink);
 	font-family: var(--vn-font);
-	border-end-start-radius: 0;
-	border-end-end-radius: 0;
 	opacity: 0;
 	translate: 0 100%;
 	scale: 1;
@@ -233,6 +231,18 @@
 	.vn.vn-sheet[open] {
 		opacity: 0;
 		translate: 0 100%;
+	}
+}
+
+/*
+ * Las esquinas las pone el material (el radio de hoja, ×1.35 con superelipse donde
+ * la hay). Sólo en el teléfono, pegada abajo, las de abajo son rectas; desde 40rem
+ * no se restauran a mano: las cuatro salen de la misma regla y casan.
+ */
+@media (max-width: 39.99rem) {
+	.vn.vn-sheet {
+		border-end-start-radius: 0;
+		border-end-end-radius: 0;
 	}
 }
 
@@ -315,8 +325,6 @@
 		margin: auto;
 		inline-size: calc(100% - 2rem);
 		max-inline-size: 32rem;
-		border-end-start-radius: var(--vn-glass-r);
-		border-end-end-radius: var(--vn-glass-r);
 		translate: 0 0;
 		scale: 0.96;
 	}
