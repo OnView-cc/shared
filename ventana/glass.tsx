@@ -52,6 +52,14 @@ type LitProps<T extends ElementType> = {
  * cualquier otra imagen o video de una persona dentro de una zona luminosa
  * necesita un envoltorio con la clase `vn`, que devuelve al ahumado todo lo que
  * lleva dentro.
+ *
+ * La garantía del luminoso depende de que el vidrio VEA su fondo: la atenuación es
+ * el `backdrop-filter`. Un antepasado entre el vidrio y el fondo con `opacity`
+ * menor que 1, `filter`, `mask`, `clip-path`, `mix-blend-mode` (o `will-change` de
+ * alguna) aísla lo de detrás: se pierde la atenuación, se queda la escarcha y el
+ * texto cae a unos 3.1:1 en el fino y 2.4:1 en el grueso con el fondo en el
+ * techo. Se anima la propia pieza de vidrio, nunca un envoltorio; o ese contenido
+ * se envuelve en `.vn` para volver al ahumado.
  */
 export function Lit<T extends ElementType = "div">({ as, className, ...rest }: LitProps<T>): ReactElement {
 	const Tag: ElementType = as ?? "div";

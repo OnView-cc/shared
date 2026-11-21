@@ -160,6 +160,16 @@ export function glassContrast(backdrop: string, grade: GlassGrade, density: Glas
  * con ese color detrás? Con holgura: se prueba el fondo `GLASS.margin` niveles
  * más claro por canal, así que un color que pasa aquí pasa también en el
  * navegador aunque el píxel le salga un par de niveles por encima.
+ *
+ * En el luminoso la cuenta supone que el vidrio VE su fondo: la atenuación es el
+ * `backdrop-filter`. Si algo entre el vidrio y el fondo aísla lo de detrás (un
+ * antepasado con `opacity` menor que 1, `filter`, `mask`, `clip-path`,
+ * `mix-blend-mode`, o `will-change` de alguna de ellas), el filtro sólo ve hasta
+ * ese antepasado: se pierde la atenuación y se queda la escarcha, y el texto cae
+ * a unos 3.1:1 en el fino y 2.4:1 en el grueso con el fondo en el techo. El
+ * remedio: animar la propia pieza de vidrio, nunca un envoltorio (así lo hace
+ * `vn-arrive`); o envolver ese contenido en `.vn`, que lo devuelve al ahumado,
+ * cuya garantía no depende del filtro.
  */
 export function passesOnGlass(backdrop: string, grade: GlassGrade, density: GlassDensity): boolean {
 	const lighter = parse(backdrop).map((c) => Math.min(255, c + GLASS.margin)) as Rgb;

@@ -126,6 +126,14 @@
  * del filtro vale aquí, y no en el ahumado, justo por eso: sin filtro no hay
  * vidrio luminoso, hay sólido.
  *
+ * Pero el filtro tiene que VER el fondo. Un antepasado entre el vidrio y el fondo
+ * con `opacity` menor que 1, `filter`, `mask`, `clip-path` o `mix-blend-mode` (o
+ * `will-change` de alguna) aísla lo de detrás: el filtro sólo ve hasta ese
+ * antepasado, se pierde la atenuación y se queda la escarcha (3.1:1 el fino y
+ * 2.4:1 el grueso con el fondo en el techo). Se anima la propia pieza de vidrio,
+ * nunca un envoltorio (`vn-arrive` va en la pieza); o ese contenido se envuelve
+ * en `.vn`, que lo devuelve al ahumado.
+ *
  * Quedan ahumados dentro de la zona (lo re-declara tokens.css): lo que es raíz
  * `.vn` (hojas, avisos y todo lo que Radix monta en un portal, que además vive
  * fuera de la página), un vidrio dentro de otro vidrio, lo que va dentro de un
