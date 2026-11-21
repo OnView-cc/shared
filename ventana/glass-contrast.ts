@@ -33,8 +33,8 @@
  * - El desenfoque no se cuenta, a propósito: desenfocar promedia colores, así que
  *   el peor caso es el color más claro sin desenfocar.
  * - `passesOnGlass` añade una holgura: prueba el fondo `GLASS.margin` niveles más
- *   claro por canal. Medido en Chrome, el píxel bajo un vidrio luminoso sale
- *   hasta 2 niveles por encima de la cuenta redondeada al más cercano. Para
+ *   claro por canal. Son 2 niveles de fondo, que cubrieron el exceso medido en la
+ *   salida en tres colores (no se igualan a lo que midió el navegador). Para
  *   decidir si un fondo vale se usa `passesOnGlass`, no una comparación a mano
  *   con `glassContrast`.
  *

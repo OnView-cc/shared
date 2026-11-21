@@ -43,8 +43,9 @@
 	 * la atenuación, la escarcha y el brillo, capa a capa
 	 * (brillo sobre (escarcha sobre (atenuación × gris))). La cuenta es una cota,
 	 * no una simulación: cada capa redondea hacia arriba y el techo lleva una
-	 * holgura de 2 niveles (se cumple aunque el fondo salga 2 niveles más claro de
-	 * lo declarado, que es lo que Chrome midió de más). La prueba de tokens
+	 * holgura de 2 niveles de fondo (se cumple aunque el fondo sea 2 niveles más
+	 * claro de lo declarado); esos 2 niveles cubrieron el exceso medido en la
+	 * salida en tres colores. La prueba de tokens
 	 * comprueba que son la frontera exacta de esa cuenta. Un color se prueba con
 	 * `passesOnGlass` de `ventana/glass-contrast.ts`, que lleva estos mismos
 	 * números y la misma holgura.

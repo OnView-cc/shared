@@ -19,8 +19,8 @@
  * una simulación: cada capa redondea HACIA ARRIBA, el filtro sólo recorta a
  * 0..255 al final (nunca entre saturar y atenuar, que daría un resultado más
  * oscuro que el de un motor que no recorte ahí) y el techo lleva una holgura de
- * 2 niveles (pasa aun con el fondo 2 niveles más claro: lo que Chrome midió de
- * más sobre la cuenta). La misma cuenta vive en `ventana/glass-contrast.ts` para
+ * 2 niveles de fondo (pasa aun con el fondo 2 niveles más claro; esos 2 niveles
+ * cubrieron el exceso medido en la salida en tres colores). La misma cuenta vive en `ventana/glass-contrast.ts` para
  * quien use el vidrio; aquí se rehace con los tokens, se comprueba que sus
  * números son los mismos y que el ámbito sólo cambia variables, nunca el
  * material ni sus respaldos. Las pruebas del ahumado siguen redondeando al más

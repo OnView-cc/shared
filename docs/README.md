@@ -2,7 +2,7 @@
 
 **El código común de las apps de OnView.** UI (`ui/`, `components/`), cliente
 CRUD y helpers (`lib/`, `hooks/`), el mundo visual y sus piezas (`styles/`,
-`sky/`) y tres módulos de worker (`worker/response`, `worker/cookies` y
+`sky/`, `ventana/`) y tres módulos de worker (`worker/response`, `worker/cookies` y
 `worker/credit-settle`, el cobro y la devolución de una reserva de créditos que
 usan onview y onview-studio desde v1.3.0). Envía TypeScript crudo: lo compila el bundler de la app que
 lo consume.
@@ -16,11 +16,139 @@ consumidores: `onview` y `admin`). El repo es **público**: el CI de los
 consumidores lo baja con `npm ci`, sin token. Para trabajar shared en local
 contra una app, se enlaza con una junction y se quita con `rmdir` antes de
 commitear.
-El mundo visual es **«Airglow»**, heredado del fork y provisional hasta que el
-subproyecto 2 lo sustituya por «Blue Hour». Ver `decisiones.md` y lo
-que falta en `pendiente.md`. Las dependencias de runtime son
+El mundo visual vigente en cada pantalla es **«Feed vertical»** (`sky/`); el
+sistema nuevo, **«Ventana»** (`ventana/`), llega pantalla a pantalla (sección
+siguiente). La sección «Airglow» de más abajo es historia del fork. Ver
+`decisiones.md` y lo que falta en `pendiente.md`. Las dependencias de runtime son
 `peerDependencies`; cada consumidor las deduplica (`dedupe` en su
 `vite.config.ts`) para que no haya dos React.
+
+## Ventana: el mundo nuevo (v2.8.0, parte 1 de 5)
+
+Un oscuro único, sin color de acento, con vidrio tipo Apple (Liquid Glass). Vive
+en `ventana/` (componentes) y `styles/ventana/` (CSS), junto a Feed vertical
+(`sky/`, `styles/sky.css`), que no se toca: ni un valor `--sk-*` cambia. Las
+pantallas pasan una a una en las partes 2 a 5 de la serie (spec
+`../../docs/superpowers/specs/2026-11-20-onview-ventana-sistema-design.md` §0:
+sitio y acceso, app sin editor, editor, admin y correos); al cerrar la quinta se
+borra `sky/`. Todo se ve en `/dev-preview/ventana` de `onview`.
+
+### La regla del vidrio
+
+El vidrio es la capa que flota (barra de navegación, barras de herramientas,
+menús, hojas, diálogos, avisos, controles sobre un video). El contenido no es de
+vidrio: listas, tablas, formularios y texto largo son sólidos, con la letra, las
+curvas y el movimiento del sistema. El texto directo sobre un video lleva `Scrim`.
+
+**El texto manda sobre el brillo.** Tres grados (`GlassGrade`): `clear` (sólo
+íconos, 3:1), `thin` (texto, 4.5:1) y `thick` (hojas, menús, diálogos; 4.5:1).
+La tinta es `--vn-ink` (#f5f5f7). La secundaria `--vn-ink-2` (#a1a1a6) es sólo
+para fondo sólido; sobre vidrio grueso se usa `--vn-ink-2-glass` (#c7c7cc) y el
+peligro va en `--vn-danger-glass` (`--vn-danger` es para sólido); sobre vidrio
+fino no hay texto secundario. Lo elegido o actual sobre vidrio se marca
+oscureciendo o con filete, nunca aclarando el relleno bajo el texto.
+
+### Las dos densidades
+
+Cuál toca lo decide lo que hay detrás.
+
+| | Ahumado (por defecto) | Luminoso (dentro de `vn-lit` o `Lit`) |
+|---|---|---|
+| Sobre qué | lo que no controlamos: el video o las imágenes de una persona | fondos nuestros: el video de demostración, el resplandor de `Glow` |
+| Material | gris frío levantado (humo) bajo el brillo, con un canto de luz de 1px | sin humo: el filtro atenúa lo de detrás (`brightness`), con una escarcha del 6 % y el brillo |
+| Garantía | sobre blanco puro detrás: claro 3.2, fino 4.7, grueso 7.4 | sobre un techo declarado por grado: `#949494` claro, `#777777` fino, `#909090` grueso |
+| Sin `backdrop-filter` | su sólido (igual que con transparencia reducida y contraste alto) | el mismo sólido: no hay vidrio luminoso sin filtro |
+
+**Cómo se usa lo luminoso.** Se activa por zona, nunca pieza a pieza:
+`<Lit>…</Lit>` (de `ventana/glass.tsx`; sólo añade la clase) o la clase `vn-lit`
+en la página o en una parte. El ámbito sólo redefine variables, nunca el
+material. Siguen ahumados, porque llevan más texto y no se sabe sobre qué caen:
+todo lo que monta una raíz `.vn` (paneles en portal, hojas, avisos), un vidrio
+dentro de otro, lo que flota sobre un `VideoFrame` y el pulgar del `Segmented`
+(las «islas ahumadas»). Para dejar ahumada otra parte basta envolverla en un
+elemento con la clase `vn`. Sobre vidrio luminoso, sólo tinta primaria.
+
+**Cómo prueba un consumidor sus colores.** `ventana/glass-contrast.ts` (puro, sin
+DOM) lleva la cuenta: `underGlass(fondo, grado, densidad)` da el color que queda
+bajo el texto, `glassContrast(...)` el contraste de la tinta con él y
+`passesOnGlass(fondo, grado, densidad)` si llega al umbral del grado. Quien pone
+vidrio luminoso sobre un fondo prueba, con `passesOnGlass`, cada uno de los
+colores más claros que ese fondo enseña bajo el vidrio (las fotos también
+cuentan); donde alguno no pasa, esa parte va ahumada. Para decidir si un fondo
+vale se usa `passesOnGlass`, no `glassContrast` a mano: la primera lleva la
+holgura. El modelo es una cota conservadora: cada capa redondea hacia arriba, no
+recorta entre `saturate()` y `brightness()`, y se prueba el fondo 2 niveles más
+claro (2 niveles de fondo, que cubrieron el exceso medido en la salida en tres
+colores). Con la marca de demostración, en fino: el naranja `#c2410c` pasa, el
+casi negro pasa y la crema `#f5ead8` no.
+
+### Ajustar el vidrio de una pieza
+
+Sólo por variables: `--vn-glass-r` (radio), `--vn-glass-shadow` (sombra de fuera)
+y `--vn-glass-rim` (filete). `--vn-glass-elevation` es la sombra entera ya
+resuelta, para quien necesite leerla. Una regla `.vn .vn-…` que pueda casar con
+un elemento que lleve `vn-glass` nunca declara `background`, `backdrop-filter`,
+`border` ni `box-shadow`: `tests/ventana-tokens.test.ts` escanea las hojas y
+falla si lo hace. `SOLID_PIECES`, en esa prueba, es la lista explícita de piezas
+sólidas exentas del escaneo; olvidar una falla en alto.
+
+### Cómo se importa
+
+```css
+@import "@onview/shared/styles/ventana.css" layer(components);
+```
+
+Va en la capa de cascada `components` para que las utilidades de Tailwind que el
+consumidor pasa por `className` (tamaños de marcas, anchos de campos) ganen a
+las piezas: lo que no tiene capa gana a `@layer utilities`, y sin capa esas
+clases no podrían con las reglas de Ventana. La fuente es `-apple-system,
+BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter Tight Variable",
+sans-serif`: SF nunca se sirve como archivo y la app instala
+`@fontsource-variable/inter-tight`. Cada app monta **un** `TooltipGroup` para
+que entre tooltips seguidos no haya espera. Todo lo que Radix monta en un portal
+va envuelto en `<div className="vn" style={{ display: "contents" }}>` (las
+piezas de aquí ya lo hacen; hazlo con las tuyas).
+
+### Las piezas
+
+| Pieza | Archivo | Qué es |
+|---|---|---|
+| `Glass`, `Lit`, `Scrim`, `Glow` | `ventana/glass.tsx` | superficie de vidrio (`grade`, `solid`), ámbito luminoso, oscurecimiento bajo texto sobre video, resplandor quieto con los colores del contenido |
+| `Button`, `IconButton` | `ventana/button.tsx` | primaria (cápsula blanca), vidrio, sin fondo y peligro; aceptan `ref` |
+| `TextField`, `TextArea` | `ventana/field.tsx` | campos sólidos con etiqueta, ayuda y error; el textarea crece |
+| `Select` | `ventana/select.tsx` | desplegable de vidrio propio, con teclado completo |
+| `Segmented` | `ventana/segmented.tsx` | control segmentado con pulgar que se desliza |
+| `Switch`, `Check` | `ventana/toggle.tsx` | interruptor y casilla |
+| `Chip`, `StateChip` | `ventana/chip.tsx` | chip elegible o etiqueta; etiqueta de estado de una toma |
+| `Menu`, `Popover`, `Tooltip`, `TooltipGroup` | `ventana/overlay.tsx` | lo que flota junto a un botón (vidrio grueso, sobre Radix) |
+| `Sheet` | `ventana/sheet.tsx` | hoja y diálogo sobre `<dialog>` nativo: sube en el teléfono, escala en escritorio |
+| `Toaster` | `ventana/toast.tsx` | avisos con `sonner` y el estilo del sistema |
+| `NavBar` | `ventana/nav-bar.tsx` | la barra flotante en cápsula |
+| `Section`, `Row`, `Skeleton`, `Alert`, `Status`, `Tabs`, `Progress`, `Accordion`, `Monogram` | `ventana/content.tsx` | lo sólido: contenido sobre el suelo |
+| `VideoFrame` | `ventana/video-frame.tsx` | marco de video 9:16, 1:1 o 16:9 con su rótulo y su propio scrim |
+| `Mark`, `Wordmark`, `AiMark` | `ventana/marks.tsx` | las marcas: OnView («Dos capas») e Iris («El prisma»; pensando, el aro gira) |
+| `MARK`, `markSvg` | `ventana/mark.ts` | la marca de OnView como datos (la usa `onview/scripts/render-brand.mjs`) |
+| `AI_NAME`, `AI_SPECTRUM`, `AI_MARK`, `aiMarkSvg` | `ventana/ai-mark.ts` | Iris como datos |
+| `GLASS`, `underGlass`, `glassContrast`, `passesOnGlass` | `ventana/glass-contrast.ts` | la cuenta del contraste sobre vidrio |
+| `SPRINGS`, `springLinear` | `ventana/springs.ts` | los muelles; `npm run springs` regenera `styles/ventana/motion.css`, que no se edita a mano |
+
+El CSS: `tokens.css` (tokens `--vn-*` y valores vivos del vidrio), `type.css`
+(la escala: `vn-display`, `vn-title-1`, `vn-title-2`, `vn-title-3`, `vn-body`,
+`vn-small`, `vn-label`, `vn-num`, `vn-wrap`, `vn-link`, `vn-prose`), `glass.css`,
+`motion.css` (`vn-arrive` y `vn-press`: la llegada va en un envoltorio, no en una
+pieza con su propia transición), `controls.css`, `content.css` y `overlays.css`.
+El espectro de Iris es lo único con color propio de la interfaz y no aparece en
+ninguna hoja de estilos: el aro se arma en JavaScript desde `AI_SPECTRUM`.
+
+### La IA se llama Iris
+
+`AI_NAME = "Iris"` en `ventana/ai-mark.ts`. `sky/ai-mark.ts` sigue diciendo
+**Lumen** hasta la parte 2, que cambia de una vez lo que la gente lee (el
+diccionario, `/lumen` a `/iris`, los legales, los correos, las etiquetas del
+admin y las instrucciones con que la IA se presenta). Tablas, columnas,
+constantes y nombres de archivo no se renombran. Antes de ese cambio, la voz de
+narración del catálogo que también se llama «Iris» tiene que cambiar de nombre
+(decisión pendiente del usuario; ver `pendiente.md`).
 
 ## Airglow: el mundo de OnView
 
@@ -146,6 +274,7 @@ _Sin cron propio._
 | `npm run check:neutral` | `node scripts/check-neutral.mjs` |
 | `npm run test` | `vitest run` |
 | `npm run typecheck` | `tsc -p tsconfig.ui.json --noEmit && tsc -p tsconfig.worker.json --noEmit` |
+| `npm run springs` | `node --experimental-strip-types scripts/gen-springs.mjs` |
 | `npm run docs` | `node scripts/gen-docs.mjs` |
 | `npm run docs:check` | `node scripts/gen-docs.mjs --check` |
 | `npm run docs:gaps` | `node scripts/gen-docs.mjs --gaps` |
