@@ -146,6 +146,22 @@
 	.vn .vn-btn.vn-glass:hover {
 		--vn-glass-rim: var(--vn-rim-top);
 	}
+	/*
+	 * Dentro de un vidrio, un botón sin fondo o de peligro tampoco aclara lo que tiene
+	 * debajo: sobre el fino la tinta no llegaría a 4.5:1 con el relleno de `--vn-hair`.
+	 * Lleva un filete: por dentro el sin fondo (sin pisar el anillo de foco), más claro
+	 * el de peligro, que ya lo tenía. Estos botones nunca son vidrio ellos mismos.
+	 */
+	.vn-glass .vn-btn--plain:hover {
+		background: transparent;
+	}
+	.vn-glass .vn-btn--plain:hover:not(:focus-visible) {
+		box-shadow: inset 0 0 0 1px var(--vn-line);
+	}
+	.vn-glass .vn-btn--danger:hover {
+		background: transparent;
+		border-color: var(--vn-rim-top);
+	}
 }
 
 .vn .vn-btn:disabled,

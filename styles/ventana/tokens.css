@@ -18,8 +18,12 @@
 	--vn-action: var(--vn-ink);
 	--vn-action-ink: #060607;
 	--vn-danger: #ff8f7e;
-	/* El peligro para texto sobre vidrio grueso: --vn-danger sólo llega a unos 3.6:1 ahí con blanco puro detrás */
-	--vn-danger-glass: #ffb8ad;
+	/*
+	 * El peligro para texto sobre vidrio grueso: --vn-danger sólo llega a unos 3.6:1 ahí con
+	 * blanco puro detrás. Sobre el fino sólo sirve a un icono (3:1); un nivel más de verde
+	 * que el primero (#ffb8ad) lo deja en 3:1 también sobre el fino luminoso en su techo.
+	 */
+	--vn-danger-glass: #ffb9ad;
 
 	/* Filetes */
 	--vn-hair: rgba(255, 255, 255, 0.08);
@@ -124,6 +128,10 @@
  * clase del ámbito puede ir en el propio vidrio de fuera), y la barra de
  * navegación de dentro de una raíz `.vn` se nombra aparte: el ámbito la alcanza
  * por su nombre, así que la isla la recupera por el suyo.
+ *
+ * `--vn-ink-2-thick` es la tinta secundaria de una pieza dentro de un vidrio grueso
+ * (glass.css): la de vidrio en el ahumado; el ámbito luminoso la pone en la primaria.
+ * Por ir aquí, las islas ahumadas la recuperan con lo demás.
  */
 .vn,
 .vn-lit .vn-glass .vn-glass,
@@ -139,6 +147,7 @@
 	--vn-dim-clear: 1;
 	--vn-dim-thin: 1;
 	--vn-dim-thick: 1;
+	--vn-ink-2-thick: var(--vn-ink-2-glass);
 }
 
 /* Rendimiento: en táctil y en estrecho el desenfoque cuesta menos */

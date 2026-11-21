@@ -33,6 +33,8 @@
 	--vn-glass-elevation: inset 0 1px 0 var(--vn-glint), var(--vn-glass-shadow, 0 1px 2px rgba(0, 0, 0, 0.2), 0 12px 40px rgba(0, 0, 0, 0.35));
 	box-shadow: var(--vn-glass-elevation);
 	color: var(--vn-ink);
+	--vn-ink-2: var(--vn-ink);
+	--vn-danger: var(--vn-danger-glass);
 }
 
 /*
@@ -42,6 +44,9 @@
  * profundidad que el círculo del radio nominal y entra en el lado con suavidad.
  * Las piezas en cápsula o redondas (botones, chips, barra, pulgar) declaran
  * `corner-shape: round`: una cápsula es una cápsula.
+ *
+ * (Las dos últimas variables de `.vn-glass` son la tinta de lo que va dentro de un
+ * vidrio sin grado, que es fino: ver «La tinta de lo que va dentro», más abajo.)
  */
 @supports (corner-shape: superellipse(1.5)) {
 	.vn-glass {
@@ -50,21 +55,47 @@
 	}
 }
 
+/*
+ * La tinta de lo que va dentro. Las piezas del sistema usan `--vn-ink-2` (pie de un
+ * campo, cuenta, pestaña sin elegir, cuerpo del acordeón, `vn-small`) y `--vn-danger`
+ * (botón y error de peligro), que son de superficie sólida: sobre vidrio, con blanco
+ * puro detrás, se quedaban en 3.2 a 3.8 y 3.7 a 4.4. Cada grado las reasigna por
+ * cascada, sólo con variables (no puede pisar el material):
+ *
+ * - Grueso: la secundaria es `--vn-ink-2-thick`, un valor vivo como el humo: la de
+ *   vidrio en el ahumado y la primaria en el luminoso (lo redefine el ámbito
+ *   `vn-lit`; las islas ahumadas lo vuelven a declarar con los demás, así que una
+ *   hoja o un vidrio dentro de otro en zona luminosa vuelven a la de vidrio). El
+ *   peligro es el de vidrio, que pasa 4.5:1 en el grueso ahumado.
+ * - Fino y claro: no llevan texto secundario, así que la secundaria es la tinta. El
+ *   peligro también es el de vidrio, pero sobre el fino sólo llega a 3:1: vale para un
+ *   icono, NO hay texto de peligro sobre vidrio fino (ni luminoso). Sobre el claro ni
+ *   el icono llega a 3:1.
+ *
+ * Una pieza sólida dentro del vidrio (la caja de un campo) hereda la secundaria más
+ * clara: sólo sube su contraste.
+ */
 .vn-glass--clear {
 	--vn-glass-smoke: var(--vn-smoke-clear);
 	--vn-glass-dim: var(--vn-dim-clear);
 	--vn-glass-solid: var(--vn-solid-clear);
+	--vn-ink-2: var(--vn-ink);
+	--vn-danger: var(--vn-danger-glass);
 }
 .vn-glass--thin {
 	--vn-glass-smoke: var(--vn-smoke-thin);
 	--vn-glass-dim: var(--vn-dim-thin);
 	--vn-glass-solid: var(--vn-solid-thin);
+	--vn-ink-2: var(--vn-ink);
+	--vn-danger: var(--vn-danger-glass);
 }
 .vn-glass--thick {
 	--vn-glass-smoke: var(--vn-smoke-thick);
 	--vn-glass-dim: var(--vn-dim-thick);
 	--vn-glass-blur: var(--vn-blur-thick);
 	--vn-glass-solid: var(--vn-solid-thick);
+	--vn-ink-2: var(--vn-ink-2-thick);
+	--vn-danger: var(--vn-danger-glass);
 }
 
 /*
@@ -84,7 +115,8 @@
  * (`ventana/glass-contrast.ts`) los colores más claros que su fondo enseña bajo
  * el vidrio. Donde un fondo pueda pasar del techo, va el ahumado. Sobre vidrio
  * luminoso, sólo tinta primaria: la secundaria y el peligro de vidrio son del
- * grueso ahumado.
+ * grueso ahumado. Por eso el ámbito también pone `--vn-ink-2-thick` en la tinta:
+ * lo que va dentro de un vidrio grueso luminoso no lleva secundaria.
  *
  * Cómo funciona: el ámbito sólo redefine variables (los valores vivos de
  * tokens.css); no declara fondo, filtro, borde ni sombra, así que no puede pisar
@@ -114,6 +146,7 @@
 	--vn-dim-thick: var(--vn-lit-dim-thick);
 	--vn-sheen: var(--vn-lit-sheen);
 	--vn-saturate: var(--vn-lit-saturate);
+	--vn-ink-2-thick: var(--vn-ink);
 }
 
 /*

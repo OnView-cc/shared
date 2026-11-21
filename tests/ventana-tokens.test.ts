@@ -376,6 +376,8 @@ describe("Ventana vidrio luminoso (el ámbito vn-lit)", () => {
 			"--vn-dim-thick": "var(--vn-lit-dim-thick)",
 			"--vn-sheen": "var(--vn-lit-sheen)",
 			"--vn-saturate": "var(--vn-lit-saturate)",
+			// La secundaria de lo que va en un vidrio grueso: sobre luminoso, la primaria
+			"--vn-ink-2-thick": "var(--vn-ink)",
 		});
 		// Lo que redefine es justo lo que la raíz declara como «valores vivos»: una raíz `.vn` dentro de la zona lo devuelve todo al ahumado
 		expect(Object.keys(scopeSets).sort()).toEqual(declarations(liveRule?.[2] ?? "").map(([prop]) => prop).sort());
@@ -706,7 +708,8 @@ describe("Ventana controles", () => {
 	});
 
 	it("sobre vidrio el foco va en outline y la sombra del material se queda, con un aro oscuro para los fondos claros", () => {
-		const glassFocus = rules.filter((r) => r.selectors.some((sel) => /vn-glass.*:focus-visible|vn-chip--glass.*:focus-visible/.test(sel)));
+		// (Un `:not(:focus-visible)` no es una regla de foco: es el filete de un botón dentro de un vidrio al pasar el puntero)
+		const glassFocus = rules.filter((r) => r.selectors.some((sel) => /vn-glass.*:focus-visible|vn-chip--glass.*:focus-visible/.test(sel) && !sel.includes(":not(:focus-visible)")));
 		expect(glassFocus.length).toBeGreaterThanOrEqual(2);
 		expect(glassFocus.flatMap((r) => r.selectors)).toEqual(
 			expect.arrayContaining([".vn .vn-btn.vn-glass:focus-visible", ".vn button.vn-chip--action.vn-glass:focus-visible", ".vn .vn-chip--glass.vn-chip--split:has(.vn-chip__main:focus-visible)"]),
@@ -1020,6 +1023,107 @@ describe("Ventana controles", () => {
 		expect(reduced).toMatch(/\.vn-acc__content\[data-state="open"\],[\s\S]*animation: none;/);
 		expect(cnt(".vn .vn-progress__bar")).toMatch(/scale: var\(--vn-progress, 0\) 1;/);
 		expect(content).toMatch(/--radix-accordion-content-height/);
+	});
+});
+
+describe("Ventana tinta de las piezas dentro del vidrio", () => {
+	/*
+	 * Una pieza del sistema dentro de un vidrio del sistema (el pie de un campo en una
+	 * hoja, una pestaña o un botón de peligro en un panel) usa `--vn-ink-2` y
+	 * `--vn-danger`, que son de superficie sólida. El vidrio las reasigna por cascada,
+	 * sólo con variables: en el grueso ahumado, a la secundaria y al peligro de vidrio;
+	 * en el fino y el claro (sin texto secundario), la secundaria a la tinta; en el
+	 * luminoso, la secundaria del grueso también a la tinta. Cuál toca lo decide el
+	 * mismo valor vivo que el humo (`--vn-ink-2-thick`), así que las islas ahumadas de
+	 * una zona luminosa recuperan la del ahumado sin una regla más.
+	 */
+	const gradeRule = (grade: string) => Object.fromEntries(declarations(glass.match(new RegExp(`\\n\\.vn-glass--${grade} \\{([^}]*)\\}`))?.[1] ?? ""));
+	const baseRule = Object.fromEntries(declarations(glass.match(/\n\.vn-glass \{([^}]*)\}/)?.[1] ?? ""));
+	const litScope = Object.fromEntries(declarations(everyRule.find((r) => r.selectors.includes(".vn-lit"))?.body ?? ""));
+	/** Resuelve `var(--vn-x)` con los tokens; `live` da los valores vivos de la densidad. */
+	const resolve = (value: string, live: Record<string, string>): string => {
+		const ref = value.match(/^var\((--vn-[\w-]+)\)$/);
+		if (!ref) return value;
+		const name = ref[1];
+		return resolve(live[name] ?? token(name.slice(5))!, live);
+	};
+	const smokedLive = Object.fromEntries(declarations(liveRule?.[2] ?? ""));
+	const litLive = { ...smokedLive, ...litScope };
+	const onGlass = (grade: string, prop: string, live: Record<string, string>) => resolve(gradeRule(grade)[prop] ?? baseRule[prop], live);
+	const smokedBehind = (grade: string) => over(token("sheen")!, over(token(`smoke-${grade}`)!, "#ffffff"));
+	const litUnderCeiling = (grade: GlassGrade) => underGlass(grey(Math.min(255, channels(token(`lit-ceiling-${grade}`)!)[0] + MARGIN)), grade, "lit");
+
+	it("en el grueso ahumado la secundaria es la de vidrio y pasa 4.5:1 sobre blanco puro; la sólida no pasaba", () => {
+		expect(onGlass("thick", "--vn-ink-2", smokedLive)).toBe(token("ink-2-glass"));
+		expect(contrast(onGlass("thick", "--vn-ink-2", smokedLive), smokedBehind("thick"))).toBeGreaterThanOrEqual(4.5);
+		// El porqué: la secundaria sólida (pie, ayuda, pestaña sin elegir) se quedaba en 3.2 a 3.8
+		expect(contrast(token("ink-2")!, smokedBehind("thick"))).toBeLessThan(4.5);
+	});
+
+	it.each(["thin", "clear"])("en el %s no hay texto secundario: la secundaria de una pieza de dentro es la tinta", (grade) => {
+		expect(onGlass(grade, "--vn-ink-2", smokedLive)).toBe(token("ink"));
+		expect(onGlass(grade, "--vn-ink-2", litLive)).toBe(token("ink"));
+	});
+
+	it("el vidrio sin grado es fino, y reasigna igual que el fino", () => {
+		expect(baseRule["--vn-ink-2"]).toBe("var(--vn-ink)");
+		expect(baseRule["--vn-danger"]).toBe("var(--vn-danger-glass)");
+		expect(baseRule["--vn-ink-2"]).toBe(gradeRule("thin")["--vn-ink-2"]);
+		expect(baseRule["--vn-danger"]).toBe(gradeRule("thin")["--vn-danger"]);
+	});
+
+	it("en el grueso luminoso la secundaria es la tinta: sobre vidrio luminoso sólo hay tinta primaria", () => {
+		expect(onGlass("thick", "--vn-ink-2", litLive)).toBe(token("ink"));
+		// Lo decide el valor vivo, que el ámbito redefine y las islas (toda raíz `.vn`, vidrio en vidrio, marco, segmentado) vuelven a declarar
+		expect(smokedLive["--vn-ink-2-thick"]).toBe("var(--vn-ink-2-glass)");
+		expect(litScope["--vn-ink-2-thick"]).toBe("var(--vn-ink)");
+		expect(gradeRule("thick")["--vn-ink-2"]).toBe("var(--vn-ink-2-thick)");
+	});
+
+	it("el peligro en el grueso es el de vidrio y pasa 4.5:1 sobre blanco puro (el sólido no pasaba)", () => {
+		expect(onGlass("thick", "--vn-danger", smokedLive)).toBe(token("danger-glass"));
+		expect(contrast(onGlass("thick", "--vn-danger", smokedLive), smokedBehind("thick"))).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("danger")!, smokedBehind("thick"))).toBeLessThan(4.5);
+	});
+
+	it("en el fino el peligro es el de vidrio y sólo sirve a un icono (3:1): no hay texto de peligro sobre vidrio fino ni luminoso", () => {
+		const danger = onGlass("thin", "--vn-danger", smokedLive);
+		expect(danger).toBe(token("danger-glass"));
+		expect(contrast(danger, smokedBehind("thin"))).toBeGreaterThanOrEqual(3);
+		expect(contrast(danger, smokedBehind("thin"))).toBeLessThan(4.5);
+		// En zona luminosa, con el fondo en su techo (y la holgura), el icono de peligro sigue llegando a 3:1 en fino y grueso
+		for (const grade of ["thin", "thick"] as const) {
+			expect(onGlass(grade, "--vn-danger", litLive), grade).toBe(token("danger-glass"));
+			expect(contrast(token("danger-glass")!, litUnderCeiling(grade)), grade).toBeGreaterThanOrEqual(3);
+			expect(contrast(token("danger-glass")!, litUnderCeiling(grade)), grade).toBeLessThan(4.5);
+		}
+		// El claro no lleva texto, y ni el icono de peligro llega a 3:1 ahí: un icono de peligro va sobre fino o grueso
+		expect(contrast(token("danger-glass")!, smokedBehind("clear"))).toBeLessThan(3);
+	});
+
+	it("la reasignación sólo cambia variables: las reglas de grado no declaran nada del material fuera de sus variables", () => {
+		for (const grade of GRADES) for (const prop of Object.keys(gradeRule(grade))) expect(prop, grade).toMatch(/^--vn-/);
+	});
+
+	it("dentro de un vidrio un botón sin fondo o de peligro no aclara el relleno al pasar el puntero: lleva un filete", () => {
+		const hoverStart = controls.indexOf("@media (hover: hover) and (pointer: fine) {");
+		const hover = controls.slice(hoverStart, controls.indexOf("\n}", hoverStart));
+		const inGlass = (variant: string) => hover.match(new RegExp(`\\.vn-glass \\.vn-btn--${variant}:hover[^{]*\\{([^}]*)\\}`))?.[1] ?? "";
+		for (const variant of ["plain", "danger"]) {
+			const body = inGlass(variant);
+			expect(body, variant).toMatch(/background: transparent;/);
+			// Gana al relleno general: la misma especificidad, y va después dentro del mismo bloque
+			expect(hover.indexOf(`.vn-glass .vn-btn--${variant}:hover`), variant).toBeGreaterThan(hover.indexOf(`.vn .vn-btn--${variant}:hover`));
+		}
+		// El filete del botón sin fondo es una sombra interior, y no pisa el anillo de foco
+		expect(hover).toMatch(/\.vn-glass \.vn-btn--plain:hover:not\(:focus-visible\) \{\s*box-shadow: inset 0 0 0 1px var\(--vn-line\);/);
+		// El de peligro ya tiene filete: se aclara
+		expect(inGlass("danger")).toMatch(/border-color: var\(--vn-rim-top\);/);
+		// La tinta se lee sobre el fino y sobre el luminoso en su techo sin ningún relleno encima
+		expect(contrast(token("ink")!, smokedBehind("thin"))).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink")!, litUnderCeiling("thin"))).toBeGreaterThanOrEqual(4.5);
+		// Con el relleno de antes (hair) no llegaba: por eso se cambió
+		expect(contrast(token("ink")!, over(token("hair")!, smokedBehind("thin")))).toBeLessThan(4.5);
 	});
 });
 
