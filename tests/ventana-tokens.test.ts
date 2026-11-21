@@ -693,6 +693,9 @@ describe("Ventana controles", () => {
 		// El filete: la luz del borde (arriba, lados, abajo) salvo que la pieza lo pinte entero con su variable
 		expect(body).toMatch(/border: 1px solid;\s*border-color: var\(--vn-glass-rim, var\(--vn-rim-light\)\);/);
 		expect(token("rim-light")).toBe("rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.14) rgba(255, 255, 255, 0.22)");
+		// `--vn-rim` (un filete parejo) no lo leía nadie: se quitó; el material usa `--vn-rim-light` y el hover `--vn-rim-top`
+		expect(token("rim")).toBeUndefined();
+		for (const css of allVentanaCss) expect(css).not.toMatch(/--vn-rim[;)\s]/);
 		// La expresión se escribe una sola vez, en una variable que las piezas reutilizan al enfocarse
 		expect(body).toMatch(/--vn-glass-elevation: inset 0 1px 0 var\(--vn-glint\), var\(--vn-glass-shadow, 0 1px 2px rgba\(0, 0, 0, 0\.2\), 0 12px 40px rgba\(0, 0, 0, 0\.35\)\);/);
 		expect(body).toMatch(/box-shadow: var\(--vn-glass-elevation\);/);

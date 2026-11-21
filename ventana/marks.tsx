@@ -6,6 +6,11 @@
  * Misma firma que `sky/kit.tsx` salvo: `Mark` y `AiMark` ya no traen un tamaño
  * por defecto en `className` (sin clase de tamaño, el CSS les da 1.5rem), y
  * `AiMark` tiene versión plana (`mono`).
+ *
+ * `className` se SUMA a la clase base en las tres piezas (`vn-mark`, `vn-ai` o
+ * `vn-ai-mono`, `vn-wordmark`); en sky `Mark` la sustituía. Una utilidad de tamaño
+ * del consumidor gana a los 1.5rem de la base porque la hoja de Ventana se importa
+ * en `@layer components`.
  */
 import { MARK, MARK_COLORS, type MarkTone } from "./mark";
 import { AI_MARK, spectrumGradient } from "./ai-mark";
@@ -16,7 +21,7 @@ export function Mark({ className, tone = "night" }: { className?: string; tone?:
 	const c = MARK_COLORS[tone];
 	const { back: b, front: f } = MARK;
 	return (
-		<svg viewBox={MARK.viewBox} className={className ?? "vn-mark"} aria-hidden="true">
+		<svg viewBox={MARK.viewBox} className={["vn-mark", className].filter(Boolean).join(" ")} aria-hidden="true">
 			<rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} fill={c} opacity={b.opacity[tone]} />
 			<rect x={f.x} y={f.y} width={f.w} height={f.h} rx={f.rx} fill={c} />
 		</svg>
@@ -47,7 +52,7 @@ export function AiMark({
 		const c = MARK_COLORS[tone];
 		const { core, ring } = AI_MARK;
 		return (
-			<svg viewBox={AI_MARK.viewBox} className={className || "vn-ai-mono"} aria-hidden="true">
+			<svg viewBox={AI_MARK.viewBox} className={["vn-ai-mono", className].filter(Boolean).join(" ")} aria-hidden="true">
 				<circle cx={12} cy={12} r={(ring.inner + ring.outer) / 2} fill="none" stroke={c} strokeWidth={ring.outer - ring.inner} opacity={AI_MARK.mono.opacity[tone]} />
 				<circle cx={12} cy={12} r={core.r} fill={c} />
 			</svg>

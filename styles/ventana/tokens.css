@@ -67,10 +67,9 @@
 	 * Filete. `--vn-rim-light` son los tres colores del borde del vidrio (arriba,
 	 * lados, abajo): la luz cae desde arriba, así que el canto de arriba brilla, los
 	 * lados casi no y el de abajo recoge un reflejo. `--vn-rim-top` es el filete
-	 * entero cuando una pieza lo sube (al pasar el puntero) y `--vn-rim` el filete
-	 * parejo de lo que no es vidrio.
+	 * entero cuando una pieza lo sube (al pasar el puntero). Lo que no es vidrio
+	 * usa `--vn-line` o `--vn-hair`.
 	 */
-	--vn-rim: rgba(255, 255, 255, 0.22);
 	--vn-rim-top: rgba(255, 255, 255, 0.45);
 	--vn-rim-light: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.14) rgba(255, 255, 255, 0.22);
 	/* La línea de luz por dentro del borde de arriba (1px: nunca queda bajo el texto) */

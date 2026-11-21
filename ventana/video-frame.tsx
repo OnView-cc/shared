@@ -7,6 +7,13 @@
  * El envoltorio es posicionamiento decorativo de texto real: no se oculta a los
  * lectores de pantalla. El formato es una clase (`vn-frame--9x16`...): el
  * aspect-ratio vive en `styles/ventana/content.css`. El marco es sólido.
+ *
+ * Tamaño: el marco necesita un ancho definido (o un alto definido, y el formato da
+ * el otro lado). Es contenedor de ancho (`container-type: inline-size`, para que el
+ * rótulo escale con él), y un contenedor así no toma el ancho de su contenido: un
+ * marco que sólo se dimensiona por lo de dentro (en una fila flexible sin ancho, en
+ * una celda `auto`, flotando) se queda en 0. Dale `className` con un ancho, o mételo
+ * en algo que lo estire.
  */
 import type { CSSProperties, ReactElement, ReactNode } from "react";
 

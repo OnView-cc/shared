@@ -43,11 +43,12 @@ function mount(node: React.ReactNode) {
 afterEach(unmount);
 
 describe("Mark", () => {
-	it("pinta los dos marcos con el color del tono, oculta a lectores, y className en el svg", () => {
+	it("pinta los dos marcos con el color del tono, oculta a lectores, y className se suma a vn-mark en el svg", () => {
 		const svg = mount(<Mark className="size-8" tone="paper" />);
 		expect(svg.tagName.toLowerCase()).toBe("svg");
 		expect(svg.getAttribute("aria-hidden")).toBe("true");
-		expect(svg.getAttribute("class")).toBe("size-8");
+		// Se suma, no sustituye: como AiMark y Wordmark (la utilidad del consumidor gana porque Ventana va en una capa)
+		expect(svg.getAttribute("class")).toBe("vn-mark size-8");
 		const rects = svg.querySelectorAll("rect");
 		expect(rects).toHaveLength(2);
 		rects.forEach((r) => expect(r.getAttribute("fill")).toBe(MARK_COLORS.paper));
@@ -66,6 +67,14 @@ describe("AiMark", () => {
 		expect(el.children[0].classList.contains("vn-ai__ring")).toBe(true);
 		expect(el.children[1].classList.contains("vn-ai__core")).toBe(true);
 		expect(el.getAttribute("style")).toMatch(/--vn-ai-spectrum:\s*conic-gradient\(/);
+	});
+
+	it("el plano (mono) suma className a vn-ai-mono, como el de color", () => {
+		expect(mount(<AiMark mono className="size-6" />).getAttribute("class")).toBe("vn-ai-mono size-6");
+		unmount();
+		expect(mount(<AiMark mono />).getAttribute("class")).toBe("vn-ai-mono");
+		unmount();
+		expect(mount(<Mark />).getAttribute("class")).toBe("vn-mark");
 	});
 
 	it("thinking añade vn-ai--thinking", () => {
