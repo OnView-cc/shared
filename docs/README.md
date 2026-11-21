@@ -183,7 +183,7 @@ inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (54), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (89), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -238,6 +238,41 @@ Módulos de las carpetas publicadas (54), con la primera línea de su comentario
 | [`ui/tabs.tsx`](../ui/tabs.tsx) | Las pestañas son el riel de páginas del mundo: los destinos en negrita sobre un filete fino, el actual en tinta con la barra de 3px en el color de la línea que se viaja. |
 | [`ui/textarea.tsx`](../ui/textarea.tsx) | El campo de varias líneas, con el trazo del mundo; lo mide su `rows`. |
 | [`ui/tooltip.tsx`](../ui/tooltip.tsx) | La nota al pie de un control: tinta sobre papel, en el corte condensado, sin flecha ni radio. |
+| [`ventana/ai-mark.ts`](../ventana/ai-mark.ts) | Iris, la IA de OnView en el mundo Ventana. |
+| [`ventana/button.test.tsx`](../ventana/button.test.tsx) | Botones de Ventana: etiqueta o enlace según haya `href`, deshabilitado, nombre accesible del botón de ícono y la pulsación común. |
+| [`ventana/button.tsx`](../ventana/button.tsx) | Botones en cápsula de Ventana. |
+| [`ventana/chip.test.tsx`](../ventana/chip.test.tsx) | Chip y StateChip de Ventana: span o botón según haya `onSelect`, aspa propia que no dispara la selección, ni un botón dentro de otro, y los materiales (sólido sin… |
+| [`ventana/chip.tsx`](../ventana/chip.tsx) | Chip y StateChip de Ventana. |
+| [`ventana/content.test.tsx`](../ventana/content.test.tsx) | Piezas sólidas de contenido de Ventana: Section, Row, Skeleton, Alert, Status, Tabs, Progress, Accordion y Monogram. |
+| [`ventana/content.tsx`](../ventana/content.tsx) | Las piezas sólidas de contenido de Ventana: Section, Row, Skeleton, Alert, Status, Tabs, Progress, Accordion y Monogram. |
+| [`ventana/field.test.tsx`](../ventana/field.test.tsx) | Campos de Ventana: etiqueta enlazada, ayuda y error accesibles, cuenta de caracteres y el alto de TextArea, que crece con el texto hasta `maxRows`. |
+| [`ventana/field.tsx`](../ventana/field.tsx) | Campos de Ventana: de una línea (`TextField`) y de varias (`TextArea`). |
+| [`ventana/glass-contrast.test.ts`](../ventana/glass-contrast.test.ts) | La cuenta del contraste sobre vidrio (`glass-contrast.ts`): la garantía del ahumado dicha con la función, los techos del luminoso como frontera exacta (con su holgura),… |
+| [`ventana/glass-contrast.ts`](../ventana/glass-contrast.ts) | La cuenta del contraste sobre el vidrio de Ventana: dado el color que hay detrás, qué color queda bajo el texto y cuánto contrasta la tinta con él. |
+| [`ventana/glass.test.tsx`](../ventana/glass.test.tsx) | Vidrio, scrim y brillo de Ventana: las clases que pinta cada pieza y lo que pasa con lo que sobra (más de tres colores) o falta (ninguno). |
+| [`ventana/glass.tsx`](../ventana/glass.tsx) | Vidrio, scrim y brillo de Ventana. |
+| [`ventana/mark.test.ts`](../ventana/mark.test.ts) | Las marcas de Ventana como datos: «Dos capas» (OnView) y «El prisma» (Iris). |
+| [`ventana/mark.ts`](../ventana/mark.ts) | La marca de OnView en el mundo Ventana, «Dos capas», como datos: **dos marcos verticales 9:16 superpuestos**, el video (atrás, tenue) y el vidrio que flota encima… |
+| [`ventana/marks.test.tsx`](../ventana/marks.test.tsx) | Mark, AiMark y Wordmark de Ventana. |
+| [`ventana/marks.tsx`](../ventana/marks.tsx) | Las piezas de marca del mundo Ventana: la marca de OnView («Dos capas»), el símbolo de Iris («El prisma») y el logotipo. |
+| [`ventana/nav-bar.test.tsx`](../ventana/nav-bar.test.tsx) | Barra de navegación de Ventana: cápsula de vidrio fino con los enlaces en línea desde 48rem y, por debajo, un botón de menú que abre una hoja de vidrio grueso desde… |
+| [`ventana/nav-bar.tsx`](../ventana/nav-bar.tsx) | La barra de navegación de Ventana: una cápsula de vidrio fino que flota. |
+| [`ventana/overlay.test.tsx`](../ventana/overlay.test.tsx) | Menú, popover y tooltip de Ventana sobre Radix: contenido dentro de `.vn`, vidrio grueso en el panel (nunca en las filas), teclado, ítems apagados, separador, nombre… |
+| [`ventana/overlay.tsx`](../ventana/overlay.tsx) | Lo que flota en Ventana, sobre Radix: `Menu` (acciones de un disparador), `Popover` (un panel con contenido propio) y `Tooltip` (una frase corta). |
+| [`ventana/portal-host.ts`](../ventana/portal-host.ts) | Dónde montan sus paneles las piezas de Radix de Ventana (`Select`, `Menu`, `Popover`, `Tooltip`). |
+| [`ventana/segmented.test.tsx`](../ventana/segmented.test.tsx) | Segmentado de Ventana: radiogroup con tabindex móvil, flechas, Inicio y Fin, pulgar de vidrio medido del botón elegido, sin animar al primer pintado y quieto con… |
+| [`ventana/segmented.tsx`](../ventana/segmented.tsx) | Control segmentado de Ventana. |
+| [`ventana/select.test.tsx`](../ventana/select.test.tsx) | Desplegable de Ventana sobre Radix: nombre accesible, texto del disparador, lista montada dentro de `.vn`, teclado, opciones apagadas y valor vacío. |
+| [`ventana/select.tsx`](../ventana/select.tsx) | El desplegable de Ventana, sobre Radix: el disparador es un campo sólido (`variant="field"`) o una cápsula sólida (`variant="chip"`), y la lista es un panel de vidrio… |
+| [`ventana/sheet.test.tsx`](../ventana/sheet.test.tsx) | Hoja y avisos de Ventana: `<dialog>` nativo (abrir, cerrar, nombre, Escape, clic fuera, foco) y `Toaster` sobre sonner con las clases de vidrio del sistema. |
+| [`ventana/sheet.tsx`](../ventana/sheet.tsx) | La hoja de Ventana, sobre el `<dialog>` nativo: el sistema ya atrapa el foco, lo devuelve al cerrar y sabe de Escape. |
+| [`ventana/springs.test.ts`](../ventana/springs.test.ts) | Muelles de Ventana: la curva se calcula en `springs.ts` y `npm run springs` la escribe como `linear()` en `styles/ventana/motion.css` (eso lo prueba… |
+| [`ventana/springs.ts`](../ventana/springs.ts) | Muelles de Ventana. |
+| [`ventana/toast.tsx`](../ventana/toast.tsx) | Los avisos de Ventana, sobre sonner, con el mismo juego de iconos que `ui/sonner.tsx`. |
+| [`ventana/toggle.test.tsx`](../ventana/toggle.test.tsx) | Interruptor y casilla de Ventana: teclado, deshabilitado, texto clicable y piezas sólidas. |
+| [`ventana/toggle.tsx`](../ventana/toggle.tsx) | Interruptor y casilla de Ventana, ambos sólidos (nunca vidrio): apagado sobre `--vn-raised`, encendido sobre `--vn-ink` con la perilla o la marca en `--vn-action-ink`. |
+| [`ventana/video-frame.test.tsx`](../ventana/video-frame.test.tsx) | VideoFrame de Ventana: el formato como clase (el aspect-ratio vive en el CSS y lo comprueba tests/ventana-tokens.test.ts), rótulo con su propio scrim dentro del… |
+| [`ventana/video-frame.tsx`](../ventana/video-frame.tsx) | Marco de video de Ventana, con la firma de `VideoFrame` de `sky/feed.tsx`: el medio de borde a borde en su formato, radio de panel y el rótulo abajo a la izquierda. |
 | [`worker/cookies.ts`](../worker/cookies.ts) | Lectura de cookies, y nada más. |
 | [`worker/credit-settle.ts`](../worker/credit-settle.ts) | Cobrar o devolver una reserva de créditos: la mitad del libro de créditos que hace falta en los dos lados. |
 | [`worker/response.ts`](../worker/response.ts) | Las tres respuestas JSON que devuelve cualquier handler de Pages Functions. |
