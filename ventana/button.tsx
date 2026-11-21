@@ -14,6 +14,10 @@ export type ButtonSize = "md" | "sm";
 type BaseProps = {
 	size?: ButtonSize;
 	href?: string;
+	/** Sólo con `href`: van al `<a>` (abrir en otra pestaña, descargar). Sin `href` no se pintan. */
+	target?: string;
+	rel?: string;
+	download?: boolean | string;
 	className?: string;
 	/** Llega al elemento que se pinta (el `<button>`, o el `<a>` si hay `href`). */
 	ref?: Ref<HTMLButtonElement>;
@@ -30,7 +34,7 @@ function glassClasses(variant: ButtonVariant | "clear"): string | undefined {
 }
 
 function render(
-	{ href, className, children, type, disabled, onClick, ...rest }: Omit<BaseProps, "size">,
+	{ href, target, rel, download, className, children, type, disabled, onClick, ...rest }: Omit<BaseProps, "size">,
 	classes: string,
 	shape: "text" | "icon",
 ): ReactElement {
@@ -46,7 +50,7 @@ function render(
 				{content}
 			</Tag>
 		) : (
-			<Tag {...rest} className={cls} href={href} onClick={onClick}>
+			<Tag {...rest} className={cls} href={href} target={target} rel={rel} download={download === true ? "" : download || undefined} onClick={onClick}>
 				{content}
 			</Tag>
 		);

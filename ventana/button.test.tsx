@@ -159,3 +159,37 @@ describe("ref de los botones", () => {
 		expect(b.current?.getAttribute("aria-label")).toBe("Menú");
 	});
 });
+
+describe("enlaces de los botones: target, rel y download", () => {
+	it("Button con href los pasa al <a>", () => {
+		const el = mount(
+			<Button href="/videos/taza.mp4" target="_blank" rel="noopener noreferrer" download="taza.mp4">
+				Descargar
+			</Button>,
+		);
+		expect(el.tagName).toBe("A");
+		expect(el.getAttribute("target")).toBe("_blank");
+		expect(el.getAttribute("rel")).toBe("noopener noreferrer");
+		expect(el.getAttribute("download")).toBe("taza.mp4");
+	});
+
+	it("IconButton con href también, y download sin nombre queda como atributo vacío", () => {
+		const el = mount(
+			<IconButton href="/videos/taza.mp4" label="Descargar" download target="_self">
+				<svg />
+			</IconButton>,
+		);
+		expect(el.getAttribute("download")).toBe("");
+		expect(el.getAttribute("target")).toBe("_self");
+	});
+
+	it("sin href no llegan al <button> (no son atributos de un botón)", () => {
+		const el = mount(
+			<Button target="_blank" rel="noopener" download="x.mp4">
+				Ok
+			</Button>,
+		);
+		expect(el.tagName).toBe("BUTTON");
+		for (const attr of ["target", "rel", "download"]) expect(el.hasAttribute(attr), attr).toBe(false);
+	});
+});

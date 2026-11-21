@@ -321,3 +321,42 @@ describe("TooltipGroup de Ventana", () => {
 		}
 	});
 });
+
+describe("Menu y Popover controlados", () => {
+	it("Popover con open y onOpenChange: abre y cierra cuando lo dice quien lo monta", async () => {
+		const onOpenChange = vi.fn();
+		const node = (open: boolean) => (
+			<Popover trigger={<button data-test="disparador">Detalles</button>} label="Detalles" open={open} onOpenChange={onOpenChange}>
+				<p>Contenido</p>
+			</Popover>
+		);
+		mount(node(false));
+		// Un <button> nativo: el clic es su activación. Pide abrir, pero manda `open`
+		act(() => trigger().click());
+		await flush();
+		expect(onOpenChange).toHaveBeenCalledWith(true);
+		expect(document.querySelector(".vn-popover")).toBeNull();
+		act(() => root!.render(node(true)));
+		await flush();
+		expect(document.querySelector(".vn-popover")).toBeTruthy();
+		act(() => root!.render(node(false)));
+		await flush();
+		expect(document.querySelector(".vn-popover")).toBeNull();
+	});
+
+	it("Menu con open y onOpenChange: abierto desde fuera, sin tocar el disparador, y avisa al cerrarse con Escape", async () => {
+		const onOpenChange = vi.fn();
+		const node = (open: boolean) => <Menu trigger={<button data-test="disparador">Más</button>} label="Acciones" items={items()} open={open} onOpenChange={onOpenChange} />;
+		mount(node(true));
+		await flush();
+		expect(document.querySelector("[role=menu]")).toBeTruthy();
+		key(document.activeElement!, "Escape");
+		await flush();
+		expect(onOpenChange).toHaveBeenCalledWith(false);
+		// Sigue abierto hasta que quien lo monta cambie `open`
+		expect(document.querySelector("[role=menu]")).toBeTruthy();
+		act(() => root!.render(node(false)));
+		await flush();
+		expect(document.querySelector("[role=menu]")).toBeNull();
+	});
+});

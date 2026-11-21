@@ -6,8 +6,14 @@
  * contents">` y crecen desde su disparador (el `transform-origin` lo da Radix).
  *
  * El disparador es el elemento que se pasa (`asChild`): ninguna pieza lo envuelve.
- * Teclado, foco, Escape y lector de pantalla los trae Radix. Todo texto visible
- * llega por props.
+ * Radix le pasa un `ref` y sus props (`onClick`, `aria-expanded`, `data-state`...),
+ * así que tiene que ser algo que acepte un `ref` y reparta sus props en el elemento
+ * que se pinta: un `Button`, un `IconButton` o un elemento nativo (`<button>`,
+ * `<a>`). Un `Chip` NO sirve (no reenvía el `ref` ni las props). Teclado, foco,
+ * Escape y lector de pantalla los trae Radix. Todo texto visible llega por props.
+ *
+ * `Menu` y `Popover` se pueden controlar desde fuera con `open` y `onOpenChange`
+ * (van tal cual a Radix); sin ellos, se abren y cierran solos.
  *
  * Materiales: sólo flota el panel. Las filas del menú son sólidas por diseño:
  * pintan su propio resaltado sobre el vidrio y nunca llevan `vn-glass`.
@@ -43,16 +49,22 @@ export function Menu({
 	label,
 	items,
 	align = "start",
+	open,
+	onOpenChange,
 }: {
+	/** Un `Button`, un `IconButton` o un elemento nativo: algo que acepte `ref` y reparta sus props (un `Chip` no). */
 	trigger: ReactElement;
 	/** El nombre accesible del menú (el consumidor lo saca de su diccionario). */
 	label: string;
 	items: (MenuItem | "separator")[];
 	align?: "start" | "end";
+	/** Abierto o cerrado desde fuera (con `onOpenChange`); sin él, el menú se lleva solo. */
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 }) {
 	const host = usePortalHost();
 	return (
-		<M.Root>
+		<M.Root open={open} onOpenChange={onOpenChange}>
 			<M.Trigger asChild>{trigger}</M.Trigger>
 			<M.Portal container={host}>
 				<div className="vn" style={{ display: "contents" }}>
@@ -82,17 +94,23 @@ export function Popover({
 	children,
 	side = "bottom",
 	align = "center",
+	open,
+	onOpenChange,
 }: {
+	/** Un `Button`, un `IconButton` o un elemento nativo: algo que acepte `ref` y reparta sus props (un `Chip` no). */
 	trigger: ReactElement;
 	/** El nombre accesible del panel. */
 	label: string;
 	children: ReactNode;
 	side?: "top" | "bottom";
 	align?: "start" | "center" | "end";
+	/** Abierto o cerrado desde fuera (con `onOpenChange`); sin él, el panel se lleva solo. */
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 }) {
 	const host = usePortalHost();
 	return (
-		<P.Root>
+		<P.Root open={open} onOpenChange={onOpenChange}>
 			<P.Trigger asChild>{trigger}</P.Trigger>
 			<P.Portal container={host}>
 				<div className="vn" style={{ display: "contents" }}>
@@ -124,6 +142,7 @@ export function Tooltip({
 }: {
 	/** La frase corta; Radix la liga al disparador con `aria-describedby`. */
 	label: ReactNode;
+	/** El disparador: un `Button`, un `IconButton` o un elemento nativo (un `Chip` no). */
 	children: ReactElement;
 	side?: "top" | "bottom" | "left" | "right";
 }) {
