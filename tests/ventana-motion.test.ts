@@ -6,7 +6,9 @@ import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { SPRINGS, springLinear } from "../ventana/springs";
 
-const css = readFileSync(new URL("../styles/ventana/motion.css", import.meta.url), "utf8");
+// Los finales de línea se normalizan: con core.autocrlf el árbol de trabajo puede venir con CRLF.
+const lf = (text: string) => text.replace(/\r\n/g, "\n");
+const css = lf(readFileSync(new URL("../styles/ventana/motion.css", import.meta.url), "utf8"));
 
 describe("motion.css de Ventana", () => {
 	it("está al día con springs.ts", () => {
@@ -61,7 +63,7 @@ describe("motion.css de Ventana", () => {
 		const dir = new URL("../styles/ventana/", import.meta.url);
 		const others = readdirSync(dir)
 			.filter((f) => f.endsWith(".css") && f !== "motion.css")
-			.map((f) => readFileSync(new URL(f, dir), "utf8").replace(/\/\*[\s\S]*?\*\//g, ""));
+			.map((f) => lf(readFileSync(new URL(f, dir), "utf8")).replace(/\/\*[\s\S]*?\*\//g, ""));
 		expect(others.length).toBeGreaterThan(4);
 		for (const sheet of others) expect(sheet).not.toMatch(/vn-arrive/);
 	});

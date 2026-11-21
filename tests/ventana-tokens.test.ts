@@ -31,7 +31,8 @@ import { describe, expect, it } from "vitest";
 import { AI_SPECTRUM } from "../ventana/ai-mark";
 import { GLASS, glassContrast, passesOnGlass, underGlass, type GlassGrade } from "../ventana/glass-contrast";
 
-const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8");
+// Los finales de línea se normalizan: con core.autocrlf el árbol de trabajo puede venir con CRLF.
+const read = (rel: string) => readFileSync(new URL(rel, import.meta.url), "utf8").replace(/\r\n/g, "\n");
 const tokens = read("../styles/ventana/tokens.css");
 const glass = read("../styles/ventana/glass.css");
 const type = read("../styles/ventana/type.css");
