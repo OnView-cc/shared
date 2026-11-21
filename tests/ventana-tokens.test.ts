@@ -1147,7 +1147,7 @@ describe("Ventana hoja y avisos", () => {
 		const mine = all.filter((r) => r.selectors.some((s) => /vn-(sheet|toast)/.test(s) && !/vn-sheet-scrim/.test(s)));
 		expect(mine.length).toBeGreaterThan(8);
 		// Única excepción: la sombra de foco del aviso devuelve la del material por su variable compartida
-		for (const r of mine) expect(r.body.replace(/box-shadow: var\(--vn-glass-elevation\), 0 0 0 2px var\(--vn-ground\);/, ""), r.selectors.join(", ")).not.toMatch(ownedByGlass);
+		for (const r of mine) expect(r.body.replace(/box-shadow: var\(--vn-glass-elevation\), 0 0 0 2px var\(--vn-ground\) !important;/, ""), r.selectors.join(", ")).not.toMatch(ownedByGlass);
 	});
 
 	it("vn-sheet-scrim sólo sale en reglas de ::backdrop y la cortina es un literal rgba(0, 0, 0, 0.5)", () => {
@@ -1208,10 +1208,9 @@ describe("Ventana hoja y avisos", () => {
 		expect(contrast(token("ink")!, thickBehind())).toBeGreaterThanOrEqual(4.5);
 	});
 
-	it("los avisos: título en tinta, descripción en tinta secundaria de vidrio (con la especificidad que gana al tema oscuro de sonner) e icono de error en danger-glass", () => {
+	it("los avisos: título en tinta, descripción en tinta secundaria de vidrio (con !important: gana al tema oscuro de sonner, que no tiene capa) e icono de error en danger-glass", () => {
 		expect(rule(".vn-toast .vn-toast__title")).toMatch(/color: var\(--vn-ink\);/);
-		const desc = all.find((r) => r.selectors.some((s) => s.includes(".vn-toast__desc") && s.startsWith("[data-sonner-toaster][data-sonner-theme]")));
-		expect(desc?.body).toMatch(/color: var\(--vn-ink-2-glass\);/);
+		expect(rule(".vn-toast .vn-toast__desc")).toMatch(/color: var\(--vn-ink-2-glass\) !important;/);
 		expect(rule('.vn-toast[data-type="error"] .vn-toast__icon')).toMatch(/color: var\(--vn-danger-glass\);/);
 		expect(contrast(token("danger-glass")!, thickBehind())).toBeGreaterThanOrEqual(3);
 	});
@@ -1219,7 +1218,64 @@ describe("Ventana hoja y avisos", () => {
 	it("el aviso es vidrio por variable, con el anillo de foco en outline", () => {
 		expect(rule(".vn.vn-toast")).toMatch(/--vn-glass-r: var\(--vn-r-panel\);/);
 		expect(rule(".vn.vn-toast")).toMatch(/--vn-glass-shadow:/);
-		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/outline: 2px solid var\(--vn-ink\);/);
+		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/outline: 2px solid var\(--vn-ink\) !important;/);
+	});
+
+	/*
+	 * Sonner inyecta su hoja SIN capa y la app importa Ventana en `@layer components`:
+	 * una declaración normal sin capa gana a cualquiera con capa, pese a la
+	 * especificidad. Lo que tiene que ganarle va con `!important` (una `!important`
+	 * con capa gana a una normal sin capa, y también si la hoja se importa sin capa).
+	 * La prueba lee la hoja de sonner, toma sus reglas que caen en el aviso, en el
+	 * aviso enfocado y en su descripción sin pasar por `data-styled='true'` (la piel
+	 * que `unstyled` apaga), y cruza sus propiedades con las que pone Ventana ahí.
+	 */
+	it("todo lo que el aviso disputa a la hoja de sonner (sin capa) lleva !important; el ancho pierde a propósito", () => {
+		const sonner = read("../node_modules/sonner/dist/styles.css").replace(/\/\*[\s\S]*?\*\//g, "");
+		const sonnerRules = [...sonner.matchAll(/([^{}]+)\{([^{}]*)\}/g)].flatMap((m) => m[1].split(",").map((s) => ({ selector: s.trim(), body: m[2] })));
+		// La piel (`data-styled`) no existe en `unstyled`; los colores ricos y la inversión los apaga `Toaster` (hay prueba en sheet.test.tsx)
+		const live = sonnerRules.filter((r) => !/data-styled|data-rich-colors|data-invert/.test(r.selector));
+		const props = (rs: { body: string }[]) => new Set(rs.flatMap((r) => declarations(r.body).map(([p]) => p)).filter((p) => !p.startsWith("--")));
+		const sonnerOn = {
+			rest: props(live.filter((r) => /(^|\s)\[data-sonner-toast\](\[[^\]]+\])*$/.test(r.selector))),
+			// Lo que cae en el aviso en reposo también cae en el enfocado (el `outline: none` de sonner, por ejemplo)
+			focus: props(live.filter((r) => /(^|\s)\[data-sonner-toast\](\[[^\]]+\])*(:focus-visible)?$/.test(r.selector))),
+			desc: props(live.filter((r) => /\[data-description\]$/.test(r.selector))),
+		};
+		const oursFor = (selectors: string[]) => everyRule.filter((r) => r.selectors.some((s) => selectors.includes(s)));
+		const ours = {
+			rest: oursFor([".vn", ".vn-glass", ".vn-glass--thick", ".vn-toast", ".vn.vn-toast"]),
+			focus: oursFor([".vn.vn-toast:focus-visible"]),
+			desc: oursFor([".vn-toast .vn-toast__desc"]),
+		};
+		const disputed = (k: keyof typeof ours) => [...props(ours[k])].filter((p) => sonnerOn[k].has(p)).sort();
+		// La lista explícita de lo que se disputa: si sonner o Ventana cambian, esto cambia y se revisa a mano
+		expect(disputed("rest")).toEqual(["width"]);
+		expect(disputed("focus")).toEqual(["box-shadow", "outline"]);
+		expect(disputed("desc")).toEqual(["color"]);
+		const isImportant = (k: keyof typeof ours, prop: string) => ours[k].flatMap((r) => declarations(r.body)).filter(([p]) => p === prop).every(([, v]) => /!important$/.test(v));
+		for (const prop of disputed("focus")) expect(isImportant("focus", prop), `foco: ${prop}`).toBe(true);
+		for (const prop of disputed("desc")) expect(isImportant("desc", prop), `descripción: ${prop}`).toBe(true);
+		// El ancho pierde a propósito contra la regla de sonner para el teléfono (aviso a lo ancho bajo 600px): sin !important
+		expect(rule(".vn-toast")).toMatch(/width: var\(--width\);/);
+		expect(rule(".vn-toast")).not.toMatch(/!important/);
+		// Y ninguna otra regla de Ventana usa !important: es sólo para ganar a una hoja ajena sin capa
+		const important = everyRule.filter((r) => /!important/.test(r.body)).flatMap((r) => r.selectors).sort();
+		expect(important).toEqual([".vn-toast .vn-toast__desc", ".vn.vn-toast:focus-visible"]);
+	});
+
+	it("el botón del aviso corta su etiqueta (sonner no pone el span de la etiqueta) sin perder el área de toque", () => {
+		const body = rule(".vn-toast .vn-btn");
+		// Los puntos suspensivos no valen en una caja flexible: el botón del aviso es un bloque que recorta
+		expect(body).toMatch(/display: block;/);
+		expect(body).toMatch(/min-inline-size: 0;/);
+		expect(body).toMatch(/max-inline-size: 50%;/);
+		expect(body).toMatch(/overflow: clip;/);
+		expect(body).toMatch(/overflow-clip-margin: calc\(\(44px - var\(--vn-btn-h\)\) \/ 2\);/);
+		expect(controls).toMatch(/\n\.vn \.vn-btn \{[^}]*white-space: nowrap;[^}]*text-overflow: ellipsis;/);
+		// overlays.css va después de controls.css: con la misma especificidad, gana al `max-inline-size: 100%` del botón
+		const entry = read("../styles/ventana.css");
+		expect(entry.indexOf("./ventana/overlays.css")).toBeGreaterThan(entry.indexOf("./ventana/controls.css"));
 	});
 
 	it("el aviso bajo unstyled: icono relative con el svg de 1rem, cargador con sus fotogramas, atrás de la pila sin texto y foco con la sombra del material", () => {
@@ -1230,7 +1286,7 @@ describe("Ventana hoja y avisos", () => {
 		const reduced = overlays.slice(overlays.indexOf("@media (prefers-reduced-motion: reduce)", overlays.indexOf("Hoja (`Sheet`)")));
 		expect(reduced.slice(0, reduced.indexOf(".vn.vn-sheet"))).toMatch(/\.vn-toast__spin \{\s*animation: none;/);
 		expect(rule('.vn-toast[data-expanded="false"][data-front="false"] > *')).toMatch(/opacity: 0;/);
-		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/box-shadow: var\(--vn-glass-elevation\), 0 0 0 2px var\(--vn-ground\);/);
+		expect(rule(".vn.vn-toast:focus-visible")).toMatch(/box-shadow: var\(--vn-glass-elevation\), 0 0 0 2px var\(--vn-ground\) !important;/);
 	});
 });
 

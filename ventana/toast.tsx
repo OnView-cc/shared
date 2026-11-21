@@ -4,19 +4,28 @@
  * `.vn`, así que el propio `<li>` lleva `vn vn-toast vn-glass vn-glass--thick`.
  *
  * `unstyled: true` es lo que deja pasar el material. Sin él, sonner pinta cada aviso
- * con `[data-sonner-toast][data-styled="true"]` (0,2,0: fondo, borde, color, radio,
- * sombra, relleno, ancho, tamaño de letra), que pesa más que `.vn-glass` (0,1,0) y
- * se llevaría el vidrio y sus respaldos. Con `unstyled`, `data-styled` es `false` y
- * sonner conserva sólo la mecánica (posición, apilado, transformaciones, gestos); la
- * maqueta y el color los pone `styles/ventana/overlays.css`. Los estilos en línea de
- * sonner son únicamente variables propias (`--index`, `--offset`, `--z-index`...).
- * Los botones de acción y de cancelar reutilizan los botones de Ventana.
+ * con `[data-sonner-toast][data-styled="true"]` (fondo, borde, color, radio, sombra,
+ * relleno, ancho, tamaño de letra) y se llevaría el vidrio y sus respaldos. Con
+ * `unstyled`, `data-styled` es `false` y sonner conserva sólo la mecánica (posición,
+ * apilado, transformaciones, gestos); la maqueta y el color los pone
+ * `styles/ventana/overlays.css`. Los estilos en línea de sonner son únicamente
+ * variables propias (`--index`, `--offset`, `--z-index`...). Los botones de acción y
+ * de cancelar reutilizan los botones de Ventana.
+ *
+ * La hoja de sonner se inyecta SIN capa y Ventana se importa en `@layer components`:
+ * frente a ella la especificidad no cuenta (lo sin capa gana a lo que tiene capa).
+ * Lo poco de sonner que no depende de `data-styled` y cae en lo que Ventana pinta
+ * (el `outline: none` y la sombra del aviso enfocado, el color de la descripción en
+ * el tema oscuro) se gana en `overlays.css` con `!important`; ver su comentario.
  *
  * La opción `closeButton` de sonner no se admite en esta versión: en `unstyled` saldría sin piel
- * y Ventana no tiene todavía un aspa de aviso. Los iconos se dimensionan y giran con el CSS de
- * Ventana (`.vn-toast__icon`), no con clases de Tailwind.
+ * y Ventana no tiene todavía un aspa de aviso. Los colores ricos (`richColors`) tampoco: pintan
+ * fondo y borde sin pasar por `data-styled` y se llevarían el vidrio, así que `Toaster` los
+ * apaga y un aviso no debe pedirlos con `toast(..., { richColors: true })`. Los iconos se
+ * dimensionan y giran con el CSS de Ventana (`.vn-toast__icon`), no con clases de Tailwind.
  *
- * `theme="dark"` va fijo: Ventana es de un solo tema.
+ * `theme="dark"` y `richColors={false}` van fijos, después de las props del consumidor: Ventana
+ * es de un solo tema y nadie los puede cambiar.
  */
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from "lucide-react";
 import type { ReactElement } from "react";
@@ -44,7 +53,6 @@ function mergeClassNames(extra: ClassNames | undefined): ClassNames {
 export function Toaster({ toastOptions, ...props }: ToasterProps): ReactElement {
 	return (
 		<Sonner
-			theme="dark"
 			icons={{
 				success: <CircleCheckIcon />,
 				info: <InfoIcon />,
@@ -52,8 +60,10 @@ export function Toaster({ toastOptions, ...props }: ToasterProps): ReactElement 
 				error: <OctagonXIcon />,
 				loading: <Loader2Icon className="vn-toast__spin" />,
 			}}
-			toastOptions={{ ...toastOptions, unstyled: true, classNames: mergeClassNames(toastOptions?.classNames) }}
 			{...props}
+			theme="dark"
+			richColors={false}
+			toastOptions={{ ...toastOptions, unstyled: true, classNames: mergeClassNames(toastOptions?.classNames) }}
 		/>
 	);
 }

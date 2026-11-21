@@ -226,6 +226,29 @@ describe("Toaster de Ventana", () => {
 		expect(el.querySelector("[data-title]")?.className).toContain("vn-toast__title");
 	});
 
+	it("el tema oscuro y los colores sin `richColors` no se pueden cambiar desde las props", async () => {
+		// Ventana es de un solo tema; los colores ricos pintarían fondo y borde y se llevarían el vidrio
+		mount(<Toaster theme="light" richColors />);
+		await act(async () => {
+			toast.error("Falló");
+			await new Promise((r) => setTimeout(r, 20));
+		});
+		expect(document.querySelector("[data-sonner-toaster]")?.getAttribute("data-sonner-theme")).toBe("dark");
+		expect(document.querySelector("[data-sonner-toast]")?.getAttribute("data-rich-colors")).toBe("false");
+	});
+
+	it("el botón de acción lleva las clases de botón de Ventana, con la etiqueta dentro", async () => {
+		mount(<Toaster />);
+		await act(async () => {
+			toast("Video borrado", { action: { label: "Deshacer el borrado de este video", onClick: () => {} } });
+			await new Promise((r) => setTimeout(r, 20));
+		});
+		const button = document.querySelector<HTMLButtonElement>("[data-sonner-toast] [data-button]")!;
+		for (const c of ["vn-btn", "vn-btn--primary", "vn-btn--sm"]) expect(button.classList.contains(c), c).toBe(true);
+		// El recorte con puntos suspensivos de una etiqueta larga lo prueba tests/ventana-tokens (`.vn-toast .vn-btn`)
+		expect(button.textContent).toBe("Deshacer el borrado de este video");
+	});
+
 	it("la descripción y el icono de un aviso de error llevan las clases del sistema", async () => {
 		mount(<Toaster />);
 		await act(async () => {

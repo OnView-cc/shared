@@ -335,12 +335,22 @@
 
 /*
  * Aviso (`Toaster`): sonner trabaja en modo `unstyled`, así que `data-styled` es
- * `false` y su piel (`[data-sonner-toast][data-styled="true"]`, 0,2,0) no existe: aquí
- * van la maqueta y el color. El material lo pone `vn-glass vn-glass--thick` en el
- * propio `<li>`. El ancho sale de `--width` con un selector de una clase para perder
- * contra la regla móvil de sonner. La descripción gana a la regla del tema oscuro de
- * sonner (`[data-sonner-theme=dark] [data-description]`, 0,3,0) por especificidad.
- * Sonner pone su propia sombra al enfocar un aviso; el foco visible va en `outline`.
+ * `false` y su piel (`[data-sonner-toast][data-styled="true"]`) no existe: aquí van
+ * la maqueta y el color. El material lo pone `vn-glass vn-glass--thick` en el propio
+ * `<li>`.
+ *
+ * La especificidad no decide nada contra sonner: inyecta su hoja SIN capa, y la app
+ * importa Ventana en `@layer components`; una declaración normal sin capa gana a
+ * cualquiera con capa, pese a la especificidad. Lo que tiene que ganarle a sonner
+ * lleva `!important` (una `!important` con capa gana a una normal sin capa, y sigue
+ * valiendo si alguien importa la hoja sin capa). Son tres, y la prueba de tokens
+ * las enumera cruzando las dos hojas: el `outline: none` y la sombra de foco de
+ * `[data-sonner-toast]` (sin ellos el aviso enfocado no tendría anillo y perdería
+ * la sombra del vidrio) y el color de `[data-sonner-theme=dark] [data-description]`.
+ * Nada más de Ventana usa `!important`. El ancho pierde a propósito: sale de
+ * `--width` y la regla de sonner para el teléfono (bajo 600px) lo pone a lo ancho.
+ * Los colores ricos de sonner (`richColors`) pintarían fondo y borde sin
+ * `data-styled`: `Toaster` los apaga y no se admiten por aviso.
  */
 .vn-toast {
 	width: var(--width);
@@ -358,10 +368,11 @@
 	line-height: 1.35;
 }
 .vn.vn-toast:focus-visible {
-	outline: 2px solid var(--vn-ink);
+	/* !important: el `outline: none` y la sombra de foco de sonner no tienen capa (ver arriba) */
+	outline: 2px solid var(--vn-ink) !important;
 	outline-offset: 2px;
-	/* La sombra de foco de sonner (0,2,0) pisaría el vidrio: se devuelve la del material por su variable compartida, con el aro oscuro del foco sobre vidrio */
-	box-shadow: var(--vn-glass-elevation), 0 0 0 2px var(--vn-ground);
+	/* Se devuelve la sombra del material por su variable compartida, con el aro oscuro del foco sobre vidrio */
+	box-shadow: var(--vn-glass-elevation), 0 0 0 2px var(--vn-ground) !important;
 }
 .vn-toast .vn-toast__icon {
 	position: relative;
@@ -404,15 +415,31 @@
 	font-weight: 600;
 	color: var(--vn-ink);
 }
-[data-sonner-toaster][data-sonner-theme] .vn-toast .vn-toast__desc {
+.vn-toast .vn-toast__desc {
 	font-weight: 400;
 	font-size: 0.875rem;
 	line-height: 1.4;
-	color: var(--vn-ink-2-glass);
+	/* !important: el color de la descripción del tema oscuro de sonner no tiene capa (ver arriba) */
+	color: var(--vn-ink-2-glass) !important;
 }
+/*
+ * Los botones del aviso: sonner pone la etiqueta directa en el `<button>`, sin el
+ * `vn-btn__label` que corta con puntos suspensivos. Aquí el propio botón es un
+ * bloque (los puntos suspensivos no valen en una caja flexible), centra la línea
+ * con su interlínea, recorta (`clip`, con margen para que su área de toque de 44px
+ * siga entera) y puede encogerse hasta la mitad del aviso: una etiqueta larga no
+ * lo desborda.
+ */
 .vn-toast .vn-btn {
-	flex: none;
+	display: block;
+	line-height: calc(var(--vn-btn-h) - 2px);
+	text-align: center;
+	flex: 0 1 auto;
 	align-self: center;
+	min-inline-size: 0;
+	max-inline-size: 50%;
+	overflow: clip;
+	overflow-clip-margin: calc((44px - var(--vn-btn-h)) / 2);
 }
 
 /* Movimiento reducido: la hoja sólo cambia de opacidad (sonner ya apaga sus transiciones) */
