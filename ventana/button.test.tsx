@@ -93,10 +93,10 @@ describe("Button", () => {
 	});
 
 	it("el de sólo filete pinta vn-btn--line y no lleva vidrio: es para ir dentro de uno", () => {
-		render(<Button variant="line">Elegir Starter</Button>);
-		const button = host.querySelector("button")!;
-		expect(button.classList.contains("vn-btn--line")).toBe(true);
-		expect(button.className).not.toContain("vn-glass");
+		const el = mount(<Button variant="line">Elegir Starter</Button>);
+		expect(el.tagName).toBe("BUTTON");
+		expect(el.classList.contains("vn-btn--line")).toBe(true);
+		expect(el.className).not.toContain("vn-glass");
 	});
 
 	it.each(["primary", "plain", "danger"] as const)("%s no lleva vidrio", (variant) => {
