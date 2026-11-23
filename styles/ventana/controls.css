@@ -242,8 +242,9 @@
 		box-shadow 140ms ease-out,
 		opacity 140ms ease-out;
 }
+/* El campo es una caja sólida aunque viva dentro de un vidrio: su ejemplo no sigue la reasignación de la secundaria (parecería escrito) */
 .vn .vn-input::placeholder {
-	color: var(--vn-ink-2);
+	color: var(--vn-ink-2-solid);
 }
 .vn .vn-input--area {
 	resize: none;
@@ -626,7 +627,8 @@
 	inset-inline-start: 1px;
 	inline-size: 27px;
 	block-size: 27px;
-	background: var(--vn-ink-2);
+	/* Apagado va sobre su riel sólido: dentro de un vidrio no pasa a tinta (parecería encendido) */
+	background: var(--vn-ink-2-solid);
 	border-radius: var(--vn-r-pill);
 	transition:
 		translate var(--vn-spring-snap-ms) var(--vn-spring-snap),
@@ -809,6 +811,26 @@
 	color: var(--vn-action-ink);
 }
 
+/*
+ * Sólo filete, sin relleno: va dentro de un vidrio, donde un relleno sólido pesa
+ * y uno más claro bajaría el contraste del texto. Elegido, el filete sube a
+ * tinta y se engrosa por dentro (una señal que no es sólo color). Nunca lleva
+ * `vn-glass`.
+ */
+.vn .vn-chip--line {
+	background: transparent;
+	border: 1px solid var(--vn-line);
+	border-radius: var(--vn-r-pill);
+	transition:
+		scale var(--vn-spring-snap-ms) var(--vn-spring-snap),
+		border-color 140ms ease-out,
+		box-shadow 140ms ease-out;
+}
+.vn .vn-chip--line.is-selected {
+	border-color: var(--vn-ink);
+	box-shadow: inset 0 0 0 1px var(--vn-ink);
+}
+
 /* Vidrio fino: pequeño, sombra corta; seleccionado sube el filete a tinta (por variable) */
 .vn .vn-chip--glass {
 	--vn-glass-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
@@ -927,6 +949,9 @@
 	.vn .vn-chip--glass.vn-chip--action:not(.is-selected):hover {
 		--vn-glass-rim: var(--vn-rim-top);
 	}
+	.vn .vn-chip--line.vn-chip--action:not(.is-selected):hover {
+		border-color: var(--vn-rim-top);
+	}
 	.vn .vn-chip__x:hover {
 		background: var(--vn-hair);
 	}
@@ -942,6 +967,11 @@
 			background-color 140ms linear,
 			border-color 140ms linear;
 	}
+	.vn .vn-chip--line {
+		transition:
+			border-color 140ms linear,
+			box-shadow 140ms linear;
+	}
 	.vn .vn-chip__x {
 		transition: background-color 140ms linear;
 	}
@@ -949,7 +979,8 @@
 
 /* Contraste alto: el filete del chip sólido se hace firme */
 @media (prefers-contrast: more) {
-	.vn .vn-chip--solid {
+	.vn .vn-chip--solid,
+	.vn .vn-chip--line {
 		border-color: var(--vn-ink-2);
 	}
 }

@@ -1,6 +1,6 @@
 /** Las marcas de Ventana como datos: «Dos capas» (OnView) y «El prisma» (Iris). Sin Node ni DOM. */
 import { describe, expect, it } from "vitest";
-import { MARK, MARK_COLORS, markSvg } from "./mark";
+import { MARK, MARK_COLORS, markGlassSvg, markSvg } from "./mark";
 import { AI_MARK, AI_NAME, AI_SPECTRUM, aiMarkSvg, spectrumAt } from "./ai-mark";
 
 describe("markSvg «Dos capas»", () => {
@@ -118,5 +118,24 @@ describe("opacidad por tono de las partes translúcidas", () => {
 		expect(markSvg("night")).toContain('opacity="0.42"');
 		expect(aiMarkSvg("paper", { mono: true })).toContain('opacity="0.5"');
 		expect(aiMarkSvg("night", { mono: true })).toContain('opacity="0.4"');
+	});
+});
+
+describe("markGlassSvg, el dibujo de vidrio de «Dos capas»", () => {
+	it("son los dos marcos, el de delante en degradado, a 512 por defecto y sin espectro", () => {
+		const svg = markGlassSvg();
+		expect(svg.match(/<rect /g)).toHaveLength(2);
+		expect(svg.match(/<linearGradient /g)).toHaveLength(1);
+		expect(svg).toContain('width="512" height="512"');
+		expect(svg).toContain(`viewBox="${MARK.viewBox}"`);
+		for (const c of AI_SPECTRUM) expect(svg.toLowerCase()).not.toContain(c);
+		expect(svg).not.toMatch(/<text/);
+	});
+
+	it("respeta el tamaño pedido y la geometría de la marca plana", () => {
+		const svg = markGlassSvg(180);
+		expect(svg).toContain('width="180" height="180"');
+		expect(svg).toContain(`x="${MARK.front.x}" y="${MARK.front.y}"`);
+		expect(svg).toContain(`x="${MARK.back.x}" y="${MARK.back.y}"`);
 	});
 });

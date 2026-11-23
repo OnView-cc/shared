@@ -23,7 +23,7 @@ siguiente). La sección «Airglow» de más abajo es historia del fork. Ver
 `peerDependencies`; cada consumidor las deduplica (`dedupe` en su
 `vite.config.ts`) para que no haya dos React.
 
-## Ventana: el mundo nuevo (v2.8.0, parte 1 de 5)
+## Ventana: el mundo nuevo (v2.8.0, parte 1 de 5; v2.9.0 con lo que pide el sitio)
 
 Un oscuro único, sin color de acento, con vidrio tipo Apple (Liquid Glass). Vive
 en `ventana/` (componentes) y `styles/ventana/` (CSS), junto a Feed vertical
@@ -50,7 +50,15 @@ oscureciendo o con filete, nunca aclarando el relleno bajo el texto. Las piezas
 del sistema dentro de un vidrio (el pie de un campo en una hoja, una pestaña, un
 botón de peligro) no tienen que elegir: cada grado reasigna `--vn-ink-2` y
 `--vn-danger` por cascada (ver `decisiones.md`). Sobre vidrio fino el peligro sólo
-vale para un icono.
+vale para un icono. Lo que se pinta sobre una caja sólida aunque la pieza viva
+dentro de un vidrio (el texto de ejemplo de un campo, el botón del interruptor
+apagado) usa `--vn-ink-2-solid` (#a1a1a6), que ningún vidrio reasigna: así un
+campo vacío no parece escrito.
+
+**Chips dentro de un vidrio.** Un chip sólido dentro de una lámina es una
+píldora casi negra, y uno de vidrio sería un vidrio dentro de otro (vuelve al
+ahumado). Para eso está `Chip tone="line"`: sólo filete, sin relleno; elegido,
+el filete pasa a tinta y engorda, nunca aclara.
 
 **La garantía del luminoso pide que el vidrio vea su fondo.** Un antepasado entre
 el vidrio y el fondo con `opacity` menor que 1, `filter`, `mask`, `clip-path` o
@@ -161,7 +169,7 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 | `Select` | `ventana/select.tsx` | desplegable de vidrio propio, con teclado completo |
 | `Segmented` | `ventana/segmented.tsx` | control segmentado con pulgar que se desliza |
 | `Switch`, `Check` | `ventana/toggle.tsx` | interruptor y casilla |
-| `Chip`, `StateChip` | `ventana/chip.tsx` | chip elegible o etiqueta; etiqueta de estado de una toma |
+| `Chip`, `StateChip` | `ventana/chip.tsx` | chip elegible o etiqueta, en tres tonos (`solid`, `glass` sobre un video, `line` dentro de un vidrio); etiqueta de estado de una toma |
 | `Menu`, `Popover`, `Tooltip`, `TooltipGroup` | `ventana/overlay.tsx` | lo que flota junto a un botón (vidrio grueso, sobre Radix); `Menu` y `Popover` admiten `open` y `onOpenChange` |
 | `PortalHost`, `usePortalHost` | `ventana/portal-host.ts` | el `<dialog>` de la hoja que contiene una pieza, para montar ahí sus paneles de Radix |
 | `Sheet` | `ventana/sheet.tsx` | hoja y diálogo sobre `<dialog>` nativo: sube en el teléfono, escala en escritorio |
@@ -170,7 +178,7 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 | `Section`, `Row`, `Skeleton`, `Alert`, `Status`, `Tabs`, `Progress`, `Accordion`, `Monogram` | `ventana/content.tsx` | lo sólido: contenido sobre el suelo |
 | `VideoFrame` | `ventana/video-frame.tsx` | marco de video 9:16, 1:1 o 16:9 con su rótulo y su propio scrim |
 | `Mark`, `Wordmark`, `AiMark` | `ventana/marks.tsx` | las marcas: OnView («Dos capas») e Iris («El prisma»; pensando, el aro gira) |
-| `MARK`, `markSvg` | `ventana/mark.ts` | la marca de OnView como datos (la usa `onview/scripts/render-brand.mjs`) |
+| `MARK`, `markSvg`, `markGlassSvg` | `ventana/mark.ts` | la marca de OnView como datos (la usa `onview/scripts/render-brand.mjs`): el dibujo plano y el de vidrio, que sólo va grande sobre el casi negro (icono de app, imagen para compartir) |
 | `AI_NAME`, `AI_SPECTRUM`, `AI_MARK`, `aiMarkSvg` | `ventana/ai-mark.ts` | Iris como datos |
 | `GLASS`, `underGlass`, `glassContrast`, `passesOnGlass` | `ventana/glass-contrast.ts` | la cuenta del contraste sobre vidrio |
 | `SPRINGS`, `springLinear` | `ventana/springs.ts` | los muelles; `npm run springs` regenera `styles/ventana/motion.css`, que no se edita a mano |
@@ -187,13 +195,14 @@ ninguna hoja de estilos: el aro se arma en JavaScript desde `AI_SPECTRUM`.
 
 ### La IA se llama Iris
 
-`AI_NAME = "Iris"` en `ventana/ai-mark.ts`. `sky/ai-mark.ts` sigue diciendo
-**Lumen** hasta la parte 2, que cambia de una vez lo que la gente lee (el
-diccionario, `/lumen` a `/iris`, los legales, los correos, las etiquetas del
-admin y las instrucciones con que la IA se presenta). Tablas, columnas,
-constantes y nombres de archivo no se renombran. Antes de ese cambio, la voz de
-narración del catálogo que también se llama «Iris» tiene que cambiar de nombre
-(decisión pendiente del usuario; ver `pendiente.md`).
+`AI_NAME = "Iris"` en `ventana/ai-mark.ts` y, desde la v2.9.0, también en
+`sky/ai-mark.ts` (la app sigue en Feed vertical pero ya dice el nombre nuevo).
+Se llamó Lumen hasta el 2026-11-20. La parte 2 cambia de una vez lo que la gente
+lee (el diccionario, `/lumen` a `/iris`, los legales, los correos, las etiquetas
+del admin y las instrucciones con que la IA se presenta). Tablas, columnas,
+constantes y nombres de archivo no se renombran: por dentro sigue `lumen`. La
+voz de narración del catálogo que también se llamaba «Iris» cambia de nombre con
+ese mismo despliegue (ver `pendiente.md`).
 
 ## Airglow: el mundo de OnView
 
@@ -242,8 +251,8 @@ Módulos de las carpetas publicadas (89), con la primera línea de su comentario
 | [`lib/use-copy.ts`](../lib/use-copy.ts) | Copiar, hecho una sola vez para todo el proyecto: la misma implementación que partners y developers, la que usa `CopyTicket` en `console.tsx`. |
 | [`lib/utils.ts`](../lib/utils.ts) | `cn` — juntar clases de Tailwind sin que se peleen entre ellas. |
 | [`lib/vite-env.d.ts`](../lib/vite-env.d.ts) | Las variables de build que lee el paquete (`import.meta.env`). |
-| [`sky/ai-mark.test.ts`](../sky/ai-mark.test.ts) | Lumen, la IA de OnView: su nombre y su símbolo, un punto blanco con halo. |
-| [`sky/ai-mark.ts`](../sky/ai-mark.ts) | Lumen, la IA de OnView (nombre elegido por el usuario el 2026-11-09): la que escribe el guion y genera las tomas. |
+| [`sky/ai-mark.test.ts`](../sky/ai-mark.test.ts) | Iris, la IA de OnView (antes Lumen): su nombre y su símbolo en Feed vertical, un punto blanco con halo. |
+| [`sky/ai-mark.ts`](../sky/ai-mark.ts) | Iris, la IA de OnView: la que escribe el guion y arma el video. |
 | [`sky/console-frame.tsx`](../sky/console-frame.tsx) | El marco de consola del admin, en el mundo «Feed vertical»: la forma de una app de trabajo, la misma que el área con sesión de onview. |
 | [`sky/console.tsx`](../sky/console.tsx) | Las piezas de la consola, en el mundo «Feed vertical» (2026-11-09). |
 | [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento del mundo: mientras se ve una página de OnView, `<html>` y la barra del navegador llevan el casi negro del mundo Feed vertical, y al salir vuelven a lo que… |
@@ -251,7 +260,7 @@ Módulos de las carpetas publicadas (89), con la primera línea de su comentario
 | [`sky/feed.test.tsx`](../sky/feed.test.tsx) | Las piezas del mundo Feed vertical (spec §3.5 y §4): el marco de video en su formato, la lámina sin imagen, la etiqueta de estado, las barras de avance, el botón del… |
 | [`sky/feed.tsx`](../sky/feed.tsx) | Las piezas del mundo Feed vertical (subproyecto 8, spec §3.5 y §4): el marco de video en su formato, la lámina sin imagen, la etiqueta de estado de una toma, las barras… |
 | [`sky/hooks.ts`](../sky/hooks.ts) | Hooks de scroll y de montaje contra los que se animan las páginas de Clear Sky, y los tres que usan las piezas de consola de `console.tsx` (`useFlash`, `useDismiss`,… |
-| [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas de marca del mundo de OnView («Feed vertical»): la marca, el símbolo de Lumen, el logotipo, el botón como enlace y la flecha. |
+| [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas de marca del mundo de OnView («Feed vertical»): la marca, el símbolo de Iris, el logotipo, el botón como enlace y la flecha. |
 | [`sky/mark.test.ts`](../sky/mark.test.ts) | La marca del mundo Feed vertical: un marco 9:16 redondeado con el rótulo macizo en su tercio bajo. |
 | [`sky/mark.ts`](../sky/mark.ts) | La marca de OnView en el mundo Feed vertical, como datos: **un marco vertical 9:16 redondeado con el rótulo macizo en su tercio bajo**, el texto que va abajo a la… |
 | [`sky/page.tsx`](../sky/page.tsx) | Las piezas de página del mundo de OnView («Feed vertical»), las del sitio de onview: la cabecera de página, el encabezado de sección, el aro de icono, el recorrido en… |

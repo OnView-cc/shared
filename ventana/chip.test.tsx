@@ -140,6 +140,19 @@ describe("Chip", () => {
 		expect(el.querySelectorAll(".vn-glass")).toHaveLength(0);
 	});
 
+	it("el tono de sólo filete pinta vn-chip--line, se anuncia elegido y nunca lleva vn-glass ni relleno sólido", () => {
+		const el = mount(
+			<Chip tone="line" selected onSelect={() => {}}>
+				9:16
+			</Chip>,
+		);
+		expect(el.tagName).toBe("BUTTON");
+		expect(el.classList.contains("vn-chip--line")).toBe(true);
+		expect(el.classList.contains("vn-chip--solid")).toBe(false);
+		expect(el.getAttribute("aria-pressed")).toBe("true");
+		expect(host!.querySelector(".vn-glass")).toBeNull();
+	});
+
 	it("seleccionado queda marcado para el CSS", () => {
 		expect(mount(<Chip selected>x</Chip>).classList.contains("is-selected")).toBe(true);
 		expect(mount(<Chip>x</Chip>).classList.contains("is-selected")).toBe(false);

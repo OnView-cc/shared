@@ -12,6 +12,14 @@
 	--vn-ink: #f5f5f7;
 	--vn-ink-2: #a1a1a6;
 	--vn-ink-2-glass: #c7c7cc;
+	/*
+	 * La secundaria de lo que se pinta SOBRE UNA CAJA SÓLIDA aunque la pieza esté
+	 * dentro de un vidrio: el texto de ejemplo de un campo y el botón del
+	 * interruptor apagado. Dentro de un vidrio `--vn-ink-2` se reasigna (a la del
+	 * vidrio, o a la tinta en fino y en zona luminosa); esta no la toca nadie, así
+	 * que un campo vacío no parece escrito.
+	 */
+	--vn-ink-2-solid: #a1a1a6;
 	--vn-ink-3: #6e6e73;
 
 	/* Acción */

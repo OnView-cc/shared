@@ -7,8 +7,8 @@
  * movimiento reducido se queda quieto.
  *
  * Regla de uso: «Iris» cuando el sujeto escribe, propone o genera; «OnView» para
- * la cuenta, el plan, el cobro y los legales. `sky/ai-mark.ts` sigue diciendo
- * Lumen hasta que el resto del proyecto pase a Ventana.
+ * la cuenta, el plan, el cobro y los legales. `sky/ai-mark.ts` dice el mismo nombre desde
+ * la v2.9.0 (antes, Lumen); lo que cambia entre los dos mundos es el símbolo.
  *
  * Geometría pura en un lienzo de 24, sin DOM ni React. Se carga también desde un
  * script de Node (tipos quitados), así que no importa nada: los dos colores del

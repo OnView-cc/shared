@@ -9,7 +9,10 @@
  * texto largo baja de línea.
  * `tone="solid"` (por defecto) es sólido y nunca lleva `vn-glass`. `tone="glass"`
  * compone `vn-glass vn-glass--thin` (para lo que flota sobre un video) y sólo lo
- * ajusta por variables; lleva texto primario, nunca secundario.
+ * ajusta por variables; lleva texto primario, nunca secundario. `tone="line"` es
+ * sólo filete, sin relleno: para ir DENTRO de un vidrio (la caja de la idea, una
+ * lámina), donde un chip sólido es una píldora casi negra y uno de vidrio sería
+ * un vidrio dentro de otro. Elegido, sube y engrosa el filete; nunca aclara.
  *
  * StateChip: la etiqueta de estado de una toma, con la firma de `StateTag` de
  * `sky/feed.tsx`. Borrador con filete, generando en tinta maciza con su cuenta,
@@ -21,6 +24,13 @@ import { X } from "lucide-react";
 export type TakeState = "draft" | "generating" | "ready" | "failed";
 
 const join = (...parts: Array<string | false | undefined>) => parts.filter(Boolean).join(" ");
+
+/** Clases por tono; sólo `glass` es vidrio, y lo compone en vez de repetirlo. */
+const TONE_CLASS = {
+	solid: "vn-chip--solid",
+	glass: "vn-chip--glass vn-glass vn-glass--thin",
+	line: "vn-chip--line",
+} as const;
 
 export function Chip({
 	children,
@@ -39,14 +49,14 @@ export function Chip({
 	onRemove?: () => void;
 	/** Nombre accesible del aspa; obligatorio con `onRemove`. */
 	removeLabel?: string;
-	tone?: "glass" | "solid";
+	tone?: "glass" | "solid" | "line";
 	className?: string;
 }): ReactElement {
 	const selectable = onSelect !== undefined;
 	const removable = onRemove !== undefined;
 	const surface = join(
 		"vn-chip",
-		tone === "glass" ? "vn-chip--glass vn-glass vn-glass--thin" : "vn-chip--solid",
+		TONE_CLASS[tone],
 		selectable && "vn-chip--action",
 		removable && "vn-chip--removable",
 		selectable && removable && "vn-chip--split",

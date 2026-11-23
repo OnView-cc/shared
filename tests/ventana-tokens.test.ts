@@ -609,6 +609,8 @@ describe("Ventana controles", () => {
 		"vn-check__box",
 		// Chip sólido y sus botones internos (transparentes sobre el chip, nunca llevan vn-glass; hay prueba de marcado)
 		"vn-chip--solid",
+		// Chip de sólo filete: transparente y con su filete, para ir dentro de un vidrio; nunca lleva vn-glass (hay prueba de marcado)
+		"vn-chip--line",
 		"vn-chip__main",
 		"vn-chip__x",
 		// Etiquetas de estado sólidas (la «lista» es vidrio compuesto y NO va aquí) y marco de video
@@ -1602,5 +1604,30 @@ describe("Ventana: las marcas", () => {
 		expect(body).toMatch(/font-weight: 650;/);
 		expect(body).toMatch(/letter-spacing: -0\.02em;/);
 		expect(body).toMatch(/min-block-size: 44px;/);
+	});
+});
+
+describe("Ventana v2.9.0: lo que pide el sitio", () => {
+	it("la tinta secundaria de lo sólido tiene su token, y ni el vidrio ni una zona luminosa la reasignan", () => {
+		expect(token("ink-2-solid")).toBe("#a1a1a6");
+		expect(contrast(token("ink-2-solid")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);
+		expect(glass).not.toMatch(/--vn-ink-2-solid\s*:/);
+		// Se define una sola vez, en la raíz: nadie la vuelve a declarar
+		expect(allVentanaCss.join("\n").match(/--vn-ink-2-solid\s*:/g)).toHaveLength(1);
+	});
+
+	it("el texto de ejemplo del campo y el botón del interruptor apagado no cambian dentro de un vidrio", () => {
+		expect(ctl(".vn .vn-input::placeholder")).toMatch(/color: var\(--vn-ink-2-solid\);/);
+		expect(ctl(".vn .vn-switch__knob")).toMatch(/background: var\(--vn-ink-2-solid\);/);
+	});
+
+	it("el chip de sólo filete no tiene relleno; elegido, sube el filete a tinta y lo engrosa, nunca aclara", () => {
+		const line = ctl(".vn .vn-chip--line");
+		expect(line).toMatch(/background: transparent;/);
+		expect(line).toMatch(/border: 1px solid var\(--vn-line\);/);
+		const selected = ctl(".vn .vn-chip--line.is-selected");
+		expect(selected).toMatch(/border-color: var\(--vn-ink\);/);
+		expect(selected).toMatch(/box-shadow: inset 0 0 0 1px var\(--vn-ink\);/);
+		expect(selected).not.toMatch(/background/);
 	});
 });

@@ -1,6 +1,6 @@
 /**
  * Las piezas de marca del mundo de OnView («Feed vertical»): la marca, el
- * símbolo de Lumen, el logotipo, el botón como enlace y la flecha. La
+ * símbolo de Iris, el logotipo, el botón como enlace y la flecha. La
  * geometría vive una sola vez en `mark.ts` y `ai-mark.ts`.
  */
 import { ArrowRight } from "lucide-react";
@@ -20,7 +20,7 @@ export function Mark({ className = "size-6", tone = "night" }: { className?: str
 	);
 }
 
-/** Lumen, la IA: un punto blanco con halo. `thinking`: el halo late mientras piensa (nunca con movimiento reducido). */
+/** Iris, la IA: un punto blanco con halo. `thinking`: el halo late mientras piensa (nunca con movimiento reducido). */
 export function AiMark({ className = "size-6", tone = "night", thinking = false }: { className?: string; tone?: MarkTone; thinking?: boolean }) {
 	const reduced = useReducedMotion();
 	const c = MARK_COLORS[tone];

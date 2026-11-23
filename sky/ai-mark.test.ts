@@ -1,10 +1,10 @@
-/** Lumen, la IA de OnView: su nombre y su símbolo, un punto blanco con halo. */
+/** Iris, la IA de OnView (antes Lumen): su nombre y su símbolo en Feed vertical, un punto blanco con halo. */
 import { describe, expect, it } from "vitest";
 import { AI_MARK, AI_NAME, aiMarkSvg } from "./ai-mark";
 
-describe("Lumen", () => {
-	it("is called Lumen in every language", () => {
-		expect(AI_NAME).toBe("Lumen");
+describe("Iris", () => {
+	it("is called Iris in every language", () => {
+		expect(AI_NAME).toBe("Iris");
 	});
 
 	it("draws a solid dot inside a faint halo ring", () => {

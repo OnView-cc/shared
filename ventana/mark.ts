@@ -41,3 +41,24 @@ export function markSvg(tone: MarkTone, size = 32): string {
 		`</svg>`
 	);
 }
+
+/**
+ * El dibujo de vidrio de la marca, para donde se ve grande sobre el casi negro
+ * (icono de app, imagen para compartir): la misma geometría, con el marco de
+ * atrás translúcido y fileteado (el video) y el de delante en un degradado de
+ * blanco a blanco al 78 % (el vidrio, con la luz arriba). Sólo existe en tono
+ * de noche y sobre fondo transparente; en pequeño y sobre papel va la plana.
+ */
+export function markGlassSvg(size = 512): string {
+	const c = MARK_COLORS.night;
+	const { back: b, front: f } = MARK;
+	return (
+		`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="${MARK.viewBox}">` +
+		`<defs><linearGradient id="vn-mark-glass" x1="0" y1="0" x2="0" y2="1">` +
+		`<stop offset="0" stop-color="${c}"/><stop offset="1" stop-color="${c}" stop-opacity="0.78"/>` +
+		`</linearGradient></defs>` +
+		`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="${b.rx}" fill="${c}" fill-opacity="0.3" stroke="${c}" stroke-opacity="0.5" stroke-width="0.75"/>` +
+		`<rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}" rx="${f.rx}" fill="url(#vn-mark-glass)"/>` +
+		`</svg>`
+	);
+}
