@@ -181,4 +181,6 @@ El sitio se compone sólo con piezas del sistema; lo que le faltaba se añade aq
 - **`markGlassSvg`.** El segundo dibujo de «Dos capas» que pedía la spec (§5.1): la misma geometría, el marco de atrás translúcido con su filete y el de delante en un degradado vertical de blanco a blanco al 78 %. Sólo en tono de noche y sobre transparente, para donde la marca se ve grande (icono de app, imagen para compartir); en pequeño y sobre papel sigue la plana, que es la que se lee a 16px.
 - **La IA se llama Iris también en `sky/ai-mark.ts`.** La app sigue en Feed vertical hasta las partes 3 y 4, pero el nombre visible cambia de una vez con la parte 2; el símbolo de cada mundo no cambia. Por dentro (archivos, constantes, tablas) sigue `lumen`.
 
+- **`vn-lead`.** La escala no tenía la frase de entrada que va bajo un titular de página (entre `vn-title-3` y `vn-body`): de 17px a 21px según el ancho, interlínea 1.4. El sitio la usa en cada primera pantalla y bajo cada título de sección; sin ella habría sido CSS suelto de la página.
+
 Además, un arreglo de la v2.8.0: en Windows con `core.autocrlf` las hojas llegaban con CRLF y las pruebas que las leen fallaban. `.gitattributes` fija LF en el árbol de trabajo y los lectores de las pruebas normalizan el final de línea.

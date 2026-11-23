@@ -33,6 +33,15 @@
 	text-wrap: balance;
 }
 
+/* La frase de entrada bajo un titular de página: entre el título y el cuerpo, crece con el ancho */
+.vn .vn-lead {
+	font-weight: 400;
+	font-size: clamp(1.0625rem, 0.9rem + 0.6vw, 1.3125rem);
+	line-height: 1.4;
+	letter-spacing: -0.01em;
+	text-wrap: pretty;
+}
+
 .vn .vn-body {
 	font-weight: 400;
 	font-size: 0.9375rem;

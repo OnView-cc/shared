@@ -460,6 +460,7 @@ describe("Ventana letra y página", () => {
 		[".vn .vn-title-1", 650, "2rem", "1.08", "-0.03em"],
 		[".vn .vn-title-2", 600, "1.375rem", "1.2", "-0.02em"],
 		[".vn .vn-title-3", 600, "1.0625rem", "1.3", "-0.01em"],
+		[".vn .vn-lead", 400, "clamp(1.0625rem, 0.9rem + 0.6vw, 1.3125rem)", "1.4", "-0.01em"],
 		[".vn .vn-body", 400, "0.9375rem", "1.55", ""],
 		[".vn .vn-small", 400, "0.8125rem", "1.45", ""],
 		[".vn .vn-label", 600, "0.75rem", "1", ""],

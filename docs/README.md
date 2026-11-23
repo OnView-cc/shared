@@ -184,7 +184,7 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 | `SPRINGS`, `springLinear` | `ventana/springs.ts` | los muelles; `npm run springs` regenera `styles/ventana/motion.css`, que no se edita a mano |
 
 El CSS: `tokens.css` (tokens `--vn-*` y valores vivos del vidrio), `type.css`
-(la escala: `vn-display`, `vn-title-1`, `vn-title-2`, `vn-title-3`, `vn-body`,
+(la escala: `vn-display`, `vn-title-1`, `vn-title-2`, `vn-title-3`, `vn-lead`, `vn-body`,
 `vn-small`, `vn-label`, `vn-num`, `vn-wrap`, `vn-link`, `vn-prose`), `glass.css`,
 `motion.css` (`vn-arrive` y `vn-press`: la llegada es una animación de fotogramas
 y va **en la propia pieza, nunca en un envoltorio de un vidrio**; convive con
