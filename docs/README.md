@@ -164,7 +164,7 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 | Pieza | Archivo | Qué es |
 |---|---|---|
 | `Glass`, `Lit`, `Scrim`, `Glow` | `ventana/glass.tsx` | superficie de vidrio (`grade`, `solid`), ámbito luminoso, oscurecimiento bajo texto sobre video, resplandor quieto con los colores del contenido |
-| `Button`, `IconButton` | `ventana/button.tsx` | primaria (cápsula blanca), vidrio, sin fondo y peligro; aceptan `ref` |
+| `Button`, `IconButton` | `ventana/button.tsx` | primaria (cápsula blanca), vidrio, sin fondo, sólo filete (`line`, para ir dentro de un vidrio) y peligro; aceptan `ref` |
 | `TextField`, `TextArea` | `ventana/field.tsx` | campos sólidos con etiqueta, ayuda y error; el textarea crece |
 | `Select` | `ventana/select.tsx` | desplegable de vidrio propio, con teclado completo |
 | `Segmented` | `ventana/segmented.tsx` | control segmentado con pulgar que se desliza |

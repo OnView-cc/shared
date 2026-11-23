@@ -3,11 +3,13 @@
  * ícono por `label`): la pieza no escribe ninguna cadena visible.
  * `glass` y `clear` componen las clases de `Glass` en vez de repetir el material,
  * así los respaldos (transparencia reducida, contraste alto, sin backdrop-filter)
- * siguen funcionando.
+ * siguen funcionando. `line` es sólo filete, sin relleno: la acción secundaria
+ * DENTRO de un vidrio (una lámina, una tabla), donde un botón de vidrio sería un
+ * vidrio dentro de otro y uno sin fondo no se ve como botón.
  */
 import type { ButtonHTMLAttributes, ElementType, ReactElement, ReactNode, Ref } from "react";
 
-export type ButtonVariant = "primary" | "glass" | "plain" | "danger";
+export type ButtonVariant = "primary" | "glass" | "plain" | "line" | "danger";
 /** 44px y 36px de alto; el área de toque del pequeño sigue siendo de 44px. */
 export type ButtonSize = "md" | "sm";
 

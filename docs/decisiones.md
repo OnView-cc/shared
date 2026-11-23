@@ -183,4 +183,6 @@ El sitio se compone sólo con piezas del sistema; lo que le faltaba se añade aq
 
 - **`vn-lead`.** La escala no tenía la frase de entrada que va bajo un titular de página (entre `vn-title-3` y `vn-body`): de 17px a 21px según el ancho, interlínea 1.4. El sitio la usa en cada primera pantalla y bajo cada título de sección; sin ella habría sido CSS suelto de la página.
 
+- **`Button variant="line"`.** Hermano del chip de sólo filete: la acción secundaria dentro de un vidrio (las salidas de cada plan en la tabla de precios). Uno de vidrio sería un vidrio dentro de otro, y el de sin fondo no se ve como botón hasta pasar el puntero. Filete `--vn-line`, sin relleno; al pasar el puntero sube el filete, nunca aclara.
+
 Además, un arreglo de la v2.8.0: en Windows con `core.autocrlf` las hojas llegaban con CRLF y las pruebas que las leen fallaban. `.gitattributes` fija LF en el árbol de trabajo y los lectores de las pruebas normalizan el final de línea.

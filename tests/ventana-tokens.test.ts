@@ -647,7 +647,7 @@ describe("Ventana controles", () => {
 		"vn-ai__core",
 	];
 	/** Variantes de botón que poseen su fondo: no llevan material. */
-	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--danger"];
+	const OWN_BACKGROUND_BUTTONS = ["vn-btn--primary", "vn-btn--plain", "vn-btn--line", "vn-btn--danger"];
 
 	/** Clases del sujeto del selector (su último compuesto), sin lo que va dentro de paréntesis o corchetes. */
 	function subjectClasses(selector: string): string[] {
@@ -1609,6 +1609,16 @@ describe("Ventana: las marcas", () => {
 });
 
 describe("Ventana v2.9.0: lo que pide el sitio", () => {
+	it("el botón de sólo filete no tiene relleno: filete de línea, tinta, y al pasar el puntero sube el filete sin aclarar", () => {
+		const line = ctl(".vn .vn-btn--line");
+		expect(line).toMatch(/background: transparent;/);
+		expect(line).toMatch(/border-color: var\(--vn-line\);/);
+		expect(line).toMatch(/color: var\(--vn-ink\);/);
+		const hover = controls.slice(controls.indexOf("@media (hover: hover) and (pointer: fine)"));
+		expect(hover).toMatch(/\.vn \.vn-btn--line:hover \{\s*border-color: var\(--vn-rim-top\);/);
+		expect(hover).not.toMatch(/\.vn \.vn-btn--line:hover \{[^}]*background/);
+	});
+
 	it("la tinta secundaria de lo sólido tiene su token, y ni el vidrio ni una zona luminosa la reasignan", () => {
 		expect(token("ink-2-solid")).toBe("#a1a1a6");
 		expect(contrast(token("ink-2-solid")!, token("ground")!)).toBeGreaterThanOrEqual(4.5);

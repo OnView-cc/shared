@@ -92,6 +92,13 @@ describe("Button", () => {
 		expect(el.classList.contains("extra")).toBe(true);
 	});
 
+	it("el de sólo filete pinta vn-btn--line y no lleva vidrio: es para ir dentro de uno", () => {
+		render(<Button variant="line">Elegir Starter</Button>);
+		const button = host.querySelector("button")!;
+		expect(button.classList.contains("vn-btn--line")).toBe(true);
+		expect(button.className).not.toContain("vn-glass");
+	});
+
 	it.each(["primary", "plain", "danger"] as const)("%s no lleva vidrio", (variant) => {
 		const el = mount(<Button variant={variant}>x</Button>);
 		expect(el.classList.contains("vn-glass")).toBe(false);

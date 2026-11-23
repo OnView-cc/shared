@@ -98,6 +98,12 @@
 	background: transparent;
 	color: var(--vn-ink);
 }
+/* Sólo filete: la acción secundaria dentro de un vidrio (sin relleno: el texto va sobre la lámina) */
+.vn .vn-btn--line {
+	border-color: var(--vn-line);
+	background: transparent;
+	color: var(--vn-ink);
+}
 .vn .vn-btn--danger {
 	border-color: var(--vn-line);
 	background: transparent;
@@ -138,6 +144,9 @@
 	}
 	.vn .vn-btn--plain:hover {
 		background: var(--vn-hair);
+	}
+	.vn .vn-btn--line:hover {
+		border-color: var(--vn-rim-top);
 	}
 	.vn .vn-btn--danger:hover {
 		background: rgba(255, 143, 126, 0.12);
