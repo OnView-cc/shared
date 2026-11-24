@@ -1732,3 +1732,18 @@ describe("Ventana v3.0.0: el armazón con barra lateral", () => {
 		expect(side).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.vn \.vn-side__link\s*\{\s*transition: none/);
 	});
 });
+
+describe("Ventana v3.0.0: la tabla y la cifra", () => {
+	const data = read("../styles/ventana/data.css");
+
+	it("entran por ventana.css y son sólidas: nada en ellas es vidrio", () => {
+		expect(read("../styles/ventana.css")).toContain('@import "./ventana/data.css";');
+		expect(data).not.toMatch(/backdrop-filter|vn-glass/);
+	});
+
+	it("la cabecera y el rótulo, en la tinta 2 sólida, pasan AA sobre la lámina", () => {
+		expect(data).toMatch(/\.vn \.vn-table th\s*\{[^}]*color: var\(--vn-ink-2-solid\)/);
+		expect(contrast(token("ink-2-solid")!, token("surface")!)).toBeGreaterThanOrEqual(4.5);
+		expect(contrast(token("ink-2-solid")!, token("raised")!)).toBeGreaterThanOrEqual(4.5);
+	});
+});

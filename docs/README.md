@@ -181,6 +181,9 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 | `Dock`, `DockItem` | `ventana/dock.tsx` | la navegación de la app: cápsula de vidrio ahumado abajo y al centro; en estrecho, iconos y el + redondo; `compact` y `hidden` los decide quien lo monta |
 | `LinkLike` | `ventana/link.ts` | el enlace que reciben `Dock` y `AppFrame` por `linkAs` (el del enrutador de quien los monta; por defecto un `<a>`) |
 | `AppFrame` | `ventana/app-frame.tsx` | el armazón de la app: raíz `.vn` (nunca luminosa), resplandor del kit, marca y cuenta arriba (o la vuelta en cápsula con `back`), el hueco del dock y el pie |
+| `SideFrame`, `SideNavItem`, `SIDE_NARROW` | `ventana/side-frame.tsx` | el armazón de la consola de administración: barra lateral de vidrio ahumado grueso a la izquierda (marca, secciones con su cifra, cuenta); por debajo de 64rem, la `NavBar` con las secciones en su hoja |
+| `DataTable`, `Column`, `Stat` | `ventana/data.tsx` | la tabla (una `<table>` con nombre que se desplaza dentro de su lámina; `empty`, `loading` y fila que se abre con un botón de verdad) y la cifra grande tabular con su rótulo y detalle; sólidas |
+| `useNarrow`, `useReducedMotion`, `useStepKeys`, `useFlash`, `useScrollToStop` | `ventana/hooks.ts` | los hooks que sobreviven a Feed vertical |
 | `VideoFrame` | `ventana/video-frame.tsx` | marco de video 9:16, 1:1 o 16:9 con su rótulo y su propio scrim |
 | `Mark`, `Wordmark`, `AiMark` | `ventana/marks.tsx` | las marcas: OnView («Dos capas») e Iris («El prisma»; pensando, el aro gira) |
 | `MARK`, `markSvg`, `markGlassSvg` | `ventana/mark.ts` | la marca de OnView como datos (la usa `onview/scripts/render-brand.mjs`): el dibujo plano y el de vidrio, que sólo va grande sobre el casi negro (icono de app, imagen para compartir) |
