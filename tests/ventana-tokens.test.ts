@@ -1752,7 +1752,9 @@ describe("Ventana v3.0.0: la tabla y la cifra", () => {
 
 	it("la tabla se desplaza dentro de su lámina y un valor largo sin espacios no la rompe", () => {
 		expect(rule(".vn .vn-table__scroll")).toMatch(/overflow-x:\s*auto/);
-		expect(rule(".vn .vn-table td")).toMatch(/overflow-wrap:\s*anywhere/);
+		// `break-word` y no `anywhere`: la columna conserva su ancho natural (no corta
+		// palabras a mitad) y la tabla, si no cabe, se desplaza dentro de su lámina
+		expect(rule(".vn .vn-table td")).toMatch(/overflow-wrap:\s*break-word/);
 	});
 
 	it("en tono de peligro la cifra sólo cambia su detalle", () => {
