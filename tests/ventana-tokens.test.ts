@@ -1757,6 +1757,10 @@ describe("Ventana v3.0.0: la tabla y la cifra", () => {
 		expect(rule(".vn .vn-table td")).toMatch(/overflow-wrap:\s*break-word/);
 	});
 
+	it("la cabecera de una columna numérica se alinea con sus cifras", () => {
+		expect(data).toMatch(/\.vn \.vn-table th\.vn-table__num,\s*\.vn \.vn-table th\.vn-table__end\s*\{[^}]*text-align:\s*end/);
+	});
+
 	it("en tono de peligro la cifra sólo cambia su detalle", () => {
 		expect(rule('.vn .vn-stat[data-tone="danger"] .vn-stat__detail')).toContain("var(--vn-danger)");
 		expect(rule('.vn .vn-stat[data-tone="danger"] .vn-stat__value')).toBe("");

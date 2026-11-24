@@ -50,6 +50,11 @@
 .vn .vn-table__end {
 	text-align: end;
 }
+/* `th` gana a las dos de arriba por especificidad: su cabecera va con sus cifras */
+.vn .vn-table th.vn-table__num,
+.vn .vn-table th.vn-table__end {
+	text-align: end;
+}
 
 /* Abrir una fila: el botón de la primera celda cubre la fila entera */
 .vn .vn-table[data-clickable] tbody tr {
