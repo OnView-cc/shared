@@ -33,7 +33,9 @@ export interface DockItem {
 
 function Item({ item, narrow, Link }: { item: DockItem; narrow: boolean; Link: LinkLike }) {
 	return (
-		<Link href={item.href} className="vn-dock__item" aria-current={item.current ? "page" : undefined}>
+		// En estrecho, encogido, el CSS quita la etiqueta (display: none) y el icono es aria-hidden:
+		// sin `aria-label` el enlace se quedaría sin nombre para un lector de pantalla
+		<Link href={item.href} className="vn-dock__item" aria-label={narrow ? item.label : undefined} aria-current={item.current ? "page" : undefined}>
 			{narrow && (
 				<span className="vn-dock__icon" aria-hidden="true">
 					{item.icon}

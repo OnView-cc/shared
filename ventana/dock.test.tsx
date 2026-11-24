@@ -105,6 +105,14 @@ describe("Dock en estrecho", () => {
 		expect(nav.hasAttribute("inert")).toBe(true);
 	});
 
+	it("encogido, cada destino conserva su nombre aunque la etiqueta se esconda", () => {
+		stubViewport(true);
+		const h = mount(<Dock label="Nav" items={ITEMS} action={ACTION} compact />);
+		// El CSS quita la etiqueta con display: none y el icono es aria-hidden: el nombre va en el propio enlace
+		expect(h.querySelector("a[href='/app']")?.getAttribute("aria-label")).toBe("Videos");
+		expect(h.querySelector("a[href='/app/brand']")?.getAttribute("aria-label")).toBe("Kits");
+	});
+
 	it("sin compact ni hidden no hay marcas", () => {
 		stubViewport(true);
 		const h = mount(<Dock label="Nav" items={ITEMS} action={ACTION} />);
