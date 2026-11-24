@@ -98,3 +98,16 @@ export function Stat({ label, value, detail, tone = "neutral" }: { label: ReactN
 		</div>
 	);
 }
+
+/**
+ * La etiqueta de estado de una fila o una ficha («Active», «Past due», «Live»):
+ * sólida y pequeña, nunca vidrio. `neutral` es sólo filete; `solid`, tinta sobre
+ * blanco; `alert`, el rojo de peligro en texto y filete; `live`, un punto delante.
+ */
+export function Tag({ tone = "neutral", children }: { tone?: "neutral" | "solid" | "alert" | "live"; children: ReactNode }): ReactElement {
+	return (
+		<span className="vn-tag" data-tone={tone}>
+			{children}
+		</span>
+	);
+}

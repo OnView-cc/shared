@@ -182,6 +182,7 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 | `LinkLike` | `ventana/link.ts` | el enlace que reciben `Dock` y `AppFrame` por `linkAs` (el del enrutador de quien los monta; por defecto un `<a>`) |
 | `AppFrame` | `ventana/app-frame.tsx` | el armazón de la app: raíz `.vn` (nunca luminosa), resplandor del kit, marca y cuenta arriba (o la vuelta en cápsula con `back`), el hueco del dock y el pie |
 | `SideFrame`, `SideNavItem`, `SIDE_NARROW` | `ventana/side-frame.tsx` | el armazón de la consola de administración: barra lateral de vidrio ahumado grueso a la izquierda (marca, secciones con su cifra, cuenta); por debajo de 64rem, la `NavBar` con las secciones en su hoja |
+| `Tag` | `ventana/data.tsx` | la etiqueta de estado de una fila o ficha: sólida, `neutral` (filete), `solid`, `alert` (rojo de peligro) y `live` (con punto) |
 | `DataTable`, `Column`, `Stat` | `ventana/data.tsx` | la tabla (una `<table>` con nombre que se desplaza dentro de su lámina; `empty`, `loading` y fila que se abre con un botón de verdad) y la cifra grande tabular con su rótulo y detalle; sólidas |
 | `useNarrow`, `useReducedMotion`, `useStepKeys`, `useFlash`, `useScrollToStop` | `ventana/hooks.ts` | los hooks que sobreviven a Feed vertical |
 | `VideoFrame` | `ventana/video-frame.tsx` | marco de video 9:16, 1:1 o 16:9 con su rótulo y su propio scrim |

@@ -7,7 +7,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { DataTable, Stat, type Column } from "./data";
+import { DataTable, Stat, Tag, type Column } from "./data";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -105,5 +105,22 @@ describe("Stat", () => {
 		const h = mount(<Stat label="Past due" value="3" detail="Needs a look" tone="danger" />);
 		const stat = h.querySelector(".vn-stat")!;
 		expect(stat.getAttribute("data-tone")).toBe("danger");
+	});
+});
+
+describe("Tag", () => {
+	it("is a solid label with its tone, never glass", () => {
+		const h = mount(
+			<>
+				<Tag>Draft</Tag>
+				<Tag tone="solid">Active</Tag>
+				<Tag tone="alert">Past due</Tag>
+				<Tag tone="live">Live</Tag>
+			</>,
+		);
+		const tags = Array.from(h.querySelectorAll(".vn-tag"));
+		expect(tags.map((t) => t.getAttribute("data-tone"))).toEqual(["neutral", "solid", "alert", "live"]);
+		expect(tags.map((t) => t.textContent)).toEqual(["Draft", "Active", "Past due", "Live"]);
+		expect(h.querySelector(".vn-glass")).toBeNull();
 	});
 });
