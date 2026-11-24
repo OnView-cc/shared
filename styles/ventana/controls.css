@@ -83,6 +83,15 @@
 	flex: none;
 }
 
+/*
+ * Un ícono pasado como hijo cae dentro de la etiqueta: va en línea con el texto y
+ * separado de él, aunque la base de la página (Tailwind) pinte los svg como bloque.
+ */
+.vn .vn-btn__label > svg {
+	display: inline-block;
+	margin-inline-end: 6px;
+	vertical-align: -3px;
+}
 /* Un ícono junto al texto (copiar, más): 16px, sin encogerse */
 .vn .vn-btn:not(.vn-btn--icon) svg {
 	inline-size: 16px;

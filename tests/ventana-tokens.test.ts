@@ -1690,3 +1690,9 @@ describe("Ventana v2.10.0: el dock y el armazón", () => {
 		expect(rule(".vn .vn-app__main--dock")).toContain("env(safe-area-inset-bottom)");
 	});
 });
+
+describe("Ventana v2.10.0: el ícono dentro de la etiqueta de un botón", () => {
+	it("va en línea con el texto, aunque la base de la página pinte los svg como bloque", () => {
+		expect(controls).toMatch(/\.vn \.vn-btn__label > svg\s*\{[^}]*display:\s*inline-block/);
+	});
+});
