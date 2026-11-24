@@ -629,6 +629,10 @@ describe("Ventana controles", () => {
 		"vn-section",
 		"vn-row",
 		"vn-row--action",
+		// La lámina sólida (Panel), su escalón y el grupo de filas (RowGroup): pintan su superficie y filete; nunca llevan vn-glass (hay prueba de marcado)
+		"vn-panel",
+		"vn-panel--raised",
+		"vn-rowgroup",
 		"vn-skel__block",
 		"vn-alert",
 		"vn-status",
@@ -1640,5 +1644,18 @@ describe("Ventana v2.9.0: lo que pide el sitio", () => {
 		expect(selected).toMatch(/border-color: var\(--vn-ink\);/);
 		expect(selected).toMatch(/box-shadow: inset 0 0 0 1px var\(--vn-ink\);/);
 		expect(selected).not.toMatch(/background/);
+	});
+});
+
+describe("Ventana v2.10.0: lo que pide la app", () => {
+	it("en un grupo de filas el filete va entre fila y fila, no arriba ni abajo", () => {
+		expect(content).toMatch(/\.vn-rowgroup \.vn-row\s*\{[^}]*border-block-end:\s*0/);
+		expect(content).toMatch(/\.vn-rowgroup \.vn-row \+ \.vn-row\s*\{[^}]*border-block-start:\s*1px solid var\(--vn-hair\)/);
+	});
+
+	it("la lámina es sólida: su superficie, su filete y sin desenfoque", () => {
+		expect(content).toMatch(/\.vn-panel\s*\{[^}]*background:\s*var\(--vn-surface\)/);
+		expect(content).toMatch(/\.vn-panel--raised\s*\{[^}]*background:\s*var\(--vn-raised\)/);
+		expect(content).not.toMatch(/\.vn-(panel|rowgroup)[^{]*\{[^}]*backdrop-filter/);
 	});
 });

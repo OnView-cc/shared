@@ -7,7 +7,7 @@ import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { installRadixDom } from "../tests/helpers/radix-dom";
-import { Accordion, Alert, Monogram, Progress, Row, Section, Skeleton, Status, Tabs } from "./content";
+import { Accordion, Alert, Monogram, Panel, Progress, Row, RowGroup, Section, Skeleton, Status, Tabs } from "./content";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -84,6 +84,60 @@ describe("Row", () => {
 		const h = mount(<Row title="Sólo lectura" meta="meta" />);
 		expect(h.querySelector("a, button")).toBeNull();
 		expect(h.querySelector(".vn-row")?.tagName).toBe("DIV");
+	});
+
+	it("con chevron pinta la flecha al final, oculta, dentro del único enlace", () => {
+		const h = mount(<Row title="Sesiones" end="2 activas" href="/account/security" chevron />);
+		expect(h.querySelectorAll("a")).toHaveLength(1);
+		const a = h.querySelector("a")!;
+		const last = a.lastElementChild!;
+		expect(last.classList.contains("vn-row__chevron")).toBe(true);
+		expect(last.getAttribute("aria-hidden")).toBe("true");
+		expect(last.querySelector("svg")).not.toBeNull();
+	});
+
+	it("sin chevron no hay flecha", () => {
+		const h = mount(<Row title="Sesiones" href="/a" />);
+		expect(h.querySelector(".vn-row__chevron")).toBeNull();
+	});
+});
+
+describe("Panel", () => {
+	it("es una lámina sólida, sin vidrio, con el elemento pedido", () => {
+		const h = mount(
+			<Panel as="section" className="x">
+				<p>dentro</p>
+			</Panel>,
+		);
+		const p = h.querySelector(".vn-panel")!;
+		expect(p.tagName).toBe("SECTION");
+		expect(p.classList.contains("x")).toBe(true);
+		expect(p.classList.contains("vn-panel--raised")).toBe(false);
+		expect(h.innerHTML).not.toContain("vn-glass");
+	});
+
+	it("raised es el escalón más claro", () => {
+		const h = mount(<Panel raised>x</Panel>);
+		expect(h.querySelector(".vn-panel")!.classList.contains("vn-panel--raised")).toBe(true);
+	});
+});
+
+describe("RowGroup", () => {
+	it("pinta su rótulo encima y sus filas dentro de una lámina sin vidrio", () => {
+		const h = mount(
+			<RowGroup label="Seguridad" id="sec">
+				<Row title="Contraseña" />
+				<Row title="Dos pasos" />
+				<Row title="Sesiones" />
+			</RowGroup>,
+		);
+		const group = h.querySelector(".vn-rowgroup")!;
+		const label = group.querySelector(".vn-rowgroup__label")!;
+		expect(label.textContent).toBe("Seguridad");
+		expect(label.id).toBe("sec-label");
+		expect(group.querySelector(".vn-panel")!.getAttribute("aria-labelledby")).toBe("sec-label");
+		expect(group.querySelectorAll(".vn-row")).toHaveLength(3);
+		expect(h.innerHTML).not.toContain("vn-glass");
 	});
 });
 

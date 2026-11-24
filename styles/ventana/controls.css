@@ -83,6 +83,13 @@
 	flex: none;
 }
 
+/* Un ícono junto al texto (copiar, más): 16px, sin encogerse */
+.vn .vn-btn:not(.vn-btn--icon) svg {
+	inline-size: 16px;
+	block-size: 16px;
+	flex: none;
+}
+
 /* Variantes */
 /* La cápsula blanca flota sobre video: una sombra corta le da canto cuando el cuadro de detrás es claro (blanco sobre blanco no tendría forma) */
 .vn .vn-btn--primary {

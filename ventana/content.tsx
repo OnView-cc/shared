@@ -13,7 +13,7 @@
  *   danger, y la caja es siempre `--vn-surface` (sky usaba un fondo rojo apagado).
  * - `Monogram` repite las iniciales de sky (`markOf`, que no es público allí).
  */
-import { ChevronDown, CircleAlert } from "lucide-react";
+import { ChevronDown, ChevronRight, CircleAlert } from "lucide-react";
 import { Accordion as A, Tabs as T } from "radix-ui";
 import { createElement, useState, type CSSProperties, type ReactNode } from "react";
 
@@ -71,6 +71,7 @@ export function Row({
 	end,
 	href,
 	onClick,
+	chevron = false,
 }: {
 	title: ReactNode;
 	meta?: ReactNode;
@@ -78,6 +79,8 @@ export function Row({
 	end?: ReactNode;
 	href?: string;
 	onClick?: () => void;
+	/** La flecha de Ajustes al final: esta fila abre otra cosa. */
+	chevron?: boolean;
 }) {
 	const inner = (
 		<>
@@ -87,6 +90,11 @@ export function Row({
 				{present(meta) && <span className="vn-small vn-row__meta">{meta}</span>}
 			</span>
 			{present(end) && <span className="vn-row__end">{end}</span>}
+			{chevron && (
+				<span className="vn-row__chevron" aria-hidden="true">
+					<ChevronRight size={16} strokeWidth={2} />
+				</span>
+			)}
 		</>
 	);
 	if (href !== undefined) {
@@ -104,6 +112,39 @@ export function Row({
 		);
 	}
 	return <div className="vn-row">{inner}</div>;
+}
+
+// ─── Panel y RowGroup ────────────────────────────────────────────────────────
+
+/**
+ * La lámina sólida: lo que se rellena o se consulta (un formulario, una cifra,
+ * una lista). Superficie con filete y el radio de las hojas, sin sombra (la
+ * elevación se declara una vez). `raised` es el escalón más claro, para lo que
+ * va al pie de otra lámina o a su lado como una franja.
+ */
+export function Panel({ children, className, as = "div", raised = false, ...rest }: { children: ReactNode; className?: string; as?: "div" | "section" | "form"; raised?: boolean; "aria-labelledby"?: string }) {
+	const classes = ["vn-panel", raised && "vn-panel--raised", className].filter(Boolean).join(" ");
+	return createElement(as, { className: classes, ...rest }, children);
+}
+
+/**
+ * Un grupo de filas como en Ajustes: el rótulo pequeño encima y las filas en una
+ * lámina, con el filete entre fila y fila (no arriba ni abajo del grupo).
+ */
+export function RowGroup({ label, children, id }: { label?: ReactNode; children: ReactNode; id?: string }) {
+	const labelId = id ? `${id}-label` : undefined;
+	return (
+		<div className="vn-rowgroup" id={id}>
+			{present(label) && (
+				<p className="vn-label vn-rowgroup__label" id={labelId}>
+					{label}
+				</p>
+			)}
+			<Panel className="vn-rowgroup__rows" aria-labelledby={present(label) ? labelId : undefined}>
+				{children}
+			</Panel>
+		</div>
+	);
 }
 
 // ─── Skeleton ────────────────────────────────────────────────────────────────
