@@ -14,7 +14,7 @@
  * oculto a la primera de verdad, que llega con el `ResizeObserver`.
  */
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
-import { useReducedMotion } from "../sky/hooks";
+import { useReducedMotion } from "./hooks";
 
 export function Segmented<T extends string>({
 	value,

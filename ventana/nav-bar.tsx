@@ -28,7 +28,7 @@
  */
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { Menu, X } from "lucide-react";
-import { useNarrow } from "../sky/hooks";
+import { useNarrow } from "./hooks";
 import { IconButton } from "./button";
 import { PortalHost } from "./portal-host";
 
@@ -43,6 +43,7 @@ export function NavBar({
 	menuLabel,
 	closeLabel,
 	compact = false,
+	narrowQuery,
 }: {
 	/** Nombre accesible del `<nav>` (y de la hoja). */
 	label: string;
@@ -55,8 +56,10 @@ export function NavBar({
 	closeLabel: string;
 	/** Se encoge: lo decide quien la monta. */
 	compact?: boolean;
+	/** Desde dónde pasa a la hoja; por defecto, por debajo de 48rem. */
+	narrowQuery?: string;
 }): ReactElement {
-	const narrow = useNarrow();
+	const narrow = useNarrow(narrowQuery);
 	const panelId = useId();
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	// La hoja sólo existe en estrecho: se toma cada vez que aparece o desaparece

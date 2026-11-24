@@ -20,7 +20,7 @@
  */
 import type { ReactElement, ReactNode } from "react";
 import { Plus } from "lucide-react";
-import { useNarrow } from "../sky/hooks";
+import { useNarrow } from "./hooks";
 import type { LinkLike } from "./link";
 
 export interface DockItem {

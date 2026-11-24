@@ -14,7 +14,7 @@
  */
 import { MARK, MARK_COLORS, type MarkTone } from "./mark";
 import { AI_MARK, spectrumGradient } from "./ai-mark";
-import { useReducedMotion } from "../sky/hooks";
+import { useReducedMotion } from "./hooks";
 
 /** La marca: dos marcos 9:16 superpuestos. `tone="paper"` sobre papel claro. */
 export function Mark({ className, tone = "night" }: { className?: string; tone?: MarkTone }) {

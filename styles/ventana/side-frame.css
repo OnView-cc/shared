@@ -1,0 +1,135 @@
+/*
+ * Ventana: el armazón con barra lateral (la consola de administración; spec
+ * 2026-11-24-onview-admin-correos-ventana §4.1). La barra lleva `vn-glass`, que
+ * trae el material y sus respaldos (transparencia reducida, contraste alto, sin
+ * backdrop-filter); aquí sólo su forma por variable y su sitio. Lo actual
+ * oscurece y lleva filete, como en el dock: sobre vidrio, aclarar baja el contraste.
+ */
+
+.vn.vn-side {
+	--vn-side-w: 232px;
+	--vn-side-gap: 12px;
+	position: relative;
+	min-block-size: 100dvh;
+	background: var(--vn-ground);
+	color: var(--vn-ink);
+}
+
+/* ── La barra (ancho) ── */
+.vn .vn-side__bar {
+	--vn-glass-r: var(--vn-r-panel);
+	position: fixed;
+	inset-block: var(--vn-side-gap);
+	inset-inline-start: var(--vn-side-gap);
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	box-sizing: border-box;
+	inline-size: var(--vn-side-w);
+	padding: 20px 12px 12px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+.vn .vn-side__brand {
+	padding-inline: 8px;
+}
+.vn .vn-side__nav {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.vn .vn-side__account {
+	margin-block-start: auto;
+}
+
+/* ── Una sección ── */
+.vn .vn-side__link {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-block-size: 40px;
+	padding-inline: 10px 8px;
+	border-radius: var(--vn-r-field);
+	color: var(--vn-ink);
+	font-size: 0.9375rem;
+	font-weight: 500;
+	text-decoration: none;
+	transition: box-shadow 160ms var(--vn-ease-out), background-color 160ms var(--vn-ease-out);
+}
+.vn .vn-side__icon {
+	display: inline-flex;
+	flex: none;
+	color: var(--vn-ink-2-glass);
+}
+.vn .vn-side__icon > svg {
+	inline-size: 18px;
+	block-size: 18px;
+}
+.vn .vn-side__label {
+	flex: 1;
+	min-inline-size: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.vn .vn-side__link[aria-current="page"] {
+	background-color: rgba(6, 6, 7, 0.32);
+	box-shadow: inset 0 0 0 1px var(--vn-line);
+	font-weight: 600;
+}
+.vn .vn-side__link[aria-current="page"] .vn-side__icon {
+	color: var(--vn-ink);
+}
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-side__link:hover {
+		box-shadow: inset 0 0 0 1px var(--vn-line);
+	}
+}
+.vn .vn-side__link:focus-visible {
+	outline: 2px solid var(--vn-ink);
+	outline-offset: 2px;
+}
+.vn .vn-side__count {
+	flex: none;
+	min-inline-size: 22px;
+	padding: 1px 7px;
+	box-sizing: border-box;
+	border-radius: var(--vn-r-pill);
+	background: var(--vn-ink);
+	color: var(--vn-action-ink);
+	font-size: 0.75rem;
+	font-weight: 700;
+	line-height: 18px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ── El contenido ── */
+.vn .vn-side__main {
+	display: block;
+	min-inline-size: 0;
+	box-sizing: border-box;
+	padding: 32px clamp(16px, 3vw, 40px) 64px;
+}
+.vn.vn-side:not([data-narrow]) .vn-side__main {
+	padding-inline-start: calc(var(--vn-side-w) + var(--vn-side-gap) + clamp(20px, 3vw, 40px));
+}
+
+/* ── Estrecho: la barra de arriba de Ventana, pegada arriba ── */
+.vn .vn-side__top {
+	position: sticky;
+	inset-block-start: 0;
+	z-index: 20;
+	padding: max(8px, env(safe-area-inset-top)) 12px 0;
+}
+/* En la hoja, las secciones apiladas a lo ancho */
+.vn .vn-nav__links--stack .vn-side__link {
+	min-block-size: 44px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.vn .vn-side__link {
+		transition: none;
+	}
+}

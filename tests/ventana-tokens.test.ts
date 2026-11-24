@@ -1696,3 +1696,39 @@ describe("Ventana v2.10.0: el ícono dentro de la etiqueta de un botón", () => 
 		expect(controls).toMatch(/\.vn \.vn-btn__label > svg\s*\{[^}]*display:\s*inline-block/);
 	});
 });
+
+describe("Ventana v3.0.0: el armazón con barra lateral", () => {
+	const side = read("../styles/ventana/side-frame.css");
+	const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const rule = (sel: string) => side.match(new RegExp(`(?:^|\\n)${escapeRe(sel)}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+
+	it("entra por ventana.css", () => {
+		expect(read("../styles/ventana.css")).toContain('@import "./ventana/side-frame.css";');
+	});
+
+	it("la barra no declara lo que posee el material; sólo su radio por variable", () => {
+		const body = rule(".vn .vn-side__bar");
+		expect(body).toContain("--vn-glass-r");
+		expect(body).not.toMatch(/(^|[;\s])(background(-color|-image)?|backdrop-filter|border(-color)?|box-shadow)\s*:/);
+	});
+
+	it("la sección actual oscurece, nunca aclara, y lleva filete", () => {
+		const body = rule('.vn .vn-side__link[aria-current="page"]');
+		expect(body).toContain("rgba(6, 6, 7, 0.32)");
+		expect(body).toContain("var(--vn-line)");
+	});
+
+	it("la cifra va en cifras tabulares y el foco se ve", () => {
+		expect(rule(".vn .vn-side__count")).toContain("tabular-nums");
+		expect(rule(".vn .vn-side__link:focus-visible")).toMatch(/outline: 2px solid var\(--vn-ink\)/);
+	});
+
+	it("el contenido deja sitio a la barra y nunca se desborda en horizontal", () => {
+		expect(rule(".vn .vn-side__main")).toMatch(/min-inline-size:\s*0/);
+		expect(side).toMatch(/\.vn\.vn-side:not\(\[data-narrow\]\) \.vn-side__main\s*\{[^}]*padding-inline-start/);
+	});
+
+	it("con movimiento reducido los enlaces no animan", () => {
+		expect(side).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.vn \.vn-side__link\s*\{\s*transition: none/);
+	});
+});
