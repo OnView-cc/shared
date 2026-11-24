@@ -21,7 +21,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { Plus } from "lucide-react";
 import { useNarrow } from "../sky/hooks";
-import { Button } from "./button";
+import type { LinkLike } from "./link";
 
 export interface DockItem {
 	key: string;
@@ -31,18 +31,21 @@ export interface DockItem {
 	current?: boolean;
 }
 
-function Item({ item, narrow }: { item: DockItem; narrow: boolean }) {
+function Item({ item, narrow, Link }: { item: DockItem; narrow: boolean; Link: LinkLike }) {
 	return (
-		<a href={item.href} className="vn-dock__item" aria-current={item.current ? "page" : undefined}>
+		<Link href={item.href} className="vn-dock__item" aria-current={item.current ? "page" : undefined}>
 			{narrow && (
 				<span className="vn-dock__icon" aria-hidden="true">
 					{item.icon}
 				</span>
 			)}
 			<span className="vn-dock__label">{item.label}</span>
-		</a>
+		</Link>
 	);
 }
+
+/** Las clases del botón primario pequeño de `Button`, para pintarlo con el enlace del enrutador. */
+const ACTION_CLASSES = "vn-btn vn-btn--primary vn-btn--sm vn-press vn-dock__action";
 
 export function Dock({
 	label,
@@ -51,6 +54,7 @@ export function Dock({
 	meta,
 	compact = false,
 	hidden = false,
+	linkAs: Link = "a",
 }: {
 	label: string;
 	items: DockItem[];
@@ -58,6 +62,8 @@ export function Dock({
 	meta?: ReactNode;
 	compact?: boolean;
 	hidden?: boolean;
+	/** El enlace del enrutador de quien lo monta; por defecto un `<a>`. */
+	linkAs?: LinkLike;
 }): ReactElement {
 	const narrow = useNarrow();
 	const [first, ...rest] = items;
@@ -71,23 +77,23 @@ export function Dock({
 			inert={hidden || undefined}>
 			{narrow ? (
 				<>
-					{first && <Item item={first} narrow />}
-					<a href={action.href} className="vn-dock__plus" aria-label={action.label}>
+					{first && <Item item={first} narrow Link={Link} />}
+					<Link href={action.href} className="vn-dock__plus" aria-label={action.label}>
 						<Plus aria-hidden="true" />
-					</a>
+					</Link>
 					{rest.map((item) => (
-						<Item key={item.key} item={item} narrow />
+						<Item key={item.key} item={item} narrow Link={Link} />
 					))}
 				</>
 			) : (
 				<>
 					{items.map((item) => (
-						<Item key={item.key} item={item} narrow={false} />
+						<Item key={item.key} item={item} narrow={false} Link={Link} />
 					))}
-					<Button href={action.href} size="sm" className="vn-dock__action">
+					<Link href={action.href} className={ACTION_CLASSES}>
 						<Plus aria-hidden="true" />
-						{action.label}
-					</Button>
+						<span className="vn-btn__label">{action.label}</span>
+					</Link>
 					{meta != null && (
 						<>
 							<span className="vn-dock__sep" aria-hidden="true" />

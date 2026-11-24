@@ -95,3 +95,19 @@ describe("AppFrame", () => {
 		expect(h.querySelector(".vn-app__top")!.textContent).not.toContain("OnView");
 	});
 });
+
+describe("AppFrame con el enlace del enrutador", () => {
+	it("la vuelta usa linkAs", () => {
+		const Fake = ({ href, className, children }: { href: string; className?: string; children?: React.ReactNode }) => (
+			<a href={href} className={className} data-router="">
+				{children}
+			</a>
+		);
+		const h = mount(
+			<AppFrame brand="B" account="A" back={{ label: "Videos", href: "/app" }} linkAs={Fake}>
+				<p>x</p>
+			</AppFrame>,
+		);
+		expect(h.querySelector(".vn-app__back")!.hasAttribute("data-router")).toBe(true);
+	});
+});

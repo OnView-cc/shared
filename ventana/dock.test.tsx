@@ -113,3 +113,19 @@ describe("Dock en estrecho", () => {
 		expect(nav.hasAttribute("inert")).toBe(false);
 	});
 });
+
+describe("Dock con el enlace del enrutador", () => {
+	it("pinta cada destino y la acción con linkAs, con sus clases y su estado", () => {
+		stubViewport(false);
+		const Fake = ({ href, className, children, ...rest }: { href: string; className?: string; children?: React.ReactNode; "aria-current"?: "page"; "aria-label"?: string }) => (
+			<a href={href} className={className} data-router="" {...rest}>
+				{children}
+			</a>
+		);
+		const h = mount(<Dock label="Nav" items={ITEMS} action={ACTION} linkAs={Fake} />);
+		const routed = Array.from(h.querySelectorAll("a[data-router]"));
+		expect(routed.map((a) => a.getAttribute("href"))).toEqual(["/app", "/app/brand", "/app/new"]);
+		expect(routed[0].getAttribute("aria-current")).toBe("page");
+		expect(routed[2].classList.contains("vn-btn--primary")).toBe(true);
+	});
+});

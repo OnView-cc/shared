@@ -179,6 +179,7 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 | `Panel`, `RowGroup` | `ventana/content.tsx` | la lámina sólida (superficie, filete y radio de hoja; `raised`, el escalón más claro) y el grupo de filas como Ajustes (rótulo encima, filete sólo entre filas) |
 | `SaveRow`, `ConfirmRow`, `CopyButton` | `ventana/form-rows.tsx` | el pie de un formulario, cancelar y confirmar un acto y copiar un valor; todo el texto por props (`words`, `cancelLabel`, `copiedLabel`) |
 | `Dock`, `DockItem` | `ventana/dock.tsx` | la navegación de la app: cápsula de vidrio ahumado abajo y al centro; en estrecho, iconos y el + redondo; `compact` y `hidden` los decide quien lo monta |
+| `LinkLike` | `ventana/link.ts` | el enlace que reciben `Dock` y `AppFrame` por `linkAs` (el del enrutador de quien los monta; por defecto un `<a>`) |
 | `AppFrame` | `ventana/app-frame.tsx` | el armazón de la app: raíz `.vn` (nunca luminosa), resplandor del kit, marca y cuenta arriba (o la vuelta en cápsula con `back`), el hueco del dock y el pie |
 | `VideoFrame` | `ventana/video-frame.tsx` | marco de video 9:16, 1:1 o 16:9 con su rótulo y su propio scrim |
 | `Mark`, `Wordmark`, `AiMark` | `ventana/marks.tsx` | las marcas: OnView («Dos capas») e Iris («El prisma»; pensando, el aro gira) |

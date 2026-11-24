@@ -16,6 +16,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Glow } from "./glass";
+import type { LinkLike } from "./link";
 
 export function AppFrame({
 	brand,
@@ -25,7 +26,10 @@ export function AppFrame({
 	glow,
 	footer,
 	children,
+	linkAs: Link = "a",
 }: {
+	/** El enlace del enrutador de quien lo monta (para la vuelta); por defecto un `<a>`. */
+	linkAs?: LinkLike;
 	brand: ReactNode;
 	account: ReactNode;
 	dock?: ReactNode;
@@ -42,10 +46,10 @@ export function AppFrame({
 			<header className="vn-app__top" data-back={back ? "" : undefined}>
 				{back ? (
 					<>
-						<a href={back.href} className="vn-app__back vn-glass vn-glass--thin vn-press">
+						<Link href={back.href} className="vn-app__back vn-glass vn-glass--thin vn-press">
 							<ChevronLeft aria-hidden="true" />
 							<span>{back.label}</span>
-						</a>
+						</Link>
 						{back.title != null && <p className="vn-app__title">{back.title}</p>}
 					</>
 				) : (
