@@ -1,37 +1,36 @@
 # @onview/shared — documentación
 
-**El código común de las apps de OnView.** UI (`ui/`, `components/`), cliente
-CRUD y helpers (`lib/`, `hooks/`), el mundo visual y sus piezas (`styles/`,
-`sky/`, `ventana/`) y tres módulos de worker (`worker/response`, `worker/cookies` y
+**El código común de las apps de OnView.** El mundo visual y sus piezas
+(`ventana/`, `styles/`), el cliente de la plataforma (`lib/`), el proveedor de
+tema (`components/`), el motor de animación y el video (`motion/`, `video/`) y
+tres módulos de worker (`worker/response`, `worker/cookies` y
 `worker/credit-settle`, el cobro y la devolución de una reserva de créditos que
-usan onview y onview-studio desde v1.3.0). Envía TypeScript crudo: lo compila el bundler de la app que
-lo consume.
+usan onview y onview-studio desde v1.3.0). Envía TypeScript crudo: lo compila el
+bundler de la app que lo consume.
 
-`ui/`, `lib/`, `hooks/`, `components/` y `sky/` asumen el DOM; `worker/` asume
+`ventana/`, `lib/` y `components/` asumen el DOM; `worker/` asume
 `@cloudflare/workers-types`. Nunca se importa cruzando esa frontera (hay dos
 `tsconfig` por eso).
 
-El pin es a un **tag** de git, no a master (`github:OnView-cc/shared#v1.0.0`;
-consumidores: `onview` y `admin`). El repo es **público**: el CI de los
-consumidores lo baja con `npm ci`, sin token. Para trabajar shared en local
-contra una app, se enlaza con una junction y se quita con `rmdir` antes de
+El pin es a un **tag** de git, no a master (`github:OnView-cc/shared#vX.Y.Z`;
+consumidores: `onview`, `admin` y `onview-studio`). El repo es **público**: el
+CI de los consumidores lo baja con `npm ci`, sin token. Para trabajar shared en
+local contra una app, se enlaza con una junction y se quita con `rmdir` antes de
 commitear.
-El mundo visual vigente en cada pantalla es **«Feed vertical»** (`sky/`); el
-sistema nuevo, **«Ventana»** (`ventana/`), llega pantalla a pantalla (sección
-siguiente). La sección «Airglow» de más abajo es historia del fork. Ver
-`decisiones.md` y lo que falta en `pendiente.md`. Las dependencias de runtime son
-`peerDependencies`; cada consumidor las deduplica (`dedupe` en su
-`vite.config.ts`) para que no haya dos React.
+El mundo visual de OnView es **«Ventana»** (`ventana/`), en todas las pantallas
+desde la v3.0.0. Ver `decisiones.md` y lo que falta en `pendiente.md`. Las
+dependencias de runtime son `peerDependencies`; cada consumidor las deduplica
+(`dedupe` en su `vite.config.ts`) para que no haya dos React.
 
-## Ventana: el mundo nuevo (v2.8.0, parte 1 de 5; v2.9.0 con lo que pide el sitio; v2.10.0 con lo que pide la app)
+## Ventana: el mundo de OnView (v2.8.0 a v3.0.0)
 
 Un oscuro único, sin color de acento, con vidrio tipo Apple (Liquid Glass). Vive
-en `ventana/` (componentes) y `styles/ventana/` (CSS), junto a Feed vertical
-(`sky/`, `styles/sky.css`), que no se toca: ni un valor `--sk-*` cambia. Las
-pantallas pasan una a una en las partes 2 a 5 de la serie (spec
-`../../docs/superpowers/specs/2026-11-20-onview-ventana-sistema-design.md` §0:
-sitio y acceso, app sin editor, editor, admin y correos); al cerrar la quinta se
-borra `sky/`. Todo se ve en `/dev-preview/ventana` de `onview`.
+en `ventana/` (componentes) y `styles/ventana/` (CSS). Llegó en cinco partes
+(spec `../../docs/superpowers/specs/2026-11-20-onview-ventana-sistema-design.md`
+§0: sistema, sitio y acceso, app sin editor, editor, admin y correos); al cerrar
+la quinta (v3.0.0) se borró Feed vertical (`sky/`, `styles/sky.css`,
+`styles/site.css`) y los restos de shadcn (`ui/`). Todo se ve en
+`/dev-preview/ventana` de `onview`.
 
 ### La regla del vidrio
 
@@ -136,15 +135,11 @@ la sombra del foco y el color de la descripción); `tests/ventana-tokens.test.ts
 lee la hoja de sonner y las enumera. Una pieza nueva sobre otra librería con CSS
 sin capa hace lo mismo y lo prueba igual.
 
-**Nunca montes una raíz `.vn` dentro de `.sk` o `.site`.** Las reglas del mundo
-viejo no tienen capa y ganan a las de Ventana: `.sk :focus-visible` y
-`.site.sk :focus-visible` (en `styles/sky.css`) le ponen a toda pieza enfocada el
-contorno de tinta de Feed vertical y su radio de 2px (`--sk-radius`), encima del
-anillo propio y cambiando el contorno de las de vidrio; `.sk a` le cambia la
-distancia y el grosor del subrayado a todo enlace (`vn-link`, `vn-nav-link`,
-`Wordmark`, un `Button` con `href`); y en `onview` `.sk input, .sk textarea,
-.sk select` (`src/index.css`, bajo 1024px) le fija a los campos la letra en 16px.
-Una pantalla pasa a Ventana cambiando su raíz (`.vn` en lugar de `.sk`), no
+**Una hoja sin capa gana a las de Ventana.** Mientras convivió con Feed vertical
+(hasta la v3.0.0), `.sk :focus-visible` y `.sk a` pisaban el foco y los enlaces
+de toda pieza montada dentro de `.sk`. Feed vertical ya no existe, pero la regla
+sigue: una hoja de un consumidor sin `@layer` y con un selector más fuerte gana
+a la pieza. Una pantalla es Ventana por su raíz (`.vn`), no
 metiendo piezas nuevas dentro de la vieja.
 
 **Qué sirve de disparador** de `Menu`, `Popover` y `Tooltip`: algo que acepte un
@@ -204,8 +199,8 @@ ninguna hoja de estilos: el aro se arma en JavaScript desde `AI_SPECTRUM`.
 
 ### La IA se llama Iris
 
-`AI_NAME = "Iris"` en `ventana/ai-mark.ts` y, desde la v2.9.0, también en
-`sky/ai-mark.ts` (la app sigue en Feed vertical pero ya dice el nombre nuevo).
+`AI_NAME = "Iris"` en `ventana/ai-mark.ts` (hasta la v3.0.0 también en
+`sky/ai-mark.ts`, ya borrado).
 Se llamó Lumen hasta el 2026-11-20. La parte 2 cambia de una vez lo que la gente
 lee (el diccionario, `/lumen` a `/iris`, los legales, los correos, las etiquetas
 del admin y las instrucciones con que la IA se presenta). Tablas, columnas,
@@ -213,107 +208,45 @@ constantes y nombres de archivo no se renombran: por dentro sigue `lumen`. La
 voz de narración del catálogo que también se llamaba «Iris» cambia de nombre con
 ese mismo despliegue (ver `pendiente.md`).
 
-## Airglow: el mundo de OnView
-
-El cielo de la casa visto desde arriba: la página clara (`#f5f5fa`), la noche
-sólo en los paneles de cielo, un solo acento violeta (`#5b3fd9`), la banda de
-la ionosfera (`#a99bff`) sólo dentro del cielo, Geist para todo y Geist Mono
-sólo en lo que mide el agente (`.sk-mono`). `styles/sky.css` se re-basó sobre
-el de Northstar («Polar Night»), que ya era «página clara + noche en paneles»
-con el mismo vocabulario de clases. Las piezas:
-
-| Qué | Dónde | Quién lo consume |
-|---|---|---|
-| El mundo: tokens, tipografía, píldoras, tarjetas, vidrio, paneles de cielo y su respaldo `.sk-band`, páginas interiores, el **bloque de consola** (el vocabulario del mapa reinterpretado en Airglow), la barra lateral y las piezas de Airglow | `styles/sky.css` (sobre `styles/site.css`) | onview y admin, desde su `index.css` |
-| La marca «Órbita con hueco» como datos (`MARK`, `MARK_COLORS`, `markSvg`) y en React (`Mark`, `Wordmark`); la píldora y la flecha | `sky/mark.ts`, `sky/kit.tsx` | onview, admin; `markSvg` lo copia `onview/scripts/render-brand.mjs` |
-| El cielo «Lectura»: la lógica sin DOM (horas, brillo por carga, pulso, subida, `DEMO_DAY`), el shader y las horas en Geist Mono | `sky/airglow.ts`, `sky/sky-canvas.tsx`, `sky/sky-hours.tsx` | onview (sitio y puerta) |
-| Las piezas de Airglow: `ItemLabel` (herramienta · tipo · hora), `DayLine` (la frase del día), `ExampleSeam` (la costura de ejemplo) | `sky/airglow-kit.tsx` | onview |
-| El kit de página: cabecera en panel de cielo, sección, aro, recorrido en pasos, preguntas, control segmentado, cierre; el documento de día | `sky/page.tsx`, `sky/day.ts`, `sky/hooks.ts` | onview (envuelto en `features/frontend/sky/page.tsx`) |
-| El marco de consola: barra lateral con destinos, barra superior con el rastro y la cuenta, salida por `#signout` | `sky/console-frame.tsx` | admin |
-| Las piezas de consola: `Section`, `CallingAt`, `Masthead`, `Stamp`, campos, `StatusBox`, `Note`, `SaveRow`, `SheetDialog`… | `sky/console.tsx`, `lib/use-copy.ts` | onview (área con sesión), admin |
-| El cliente de plataforma: `platformOrigin()` (`VITE_PLATFORM_ORIGIN`; localhost → `:8800`), `api()` con credenciales, `fetchMe()`, `signInUrl()`, `signOutAndGo()` | `lib/platform-client.ts` | admin |
-
-Reglas que las piezas ya cumplen y que un consumidor no debe deshacer (están
-en la cabecera de `sky.css` y en el `DESIGN.md` de `onview`): sólo claro, con
-la noche dentro de los paneles de cielo; el violeta como único acento; la banda
-sólo dentro del cielo; Geist, y Geist Mono sólo en lo que mide el agente;
-sombra o línea, nunca las dos; vidrio sólo donde algo flota; toda carga
-inventada lleva su costura de ejemplo. Los iconos se tipan por su forma
-(`IconComponent`) porque cada consumidor trae su propia copia de lucide-react.
-
 ## Módulos
 
 <!-- BEGIN generated:modules -->
 <!-- No edites aquí: lo reescribe `npm run docs`. -->
 
-Módulos de las carpetas publicadas (89), con la primera línea de su comentario de cabecera.
+Módulos de las carpetas publicadas (57), con la primera línea de su comentario de cabecera.
 
 | Archivo | Qué hace |
 | --- | --- |
-| [`components/confirm-delete-modal.tsx`](../components/confirm-delete-modal.tsx) | «¿Seguro?» antes de un borrado, igual en toda la plataforma. |
-| [`components/form-modal.tsx`](../components/form-modal.tsx) | El envoltorio de cualquier formulario en diálogo: título, descripción y hueco. |
-| [`components/theme-provider.tsx`](../components/theme-provider.tsx) | El mundo Feed vertical es oscuro entero (subproyecto 8): el mismo casi negro fuera y dentro. |
-| [`lib/crud-api.ts`](../lib/crud-api.ts) | El cliente CRUD que se repetía en cada feature, escrito una vez. |
-| [`lib/crud-hooks.ts`](../lib/crud-hooks.ts) | Los hooks de React Query que van encima de `crud-api.ts`. |
-| [`lib/initials.ts`](../lib/initials.ts) | Dos letras en lugar de alguien que todavía no tiene avatar. |
+| [`components/theme-provider.tsx`](../components/theme-provider.tsx) | OnView es oscuro entero (Ventana, como antes Feed vertical): el mismo casi negro fuera y dentro. |
+| [`lib/platform-client.test.ts`](../lib/platform-client.test.ts) | El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. |
 | [`lib/platform-client.ts`](../lib/platform-client.ts) | Hablar con el control plane desde una consola que vive en otro origen (admin., partners., developers. |
-| [`lib/use-copy.ts`](../lib/use-copy.ts) | Copiar, hecho una sola vez para todo el proyecto: la misma implementación que partners y developers, la que usa `CopyTicket` en `console.tsx`. |
-| [`lib/utils.ts`](../lib/utils.ts) | `cn` — juntar clases de Tailwind sin que se peleen entre ellas. |
+| [`lib/platform-origin-local.test.ts`](../lib/platform-origin-local.test.ts) | En local, una consola habla con el `wrangler pages dev` de onview (puerto 8900). |
+| [`lib/platform-origin.test.ts`](../lib/platform-origin.test.ts) | Sin `VITE_PLATFORM_ORIGIN`, una consola en un subdominio habla con el apex de producción. |
 | [`lib/vite-env.d.ts`](../lib/vite-env.d.ts) | Las variables de build que lee el paquete (`import.meta.env`). |
-| [`sky/ai-mark.test.ts`](../sky/ai-mark.test.ts) | Iris, la IA de OnView (antes Lumen): su nombre y su símbolo en Feed vertical, un punto blanco con halo. |
-| [`sky/ai-mark.ts`](../sky/ai-mark.ts) | Iris, la IA de OnView: la que escribe el guion y arma el video. |
-| [`sky/console-frame.tsx`](../sky/console-frame.tsx) | El marco de consola del admin, en el mundo «Feed vertical»: la forma de una app de trabajo, la misma que el área con sesión de onview. |
-| [`sky/console.tsx`](../sky/console.tsx) | Las piezas de la consola, en el mundo «Feed vertical» (2026-11-09). |
-| [`sky/day.test.tsx`](../sky/day.test.tsx) | El documento del mundo: mientras se ve una página de OnView, `<html>` y la barra del navegador llevan el casi negro del mundo Feed vertical, y al salir vuelven a lo que… |
-| [`sky/day.ts`](../sky/day.ts) | El documento entero lleva el casi negro del mundo Feed vertical mientras se ve una página de OnView: el fondo de `<html>` (lo que asoma en el rebote del scroll) y el… |
-| [`sky/feed.test.tsx`](../sky/feed.test.tsx) | Las piezas del mundo Feed vertical (spec §3.5 y §4): el marco de video en su formato, la lámina sin imagen, la etiqueta de estado, las barras de avance, el botón del… |
-| [`sky/feed.tsx`](../sky/feed.tsx) | Las piezas del mundo Feed vertical (subproyecto 8, spec §3.5 y §4): el marco de video en su formato, la lámina sin imagen, la etiqueta de estado de una toma, las barras… |
-| [`sky/hooks.ts`](../sky/hooks.ts) | Hooks de scroll y de montaje contra los que se animan las páginas de Clear Sky, y los tres que usan las piezas de consola de `console.tsx` (`useFlash`, `useDismiss`,… |
-| [`sky/kit.tsx`](../sky/kit.tsx) | Las piezas de marca del mundo de OnView («Feed vertical»): la marca, el símbolo de Iris, el logotipo, el botón como enlace y la flecha. |
-| [`sky/mark.test.ts`](../sky/mark.test.ts) | La marca del mundo Feed vertical: un marco 9:16 redondeado con el rótulo macizo en su tercio bajo. |
-| [`sky/mark.ts`](../sky/mark.ts) | La marca de OnView en el mundo Feed vertical, como datos: **un marco vertical 9:16 redondeado con el rótulo macizo en su tercio bajo**, el texto que va abajo a la… |
-| [`sky/page.tsx`](../sky/page.tsx) | Las piezas de página del mundo de OnView («Feed vertical»), las del sitio de onview: la cabecera de página, el encabezado de sección, el aro de icono, el recorrido en… |
-| [`sky/platform-client.test.ts`](../sky/platform-client.test.ts) | El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. |
-| [`sky/platform-origin-local.test.ts`](../sky/platform-origin-local.test.ts) | En local, una consola habla con el `wrangler pages dev` de onview (puerto 8900). |
-| [`sky/platform-origin.test.ts`](../sky/platform-origin.test.ts) | Sin `VITE_PLATFORM_ORIGIN`, una consola en un subdominio habla con el apex de producción. |
-| [`sky/select.tsx`](../sky/select.tsx) | El desplegable del mundo de OnView («Feed vertical»), sobre Radix: el disparador es un campo (`variant="field"`) o una píldora de la caja de «Nuevo video»… |
-| [`ui/alert-dialog.tsx`](../ui/alert-dialog.tsx) | El diálogo de consecuencias: el mismo papel que `Dialog`, pero no se cierra al pulsar fuera y el foco empieza en «Cancel», el lado que no hace nada. |
-| [`ui/avatar.tsx`](../ui/avatar.tsx) | La cara de alguien es su monograma: su foto, o sus iniciales en el corte condensado, dentro de un cuadrado con el trazo del mundo. |
-| [`ui/badge.tsx`](../ui/badge.tsx) | El sello: un estado impreso en una caja con el trazo del mundo. |
-| [`ui/button.tsx`](../ui/button.tsx) | El billete: la única forma de botón del mundo del mapa (ver `styles/site.css`, «billetes y botones»). |
-| [`ui/card.tsx`](../ui/card.tsx) | En el mundo del mapa no hay tarjetas: hay paradas. |
-| [`ui/checkbox.tsx`](../ui/checkbox.tsx) | La casilla del mundo: un cuadrado con el trazo de 3px que se llena de tinta. |
-| [`ui/command.tsx`](../ui/command.tsx) | La paleta de órdenes sobre cmdk: el campo de búsqueda cerrado por el filete grueso, los grupos con rótulo de andén y las filas del panel de papel. |
-| [`ui/dialog.tsx`](../ui/dialog.tsx) | El diálogo de papel sobre Radix: el trazo de 3px sobre papel, la única penumbra del mundo detrás (tinta al 70 %), una cabecera cerrada por el filete grueso, el aspa… |
-| [`ui/dropdown-menu.tsx`](../ui/dropdown-menu.tsx) | El menú de acciones sobre Radix: un panel de papel con el trazo del mundo (`menu-paper`, en `styles/product.css`), filas en negrita que se tintan al pasar, rótulos de… |
-| [`ui/hover-card.tsx`](../ui/hover-card.tsx) | La ficha que se abre al pasar el ratón: el mismo panel de papel que un popover. |
-| [`ui/input.tsx`](../ui/input.tsx) | El campo del mundo: el trazo de 3px sobre papel, la única tinta clara al enfocar. |
-| [`ui/label.tsx`](../ui/label.tsx) | El rótulo de un campo: el rótulo de andén, en bloque, con medio renglón debajo. |
-| [`ui/popover.tsx`](../ui/popover.tsx) | Un panel de papel con contenido, anclado a lo que lo abre; sin radio ni sombra. |
-| [`ui/progress.tsx`](../ui/progress.tsx) | Una vía con el trazo del mundo que se rellena de tinta hasta donde llega el valor. |
-| [`ui/select.tsx`](../ui/select.tsx) | El desplegable sobre Radix: el disparador es un campo del mundo con su chevrón, y las opciones un panel de papel con filas en negrita. |
-| [`ui/separator.tsx`](../ui/separator.tsx) | El filete fino del mundo, en horizontal o en vertical. |
-| [`ui/sheet.tsx`](../ui/sheet.tsx) | La hoja lateral: un pliego de papel que entra desde un borde de la pantalla, con el trazo del mundo en el canto que da a la página y la penumbra detrás. |
-| [`ui/skeleton.tsx`](../ui/skeleton.tsx) | El hueco de carga: la forma de lo que viene, en la única tinta clara, quieto. |
-| [`ui/sonner.tsx`](../ui/sonner.tsx) | Las notificaciones: una hoja de niebla con el filete del mundo y la esquina de 2px (la piel va en `styles/sky.css`, `.site.sk [data-sonner-toast]`). |
-| [`ui/switch.tsx`](../ui/switch.tsx) | El interruptor: una vía cuadrada con el trazo del mundo y un mando de tinta que la cruza; encendido, la vía se entinta y el mando pasa a papel. |
-| [`ui/table.tsx`](../ui/table.tsx) | Una lista es una tabla de tarifas (`.fare`, en `styles/site.css`): el corte condensado con cifras tabulares, las cabeceras como rótulos de andén cerradas por el filete… |
-| [`ui/tabs.tsx`](../ui/tabs.tsx) | Las pestañas son el riel de páginas del mundo: los destinos en negrita sobre un filete fino, el actual en tinta con la barra de 3px en el color de la línea que se viaja. |
-| [`ui/textarea.tsx`](../ui/textarea.tsx) | El campo de varias líneas, con el trazo del mundo; lo mide su `rows`. |
-| [`ui/tooltip.tsx`](../ui/tooltip.tsx) | La nota al pie de un control: tinta sobre papel, en el corte condensado, sin flecha ni radio. |
 | [`ventana/ai-mark.ts`](../ventana/ai-mark.ts) | Iris, la IA de OnView en el mundo Ventana. |
+| [`ventana/app-frame.test.tsx`](../ventana/app-frame.test.tsx) | El armazón de la app en Ventana: la raíz `.vn` (ahumada, nunca luminosa), el resplandor del kit detrás, arriba la marca y la cuenta (o la vuelta), el contenido con el… |
+| [`ventana/app-frame.tsx`](../ventana/app-frame.tsx) | El armazón de la app en Ventana (spec 2026-11-23-onview-app-ventana §5): la raíz `.vn` (vidrio ahumado: la app enseña contenido del usuario y nunca va en una zona… |
 | [`ventana/button.test.tsx`](../ventana/button.test.tsx) | Botones de Ventana: etiqueta o enlace según haya `href`, deshabilitado, nombre accesible del botón de ícono y la pulsación común. |
 | [`ventana/button.tsx`](../ventana/button.tsx) | Botones en cápsula de Ventana. |
 | [`ventana/chip.test.tsx`](../ventana/chip.test.tsx) | Chip y StateChip de Ventana: span o botón según haya `onSelect`, aspa propia que no dispara la selección, ni un botón dentro de otro, y los materiales (sólido sin… |
 | [`ventana/chip.tsx`](../ventana/chip.tsx) | Chip y StateChip de Ventana. |
 | [`ventana/content.test.tsx`](../ventana/content.test.tsx) | Piezas sólidas de contenido de Ventana: Section, Row, Skeleton, Alert, Status, Tabs, Progress, Accordion y Monogram. |
 | [`ventana/content.tsx`](../ventana/content.tsx) | Las piezas sólidas de contenido de Ventana: Section, Row, Skeleton, Alert, Status, Tabs, Progress, Accordion y Monogram. |
+| [`ventana/data.test.tsx`](../ventana/data.test.tsx) | La tabla y la cifra de Ventana (spec 2026-11-24-onview-admin-correos-ventana §4.2): láminas sólidas para leer datos. |
+| [`ventana/data.tsx`](../ventana/data.tsx) | La tabla y la cifra de Ventana: láminas sólidas para leer datos (spec 2026-11-24-onview-admin-correos-ventana §4.2). |
+| [`ventana/dock.test.tsx`](../ventana/dock.test.tsx) | El dock de Ventana: la cápsula de vidrio ahumado de abajo. |
+| [`ventana/dock.tsx`](../ventana/dock.tsx) | El dock de Ventana: la navegación de la app, una cápsula de vidrio que flota abajo y al centro, igual en escritorio y teléfono (spec 2026-11-23-onview-app- ventana §5). |
 | [`ventana/field.test.tsx`](../ventana/field.test.tsx) | Campos de Ventana: etiqueta enlazada, ayuda y error accesibles, cuenta de caracteres y el alto de TextArea, que crece con el texto hasta `maxRows`. |
 | [`ventana/field.tsx`](../ventana/field.tsx) | Campos de Ventana: de una línea (`TextField`) y de varias (`TextArea`). |
+| [`ventana/form-rows.test.tsx`](../ventana/form-rows.test.tsx) | Las filas de formulario de Ventana: guardar, confirmar y copiar. |
+| [`ventana/form-rows.tsx`](../ventana/form-rows.tsx) | Las filas de formulario de Ventana (las gemelas de las de la consola de Feed vertical, ya borrada), sin texto escrito: todo lo visible llega por props (`words`,… |
 | [`ventana/glass-contrast.test.ts`](../ventana/glass-contrast.test.ts) | La cuenta del contraste sobre vidrio (`glass-contrast.ts`): la garantía del ahumado dicha con la función, los techos del luminoso como frontera exacta (con su holgura),… |
 | [`ventana/glass-contrast.ts`](../ventana/glass-contrast.ts) | La cuenta del contraste sobre el vidrio de Ventana: dado el color que hay detrás, qué color queda bajo el texto y cuánto contrasta la tinta con él. |
 | [`ventana/glass.test.tsx`](../ventana/glass.test.tsx) | Vidrio, scrim y brillo de Ventana: las clases que pinta cada pieza y lo que pasa con lo que sobra (más de tres colores) o falta (ninguno). |
 | [`ventana/glass.tsx`](../ventana/glass.tsx) | Vidrio, scrim y brillo de Ventana. |
+| [`ventana/hooks.test.ts`](../ventana/hooks.test.ts) | Los hooks de Ventana (los que sobreviven a Feed vertical): la anchura, el movimiento reducido, el paso con flechas, el aviso que se apaga solo y la parada de la URL. |
+| [`ventana/hooks.ts`](../ventana/hooks.ts) | Los hooks de Ventana: la anchura, el movimiento reducido, el paso con flechas, el aviso que se apaga solo y la parada de la URL. |
+| [`ventana/link.ts`](../ventana/link.ts) | El enlace que pinta una pieza de Ventana cuando quien la monta tiene un enrutador: `Dock` y `AppFrame` aceptan `linkAs` para que la navegación de la app no recargue la… |
 | [`ventana/mark.test.ts`](../ventana/mark.test.ts) | Las marcas de Ventana como datos: «Dos capas» (OnView) y «El prisma» (Iris). |
 | [`ventana/mark.ts`](../ventana/mark.ts) | La marca de OnView en el mundo Ventana, «Dos capas», como datos: **dos marcos verticales 9:16 superpuestos**, el video (atrás, tenue) y el vidrio que flota encima… |
 | [`ventana/marks.test.tsx`](../ventana/marks.test.tsx) | Mark, AiMark y Wordmark de Ventana. |
@@ -329,13 +262,15 @@ Módulos de las carpetas publicadas (89), con la primera línea de su comentario
 | [`ventana/select.tsx`](../ventana/select.tsx) | El desplegable de Ventana, sobre Radix: el disparador es un campo sólido (`variant="field"`) o una cápsula sólida (`variant="chip"`), y la lista es un panel de vidrio… |
 | [`ventana/sheet.test.tsx`](../ventana/sheet.test.tsx) | Hoja y avisos de Ventana: `<dialog>` nativo (abrir, cerrar, nombre, Escape, clic fuera, foco) y `Toaster` sobre sonner con las clases de vidrio del sistema. |
 | [`ventana/sheet.tsx`](../ventana/sheet.tsx) | La hoja de Ventana, sobre el `<dialog>` nativo: el sistema ya atrapa el foco, lo devuelve al cerrar y sabe de Escape. |
+| [`ventana/side-frame.test.tsx`](../ventana/side-frame.test.tsx) | El armazón con barra lateral (spec 2026-11-24-onview-admin-correos-ventana §4.1): en ancho, una barra de vidrio ahumado a la izquierda con la marca, las secciones y la… |
+| [`ventana/side-frame.tsx`](../ventana/side-frame.tsx) | El armazón con barra lateral de Ventana: la consola de administración (spec 2026-11-24-onview-admin-correos-ventana §4.1). |
 | [`ventana/springs.test.ts`](../ventana/springs.test.ts) | Muelles de Ventana: la curva se calcula en `springs.ts` y `npm run springs` la escribe como `linear()` en `styles/ventana/motion.css` (eso lo prueba… |
 | [`ventana/springs.ts`](../ventana/springs.ts) | Muelles de Ventana. |
 | [`ventana/toast.tsx`](../ventana/toast.tsx) | Los avisos de Ventana, sobre sonner, con el mismo juego de iconos que `ui/sonner.tsx`. |
 | [`ventana/toggle.test.tsx`](../ventana/toggle.test.tsx) | Interruptor y casilla de Ventana: teclado, deshabilitado, texto clicable y piezas sólidas. |
 | [`ventana/toggle.tsx`](../ventana/toggle.tsx) | Interruptor y casilla de Ventana, ambos sólidos (nunca vidrio): apagado sobre `--vn-raised`, encendido sobre `--vn-ink` con la perilla o la marca en `--vn-action-ink`. |
 | [`ventana/video-frame.test.tsx`](../ventana/video-frame.test.tsx) | VideoFrame de Ventana: el formato como clase (el aspect-ratio vive en el CSS y lo comprueba tests/ventana-tokens.test.ts), rótulo con su propio scrim dentro del… |
-| [`ventana/video-frame.tsx`](../ventana/video-frame.tsx) | Marco de video de Ventana, con la firma de `VideoFrame` de `sky/feed.tsx`: el medio de borde a borde en su formato, radio de panel y el rótulo abajo a la izquierda. |
+| [`ventana/video-frame.tsx`](../ventana/video-frame.tsx) | Marco de video de Ventana, con la firma del `VideoFrame` de Feed vertical: el medio de borde a borde en su formato, radio de panel y el rótulo abajo a la izquierda. |
 | [`worker/cookies.ts`](../worker/cookies.ts) | Lectura de cookies, y nada más. |
 | [`worker/credit-settle.ts`](../worker/credit-settle.ts) | Cobrar o devolver una reserva de créditos: la mitad del libro de créditos que hace falta en los dos lados. |
 | [`worker/response.ts`](../worker/response.ts) | Las tres respuestas JSON que devuelve cualquier handler de Pages Functions. |

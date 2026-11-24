@@ -1,6 +1,6 @@
 /**
- * Las filas de formulario de Ventana, gemelas de las de `sky/console.tsx` sin su
- * texto escrito: todo lo visible llega por props (`words`, `label`,
+ * Las filas de formulario de Ventana (las gemelas de las de la consola de Feed
+ * vertical, ya borrada), sin texto escrito: todo lo visible llega por props (`words`, `label`,
  * `cancelLabel`, `copiedLabel`), así que valen en los tres idiomas.
  *
  * - `SaveRow`: el pie de un formulario. El aviso a la izquierda, con su sitio

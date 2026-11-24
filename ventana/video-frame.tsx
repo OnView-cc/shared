@@ -1,5 +1,5 @@
 /**
- * Marco de video de Ventana, con la firma de `VideoFrame` de `sky/feed.tsx`: el
+ * Marco de video de Ventana, con la firma del `VideoFrame` de Feed vertical: el
  * medio de borde a borde en su formato, radio de panel y el rótulo abajo a la
  * izquierda. El marco trae su propio scrim dentro del envoltorio del rótulo (no usa
  * el `Scrim` de glass.tsx): el degradado lo mide el texto, no el marco, así el

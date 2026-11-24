@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 /**
- * El mundo Feed vertical es oscuro entero (subproyecto 8): el mismo casi negro
- * fuera y dentro. No hay tema claro ni lo elige el sistema.
+ * OnView es oscuro entero (Ventana, como antes Feed vertical): el mismo casi
+ * negro fuera y dentro. No hay tema claro ni lo elige el sistema.
  *
  * Este proveedor sobrevive para que las apps que lo montan sigan compilando. No
  * lee `localStorage` ni escucha al sistema: pone la clase `dark` en la raíz

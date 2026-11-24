@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /** El cliente de plataforma: la URL de entrada, las credenciales en cada llamada, la frase del servidor y un solo refresh. */
 import { beforeAll, describe, expect, it, vi } from "vitest";
-import { ApiError, api, fetchMe, signInUrl } from "../lib/platform-client";
+import { ApiError, api, fetchMe, signInUrl } from "./platform-client";
 
 // jsdom corre en `localhost`, donde el cliente apuntaría al puerto local de
 // desarrollo; el build de producción fija el origen con esta variable.
