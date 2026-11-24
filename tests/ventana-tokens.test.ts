@@ -1741,6 +1741,25 @@ describe("Ventana v3.0.0: la tabla y la cifra", () => {
 		expect(data).not.toMatch(/backdrop-filter|vn-glass/);
 	});
 
+	const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const rule = (sel: string) => data.match(new RegExp(`(?:^|\\n)${escapeRe(sel)}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+
+	it("las cifras van tabulares y alineadas al final", () => {
+		expect(rule(".vn .vn-table__num")).toContain("tabular-nums");
+		expect(rule(".vn .vn-table__num")).toMatch(/text-align:\s*end/);
+		expect(rule(".vn .vn-stat__value")).toContain("tabular-nums");
+	});
+
+	it("la tabla se desplaza dentro de su lámina y un valor largo sin espacios no la rompe", () => {
+		expect(rule(".vn .vn-table__scroll")).toMatch(/overflow-x:\s*auto/);
+		expect(rule(".vn .vn-table td")).toMatch(/overflow-wrap:\s*anywhere/);
+	});
+
+	it("en tono de peligro la cifra sólo cambia su detalle", () => {
+		expect(rule('.vn .vn-stat[data-tone="danger"] .vn-stat__detail')).toContain("var(--vn-danger)");
+		expect(rule('.vn .vn-stat[data-tone="danger"] .vn-stat__value')).toBe("");
+	});
+
 	it("la cabecera y el rótulo, en la tinta 2 sólida, pasan AA sobre la lámina", () => {
 		expect(data).toMatch(/\.vn \.vn-table th\s*\{[^}]*color: var\(--vn-ink-2-solid\)/);
 		expect(contrast(token("ink-2-solid")!, token("surface")!)).toBeGreaterThanOrEqual(4.5);

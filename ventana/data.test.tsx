@@ -4,8 +4,6 @@
  * §4.2): láminas sólidas para leer datos. La tabla es una `<table>` de verdad,
  * con nombre, que se desplaza dentro de su lámina y nunca ensancha la página.
  */
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -13,9 +11,6 @@ import { DataTable, Stat, type Column } from "./data";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-// En jsdom `import.meta.url` no es un `file:`: la ruta sale de la raíz del paquete, donde corre vitest
-const css = readFileSync(resolve(process.cwd(), "styles/ventana/data.css"), "utf8").replace(/\r\n/g, "\n");
-const rule = (sel: string) => css.match(new RegExp(`(?:^|\\n)${sel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
 
 let root: Root | undefined;
 let host: HTMLElement | undefined;
@@ -87,16 +82,12 @@ describe("DataTable", () => {
 		const h = mount(<DataTable label="Subscriptions" columns={COLUMNS} rows={ROWS} rowKey={(r) => r.id} empty="" />);
 		const cell = h.querySelectorAll("tbody tr")[0].querySelectorAll("td")[1];
 		expect(cell.classList.contains("vn-table__num")).toBe(true);
-		expect(rule(".vn .vn-table__num")).toContain("tabular-nums");
-		expect(rule(".vn .vn-table__num")).toMatch(/text-align:\s*end/);
 	});
 
 	it("se desplaza dentro de su lámina y un valor largo sin espacios no la rompe", () => {
 		const h = mount(<DataTable label="Subscriptions" columns={COLUMNS} rows={ROWS} rowKey={(r) => r.id} empty="" />);
 		const scroller = h.querySelector("table")!.parentElement!;
 		expect(scroller.classList.contains("vn-table__scroll")).toBe(true);
-		expect(rule(".vn .vn-table__scroll")).toMatch(/overflow-x:\s*auto/);
-		expect(rule(".vn .vn-table td")).toMatch(/overflow-wrap:\s*anywhere/);
 		expect(h.querySelector(".vn-table")?.closest(".vn-panel")).not.toBeNull();
 	});
 });
@@ -108,14 +99,11 @@ describe("Stat", () => {
 		expect(stat.textContent).toContain("MRR");
 		expect(stat.querySelector(".vn-stat__value")?.textContent).toBe("$12,400");
 		expect(stat.querySelector(".vn-stat__detail")?.textContent).toBe("+4% this month");
-		expect(rule(".vn .vn-stat__value")).toContain("tabular-nums");
 	});
 
 	it("en tono de peligro sólo cambia el detalle", () => {
 		const h = mount(<Stat label="Past due" value="3" detail="Needs a look" tone="danger" />);
 		const stat = h.querySelector(".vn-stat")!;
 		expect(stat.getAttribute("data-tone")).toBe("danger");
-		expect(rule('.vn .vn-stat[data-tone="danger"] .vn-stat__detail')).toContain("var(--vn-danger)");
-		expect(rule('.vn .vn-stat[data-tone="danger"] .vn-stat__value')).toBe("");
 	});
 });
