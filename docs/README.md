@@ -23,7 +23,7 @@ siguiente). La sección «Airglow» de más abajo es historia del fork. Ver
 `peerDependencies`; cada consumidor las deduplica (`dedupe` en su
 `vite.config.ts`) para que no haya dos React.
 
-## Ventana: el mundo nuevo (v2.8.0, parte 1 de 5; v2.9.0 con lo que pide el sitio)
+## Ventana: el mundo nuevo (v2.8.0, parte 1 de 5; v2.9.0 con lo que pide el sitio; v2.10.0 con lo que pide la app)
 
 Un oscuro único, sin color de acento, con vidrio tipo Apple (Liquid Glass). Vive
 en `ventana/` (componentes) y `styles/ventana/` (CSS), junto a Feed vertical
@@ -175,7 +175,11 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 | `Sheet` | `ventana/sheet.tsx` | hoja y diálogo sobre `<dialog>` nativo: sube en el teléfono, escala en escritorio |
 | `Toaster` | `ventana/toast.tsx` | avisos con `sonner` y el estilo del sistema |
 | `NavBar` | `ventana/nav-bar.tsx` | la barra flotante en cápsula |
-| `Section`, `Row`, `Skeleton`, `Alert`, `Status`, `Tabs`, `Progress`, `Accordion`, `Monogram` | `ventana/content.tsx` | lo sólido: contenido sobre el suelo |
+| `Section`, `Row`, `Skeleton`, `Alert`, `Status`, `Tabs`, `Progress`, `Accordion`, `Monogram` | `ventana/content.tsx` | lo sólido: contenido sobre el suelo; `Row chevron` pinta la flecha de Ajustes |
+| `Panel`, `RowGroup` | `ventana/content.tsx` | la lámina sólida (superficie, filete y radio de hoja; `raised`, el escalón más claro) y el grupo de filas como Ajustes (rótulo encima, filete sólo entre filas) |
+| `SaveRow`, `ConfirmRow`, `CopyButton` | `ventana/form-rows.tsx` | el pie de un formulario, cancelar y confirmar un acto y copiar un valor; todo el texto por props (`words`, `cancelLabel`, `copiedLabel`) |
+| `Dock`, `DockItem` | `ventana/dock.tsx` | la navegación de la app: cápsula de vidrio ahumado abajo y al centro; en estrecho, iconos y el + redondo; `compact` y `hidden` los decide quien lo monta |
+| `AppFrame` | `ventana/app-frame.tsx` | el armazón de la app: raíz `.vn` (nunca luminosa), resplandor del kit, marca y cuenta arriba (o la vuelta en cápsula con `back`), el hueco del dock y el pie |
 | `VideoFrame` | `ventana/video-frame.tsx` | marco de video 9:16, 1:1 o 16:9 con su rótulo y su propio scrim |
 | `Mark`, `Wordmark`, `AiMark` | `ventana/marks.tsx` | las marcas: OnView («Dos capas») e Iris («El prisma»; pensando, el aro gira) |
 | `MARK`, `markSvg`, `markGlassSvg` | `ventana/mark.ts` | la marca de OnView como datos (la usa `onview/scripts/render-brand.mjs`): el dibujo plano y el de vidrio, que sólo va grande sobre el casi negro (icono de app, imagen para compartir) |
@@ -186,7 +190,7 @@ pueda abrirse dentro de una hoja pasa `usePortalHost()` como `container` de su
 El CSS: `tokens.css` (tokens `--vn-*` y valores vivos del vidrio), `type.css`
 (la escala: `vn-display`, `vn-title-1`, `vn-title-2`, `vn-title-3`, `vn-lead`, `vn-body`,
 `vn-small`, `vn-label`, `vn-num`, `vn-wrap`, `vn-link`, `vn-prose`), `glass.css`,
-`motion.css` (`vn-arrive` y `vn-press`: la llegada es una animación de fotogramas
+`frame.css` (el armazón y el dock), `motion.css` (`vn-arrive` y `vn-press`: la llegada es una animación de fotogramas
 y va **en la propia pieza, nunca en un envoltorio de un vidrio**; convive con
 `vn-press` y con la transición de cualquier pieza), `controls.css`, `content.css`
 y `overlays.css`.

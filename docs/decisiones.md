@@ -186,3 +186,11 @@ El sitio se compone sólo con piezas del sistema; lo que le faltaba se añade aq
 - **`Button variant="line"`.** Hermano del chip de sólo filete: la acción secundaria dentro de un vidrio (las salidas de cada plan en la tabla de precios). Uno de vidrio sería un vidrio dentro de otro, y el de sin fondo no se ve como botón hasta pasar el puntero. Filete `--vn-line`, sin relleno; al pasar el puntero sube el filete, nunca aclara.
 
 Además, un arreglo de la v2.8.0: en Windows con `core.autocrlf` las hojas llegaban con CRLF y las pruebas que las leen fallaban. `.gitattributes` fija LF en el árbol de trabajo y los lectores de las pruebas normalizan el final de línea.
+
+## Ventana: lo que pide la app (v2.10.0, parte 3, 2026-11-23)
+
+- **El dock es siempre vidrio ahumado.** La cápsula del sitio es luminosa arriba porque detrás sólo tiene el resplandor; un dock abajo tiene carteles y texto del usuario por debajo desde el primer cuadro, y la garantía de contraste que vale ahí es la del ahumado (contra blanco puro). Por eso `AppFrame` no monta `Lit`.
+- **Lo actual del dock oscurece y lleva filete**, igual que `vn-nav-link`: aclarar sobre vidrio bajaría el contraste del texto.
+- **El dock se posiciona solo** (fijo abajo, sobre el área segura) y el armazón reserva su hueco con `padding-block-end` en el `main`: nada queda tapado sin que cada pantalla tenga que acordarse.
+- **Las filas de formulario llevan todo su texto por props.** Las de `sky/console.tsx` tenían las frases en inglés escritas dentro; en Ventana valen en los tres idiomas.
+- **`Row` gana `chevron` y no cambia nada más**: el sitio la usa tal cual y la flecha sólo sale cuando quien la monta la pide.

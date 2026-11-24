@@ -1,0 +1,264 @@
+/*
+ * Ventana: el armazón de la app y su dock (spec 2026-11-23-onview-app-ventana §5).
+ * El vidrio no se redeclara: el dock y la cápsula de vuelta llevan `vn-glass`, que
+ * trae el material y sus respaldos; aquí sólo su forma por variable (`--vn-glass-r`)
+ * y su sitio. Lo de dentro del dock (destinos y +) pinta su propio estado: lo actual
+ * oscurece y lleva filete, nunca aclara.
+ */
+
+/* ── El armazón ── */
+.vn.vn-app {
+	--vn-dock-h: 52px;
+	position: relative;
+	isolation: isolate;
+	display: flex;
+	flex-direction: column;
+	min-block-size: 100dvh;
+	overflow-x: clip;
+}
+.vn .vn-app__glow {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline: 0;
+	z-index: -1;
+	block-size: min(40rem, 80dvh);
+	overflow: hidden;
+	pointer-events: none;
+}
+/* El resplandor se funde al suelo: su borde de abajo no se ve como un corte */
+.vn .vn-app__glow::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(to bottom, transparent 35%, var(--vn-ground) 100%);
+}
+.vn .vn-app__top {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	align-items: center;
+	gap: 12px;
+	padding: max(16px, env(safe-area-inset-top)) clamp(16px, 3vw, 32px) 8px;
+}
+.vn .vn-app__brand {
+	grid-column: 1;
+	justify-self: start;
+}
+.vn .vn-app__title {
+	grid-column: 2;
+	margin: 0;
+	max-inline-size: 40vw;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 0.9375rem;
+	font-weight: 600;
+}
+.vn .vn-app__account {
+	grid-column: 3;
+	justify-self: end;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+/* La vuelta: una cápsula de vidrio con su flecha; el material lo pone vn-glass */
+.vn .vn-app__back {
+	--vn-glass-r: var(--vn-r-pill);
+	grid-column: 1;
+	justify-self: start;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	min-block-size: 40px;
+	padding: 0 16px 0 10px;
+	color: var(--vn-ink);
+	font-size: 0.9375rem;
+	font-weight: 600;
+	text-decoration: none;
+}
+.vn .vn-app__back > svg {
+	inline-size: 20px;
+	block-size: 20px;
+	flex: none;
+}
+.vn .vn-app__back:focus-visible {
+	outline: 2px solid var(--vn-ink);
+	outline-offset: 2px;
+}
+.vn .vn-app__main {
+	flex: 1;
+	min-inline-size: 0;
+}
+/* El hueco del dock: su alto, su margen y el área segura; nada queda debajo */
+.vn .vn-app__main--dock {
+	padding-block-end: calc(var(--vn-dock-h) + 40px + env(safe-area-inset-bottom));
+}
+.vn .vn-app__footer {
+	padding: 48px clamp(16px, 3vw, 32px) 8px;
+	color: var(--vn-ink-2);
+	font-size: 0.8125rem;
+}
+
+/* ── El dock ── */
+.vn .vn-dock {
+	--vn-glass-r: var(--vn-r-pill);
+	position: fixed;
+	z-index: 40;
+	inset-block-end: max(16px, env(safe-area-inset-bottom));
+	inset-inline-start: 50%;
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	box-sizing: border-box;
+	block-size: var(--vn-dock-h, 52px);
+	max-inline-size: calc(100% - 24px);
+	padding-inline: 6px;
+	translate: -50% 0;
+	transition:
+		translate var(--vn-spring-soft-ms) var(--vn-spring-soft),
+		opacity 200ms ease-out,
+		block-size var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn .vn-dock[data-hidden] {
+	translate: -50% calc(100% + 32px);
+	opacity: 0;
+	pointer-events: none;
+}
+.vn .vn-dock__item {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	block-size: 40px;
+	padding-inline: 16px;
+	border-radius: var(--vn-r-pill);
+	background-color: transparent;
+	box-shadow: inset 0 0 0 1px transparent;
+	color: var(--vn-ink);
+	font-size: 0.875rem;
+	font-weight: 500;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	-webkit-tap-highlight-color: transparent;
+	transition: box-shadow 140ms ease-out;
+}
+/* Lo actual oscurece y lleva filete; nunca aclara (sobre vidrio bajaría el contraste) */
+.vn .vn-dock__item[aria-current="page"] {
+	background-color: rgba(6, 6, 7, 0.32);
+	box-shadow: inset 0 0 0 1px var(--vn-line);
+	font-weight: 600;
+}
+@media (hover: hover) and (pointer: fine) {
+	.vn .vn-dock__item:hover {
+		box-shadow: inset 0 0 0 1px var(--vn-line);
+	}
+}
+.vn .vn-dock__item:focus-visible,
+.vn .vn-dock__plus:focus-visible {
+	outline: 2px solid var(--vn-ink);
+	outline-offset: 2px;
+}
+.vn .vn-dock__action {
+	margin-inline-start: 6px;
+}
+.vn .vn-dock__sep {
+	inline-size: 1px;
+	block-size: 22px;
+	margin-inline: 8px 2px;
+	background: var(--vn-line);
+}
+.vn .vn-dock__meta {
+	display: inline-flex;
+	align-items: center;
+	padding-inline-end: 10px;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.vn .vn-dock__meta a {
+	color: inherit;
+	text-decoration: none;
+}
+.vn .vn-dock__meta a:focus-visible {
+	outline: 2px solid var(--vn-ink);
+	outline-offset: 4px;
+	border-radius: 4px;
+}
+
+/* Estrecho: destinos con ícono y texto pequeño, el + redondo en medio */
+.vn .vn-dock[data-narrow] {
+	--vn-dock-h: 60px;
+	justify-content: space-between;
+	gap: 8px;
+	inline-size: min(22rem, calc(100% - 24px));
+	padding-inline: 8px;
+}
+.vn .vn-dock[data-narrow] .vn-dock__item {
+	flex-direction: column;
+	gap: 3px;
+	block-size: 48px;
+	min-inline-size: 64px;
+	padding-inline: 12px;
+	font-size: 0.6875rem;
+	font-weight: 600;
+}
+.vn .vn-dock__icon {
+	display: inline-flex;
+}
+.vn .vn-dock__icon svg {
+	inline-size: 20px;
+	block-size: 20px;
+}
+.vn .vn-dock__plus {
+	display: grid;
+	place-items: center;
+	inline-size: 44px;
+	block-size: 44px;
+	border-radius: var(--vn-r-pill);
+	background: var(--vn-action);
+	color: var(--vn-action-ink);
+	-webkit-tap-highlight-color: transparent;
+	transition: scale var(--vn-spring-snap-ms) var(--vn-spring-snap);
+}
+.vn .vn-dock__plus:active {
+	scale: 0.94;
+}
+.vn .vn-dock__plus svg {
+	inline-size: 22px;
+	block-size: 22px;
+}
+/* Encogido (al bajar en el teléfono): sólo iconos y el + */
+.vn .vn-dock[data-narrow][data-compact] {
+	--vn-dock-h: 48px;
+}
+.vn .vn-dock[data-narrow][data-compact] .vn-dock__label {
+	display: none;
+}
+.vn .vn-dock[data-narrow][data-compact] .vn-dock__item {
+	block-size: 40px;
+}
+.vn .vn-dock[data-narrow][data-compact] .vn-dock__plus {
+	inline-size: 38px;
+	block-size: 38px;
+}
+
+/* Movimiento reducido: el dock no se desliza ni cambia de alto con resorte; sólo opacidad */
+@media (prefers-reduced-motion: reduce) {
+	.vn .vn-dock {
+		transition: opacity 160ms linear;
+	}
+	.vn .vn-dock[data-hidden] {
+		translate: -50% 0;
+	}
+	.vn .vn-dock__plus {
+		transition: none;
+	}
+}
+
+/* Transparencia reducida: el vidrio pasa a su sólido (lo hace vn-glass); el resplandor se apaga */
+@media (prefers-reduced-transparency: reduce) {
+	.vn .vn-app__glow {
+		display: none;
+	}
+}

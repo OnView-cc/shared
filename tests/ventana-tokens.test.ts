@@ -39,6 +39,7 @@ const type = read("../styles/ventana/type.css");
 const controls = read("../styles/ventana/controls.css");
 const content = read("../styles/ventana/content.css");
 const overlays = read("../styles/ventana/overlays.css");
+const frame = read("../styles/ventana/frame.css");
 const all = tokens + glass + type + controls + content + overlays + read("../styles/ventana.css");
 const allVentanaCss = [
 	...readdirSync(new URL("../styles/ventana/", import.meta.url))
@@ -632,6 +633,10 @@ describe("Ventana controles", () => {
 		// La lámina sólida (Panel), su escalón y el grupo de filas (RowGroup): pintan su superficie y filete; nunca llevan vn-glass (hay prueba de marcado)
 		"vn-panel",
 		"vn-panel--raised",
+		// Lo de dentro del dock: los destinos (lo actual oscurece y lleva filete, como vn-nav-link), el + blanco y el filete; nunca llevan vn-glass (hay prueba de marcado); el dock sí es vidrio
+		"vn-dock__item",
+		"vn-dock__plus",
+		"vn-dock__sep",
 		"vn-rowgroup",
 		"vn-skel__block",
 		"vn-alert",
@@ -1657,5 +1662,31 @@ describe("Ventana v2.10.0: lo que pide la app", () => {
 		expect(content).toMatch(/\.vn-panel\s*\{[^}]*background:\s*var\(--vn-surface\)/);
 		expect(content).toMatch(/\.vn-panel--raised\s*\{[^}]*background:\s*var\(--vn-raised\)/);
 		expect(content).not.toMatch(/\.vn-(panel|rowgroup)[^{]*\{[^}]*backdrop-filter/);
+	});
+});
+
+describe("Ventana v2.10.0: el dock y el armazón", () => {
+	const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const rule = (sel: string) => frame.match(new RegExp(`(?:^|\\n)${escape(sel)}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+
+	it("el dock y la vuelta no declaran lo que posee el material; sólo su radio por variable", () => {
+		for (const sel of [".vn .vn-dock", ".vn .vn-app__back"]) {
+			const body = rule(sel);
+			expect(body, sel).toContain("--vn-glass-r");
+			expect(body, sel).not.toMatch(/(^|[;\s])(background(-color|-image)?|backdrop-filter|border(-color)?|box-shadow)\s*:/);
+		}
+	});
+
+	it("lo actual del dock oscurece, nunca aclara", () => {
+		expect(rule('.vn .vn-dock__item[aria-current="page"]')).toContain("rgba(6, 6, 7, 0.32)");
+	});
+
+	it("con movimiento reducido el dock sólo cambia la opacidad y con transparencia reducida se apaga el resplandor", () => {
+		expect(frame).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.vn \.vn-dock\s*\{\s*transition: opacity/);
+		expect(frame).toMatch(/prefers-reduced-transparency: reduce\)\s*\{\s*\.vn \.vn-app__glow\s*\{\s*display: none/);
+	});
+
+	it("el contenido reserva el hueco del dock con el área segura", () => {
+		expect(rule(".vn .vn-app__main--dock")).toContain("env(safe-area-inset-bottom)");
 	});
 });
