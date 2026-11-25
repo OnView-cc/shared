@@ -73,12 +73,24 @@ export function auditFrame(stage: HTMLElement, moment: number, format: Format, o
 	const visible = all.filter((el) => opacityOf(el, layer) > VISIBLE);
 	const texts = visible.filter(ownText).map((el) => ({ el, box: rel(el) }));
 
+	const clips = (el: Element) => {
+		const cs = el.ownerDocument.defaultView?.getComputedStyle(el);
+		return !!cs && ["hidden", "clip", "auto", "scroll"].includes(cs.overflow || cs.overflowX || "visible");
+	};
 	for (const { el, box } of texts) {
 		const cw = el.clientWidth;
 		const ch = el.clientHeight;
-		const spills = (cw > 0 && el.scrollWidth > cw + TOL) || (ch > 0 && el.scrollHeight > ch + TOL);
+		// Sólo se corta lo que recorta su caja (o un contenedor que recorta): un texto que sobresale sin recorte se ve entero.
+		const spills = clips(el) && ((cw > 0 && el.scrollWidth > cw + TOL) || (ch > 0 && el.scrollHeight > ch + TOL));
+		let cut = false;
+		for (let p = el.parentElement; p && p !== layer; p = p.parentElement) {
+			if (!clips(p)) continue;
+			const c = rel(p);
+			if (box.left < c.left - TOL || box.top < c.top - TOL || box.right > c.right + TOL || box.bottom > c.bottom + TOL) cut = true;
+			break;
+		}
 		const outside = box.left < -TOL || box.top < -TOL || box.right > W + TOL || box.bottom > H + TOL;
-		if (spills || outside) add("text_overflow", `${label(el)} ${outside ? "leaves the frame" : "does not fit its box"}`);
+		if (spills || cut || outside) add("text_overflow", `${label(el)} ${outside ? "leaves the frame" : "is cut by its box"}`);
 		else if (box.left < safe.left * W - TOL || box.right > (1 - safe.right) * W + TOL || box.top < safe.top * H - TOL || box.bottom > (1 - safe.bottom) * H + TOL) add("out_of_safe_area", `${label(el)} is outside the safe area`);
 	}
 	for (let i = 0; i < texts.length; i++) {

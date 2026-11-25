@@ -47,10 +47,30 @@ describe("auditFrame", () => {
 		expect(codes()).toEqual([]);
 	});
 
-	it("text_overflow: text wider than its box", () => {
+	it("text_overflow: text wider than a box that clips it", () => {
 		const el = text("Una frase muy larga", "200,600,500,120");
+		el.style.overflow = "hidden";
 		Object.defineProperty(el, "clientWidth", { value: 500 });
 		Object.defineProperty(el, "scrollWidth", { value: 620 });
+		expect(codes()).toContain("text_overflow");
+	});
+
+	it("a text that sticks out of a box that does not clip it is not overflow", () => {
+		const el = text("Hola", "200,600,500,120");
+		Object.defineProperty(el, "clientWidth", { value: 500 });
+		Object.defineProperty(el, "scrollWidth", { value: 503 });
+		expect(codes()).not.toContain("text_overflow");
+	});
+
+	it("text_overflow: text cut by an ancestor that clips", () => {
+		const screen = document.createElement("div");
+		screen.style.overflow = "hidden";
+		screen.dataset.box = "100,100,400,400";
+		layer.appendChild(screen);
+		const el = document.createElement("div");
+		el.textContent = "Cortado";
+		el.dataset.box = "300,300,400,120";
+		screen.appendChild(el);
 		expect(codes()).toContain("text_overflow");
 	});
 
