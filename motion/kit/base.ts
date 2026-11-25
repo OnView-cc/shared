@@ -10,6 +10,7 @@
  * crean nodos dentro de un `onUpdate` y dibujan dentro de `ctx.el` (o de la
  * pieza que se les pase).
  */
+import { gsap } from "gsap";
 import type { SceneCtx } from "../scene/context";
 
 export interface ComponentDoc {
@@ -37,11 +38,13 @@ export function piece(ctx: SceneCtx, cls: string, o: { x?: number; y?: number; w
 		position: "absolute",
 		left: `${(o.x ?? s.w / 2) * ctx.u}px`,
 		top: `${(o.y ?? s.h / 2) * ctx.u}px`,
-		transform: "translate(-50%, -50%)",
+
 	});
 	if (o.width != null) el.style.width = `${o.width * ctx.u}px`;
 	if (o.height != null) el.style.height = `${o.height * ctx.u}px`;
 	(o.parent ?? ctx.el).appendChild(el);
+	// Centrado con GSAP (no con `transform` en CSS): así las piezas se pueden mover y girar sin perderlo.
+	gsap.set(el, { xPercent: -50, yPercent: -50 });
 	return el;
 }
 
@@ -65,3 +68,22 @@ export const AFTER = { immediateRender: false } as const;
 
 /** Un tiempo dentro del momento: nunca antes de que empiece ni después de que acabe. */
 export const within = (ctx: SceneCtx, t: number) => Math.min(ctx.at + ctx.seconds, Math.max(ctx.at, t));
+
+export type From = "left" | "right" | "top" | "bottom" | "scale";
+
+/** El desplazamiento (en px) desde el que entra una pieza por un lado; `scale` entra en su sitio, creciendo. */
+export function offsetFrom(ctx: SceneCtx, from: From): { x: number; y: number; scale: number } {
+	const s = stageU(ctx);
+	if (from === "left") return { x: -s.w * 0.75 * ctx.u, y: 0, scale: 1 };
+	if (from === "right") return { x: s.w * 0.75 * ctx.u, y: 0, scale: 1 };
+	if (from === "top") return { x: 0, y: -s.h * 0.85 * ctx.u, scale: 1 };
+	if (from === "bottom") return { x: 0, y: s.h * 0.85 * ctx.u, scale: 1 };
+	return { x: 0, y: 0, scale: 0.6 };
+}
+
+/** Un envoltorio con perspectiva (para piezas que giran en 3D), centrado en (x, y). */
+export function stage3d(ctx: SceneCtx, cls: string, o: { x?: number; y?: number }): HTMLElement {
+	const wrap = piece(ctx, cls, o);
+	Object.assign(wrap.style, { perspective: `${220 * ctx.u}px` });
+	return wrap;
+}
