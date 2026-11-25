@@ -52,6 +52,8 @@
     "vitest": "^3.2.7"
   },
   "dependencies": {
+    "acorn": "8.19.0",
+    "acorn-walk": "8.3.5",
     "gsap": "3.13.0"
   }
 }
