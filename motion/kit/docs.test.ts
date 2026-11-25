@@ -28,8 +28,10 @@ describe("kit docs", () => {
 describe("KIT_DOCS, the docs without the DOM (for the Worker)", () => {
 	it("is exactly kitDocs(); regenerate with UPDATE_KIT_DOCS=1 npx vitest run motion/kit/docs.test.ts", async () => {
 		const text = kitDocs();
-		if (process.env.UPDATE_KIT_DOCS) {
-			const { writeFileSync } = await import("node:fs");
+		// Sin tipos de Node en este paquete: el entorno y `fs` se leen sin nombrarlos en los tipos.
+		const env = (globalThis as unknown as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {};
+		if (env.UPDATE_KIT_DOCS) {
+			const { writeFileSync } = (await import(/* @vite-ignore */ `node:${"fs"}`)) as { writeFileSync(file: URL, text: string): void };
 			const body = `/**\n * La documentación de la caja ya escrita (la genera \`motion/kit/docs.test.ts\` con UPDATE_KIT_DOCS=1):\n * el mismo texto que \`kitDocs()\`, sin importar los componentes, para el Worker que escribe escenas\n * (no tiene DOM). La prueba falla si se queda vieja.\n */\nexport const KIT_DOCS = ${JSON.stringify(text)};\n`;
 			writeFileSync(new URL("./docs-text.ts", import.meta.url), body);
 		}
