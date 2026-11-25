@@ -246,6 +246,14 @@
 		border-end-end-radius: 0;
 	}
 }
+/* Con el teclado abierto (sheet.tsx mide cuánto tapa) la hoja sube sobre él y
+   encoge, para que su pie siga a la vista */
+@media (max-width: 39.99rem) {
+	.vn.vn-sheet[open] {
+		margin-block-end: var(--vn-keyboard-inset, 0px);
+		max-block-size: min(calc(88dvh - var(--vn-keyboard-inset, 0px)), 44rem);
+	}
+}
 
 .vn.vn-sheet:focus-visible {
 	outline: 2px solid transparent;
@@ -339,6 +347,10 @@
 		max-inline-size: 32rem;
 		translate: 0 0;
 		scale: 0.96;
+	}
+	/* Una hoja ancha: formularios de dos columnas y listas largas */
+	.vn.vn-sheet[data-size="wide"] {
+		max-inline-size: 40rem;
 	}
 	.vn.vn-sheet[open] {
 		scale: 1;

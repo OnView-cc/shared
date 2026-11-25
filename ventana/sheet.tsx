@@ -47,6 +47,7 @@ export function Sheet({
 	closeLabel,
 	children,
 	footer,
+	size = "default",
 }: {
 	open: boolean;
 	onClose: () => void;
@@ -57,6 +58,8 @@ export function Sheet({
 	closeLabel: string;
 	children?: ReactNode;
 	footer?: ReactNode;
+	/** `wide`: desde 40rem la hoja mide 40rem en vez de 32 (formularios de dos columnas, listas). */
+	size?: "default" | "wide";
 }): ReactElement {
 	const ref = useRef<HTMLDialogElement>(null);
 	// El diálogo existe siempre (sólo su contenido se monta con `open`): se toma una vez, al montarse
@@ -93,10 +96,33 @@ export function Sheet({
 		if (!open && dialog.open) dialog.close();
 	}, [open]);
 
+	// El teclado del teléfono no encoge la página (iOS, y Android sin
+	// `interactive-widget`): mientras la hoja está abierta se mide cuánto tapa
+	// (`visualViewport`) y la hoja se aparta y encoge esa altura, para que su pie
+	// («Guardar») quede a la vista. Sin `visualViewport` no se hace nada.
+	useEffect(() => {
+		const dialog = ref.current;
+		const vv = typeof window !== "undefined" ? window.visualViewport : null;
+		if (!open || !dialog || !vv) return;
+		const update = () => {
+			const inset = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+			dialog.style.setProperty("--vn-keyboard-inset", `${inset}px`);
+		};
+		update();
+		vv.addEventListener("resize", update);
+		vv.addEventListener("scroll", update);
+		return () => {
+			vv.removeEventListener("resize", update);
+			vv.removeEventListener("scroll", update);
+			dialog.style.removeProperty("--vn-keyboard-inset");
+		};
+	}, [open]);
+
 	return (
 		<dialog
 			ref={ref}
 			className="vn vn-glass vn-glass--thick vn-sheet vn-sheet-scrim"
+			data-size={size === "wide" ? "wide" : undefined}
 			aria-labelledby={titleId}
 			aria-describedby={description ? descId : undefined}
 			onCancel={(e) => {

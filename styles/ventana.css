@@ -1,4 +1,4 @@
-/* Ventana: punto de entrada. Vive junto a Feed vertical (`sky.css`), no lo sustituye aquí. */
+/* Ventana: punto de entrada. El mundo visual de OnView (Feed vertical se borró en la v3.0.0). */
 @import "./ventana/tokens.css";
 @import "./ventana/type.css";
 @import "./ventana/glass.css";

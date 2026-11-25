@@ -360,3 +360,39 @@ describe("Toaster de Ventana", () => {
 		expect(icon.className).toContain("vn-toast__icon");
 	});
 });
+
+describe("Sheet: tamaño ancho y teclado (parte 5)", () => {
+	it("size=\"wide\" se marca para que la hoja pueda medir 40rem desde 40rem", () => {
+		mount(
+			<Sheet open onClose={() => {}} title="T" closeLabel="Cerrar" size="wide">
+				<p>x</p>
+			</Sheet>,
+		);
+		expect(dialog().getAttribute("data-size")).toBe("wide");
+	});
+
+	it("sin size no lleva marca", () => {
+		mount(
+			<Sheet open onClose={() => {}} title="T" closeLabel="Cerrar">
+				<p>x</p>
+			</Sheet>,
+		);
+		expect(dialog().hasAttribute("data-size")).toBe(false);
+	});
+
+	it("con el teclado abierto, la hoja sabe cuánto tapa (--vn-keyboard-inset)", () => {
+		const listeners: Record<string, () => void> = {};
+		const vv = { height: 800, offsetTop: 0, addEventListener: (type: string, fn: () => void) => (listeners[type] = fn), removeEventListener: () => {} };
+		Object.defineProperty(window, "visualViewport", { value: vv, configurable: true });
+		Object.defineProperty(window, "innerHeight", { value: 800, configurable: true });
+		mount(
+			<Sheet open onClose={() => {}} title="T" closeLabel="Cerrar">
+				<input />
+			</Sheet>,
+		);
+		expect(dialog().style.getPropertyValue("--vn-keyboard-inset")).toBe("0px");
+		vv.height = 460;
+		act(() => listeners.resize());
+		expect(dialog().style.getPropertyValue("--vn-keyboard-inset")).toBe("340px");
+	});
+});

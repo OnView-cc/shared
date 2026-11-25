@@ -124,3 +124,11 @@ describe("Tag", () => {
 		expect(h.querySelector(".vn-glass")).toBeNull();
 	});
 });
+
+describe("DataTable rowLabel", () => {
+	it("names the button that opens a row, whatever the first cell shows", () => {
+		const h = mount(<DataTable label="Steps" columns={COLUMNS} rows={ROWS} rowKey={(r) => r.id} empty="" onRowClick={() => {}} rowLabel={(r) => `Open ${r.email}`} />);
+		const button = h.querySelector("tbody tr td button")!;
+		expect(button.getAttribute("aria-label")).toBe("Open ana@example.com");
+	});
+});

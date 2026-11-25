@@ -1772,3 +1772,13 @@ describe("Ventana v3.0.0: la tabla y la cifra", () => {
 		expect(contrast(token("ink-2-solid")!, token("raised")!)).toBeGreaterThanOrEqual(4.5);
 	});
 });
+
+describe("Ventana v3.0.0: la hoja ancha y el teclado", () => {
+	it("desde 40rem una hoja ancha mide 40rem", () => {
+		expect(overlays).toMatch(/\.vn\.vn-sheet\[data-size="wide"\]\s*\{[^}]*max-inline-size:\s*40rem/);
+	});
+	it("en el teléfono la hoja se aparta del teclado y encoge lo que tapa", () => {
+		expect(overlays).toMatch(/margin-block-end:\s*var\(--vn-keyboard-inset, 0px\)/);
+		expect(overlays).toMatch(/max-block-size:\s*min\(calc\(88dvh - var\(--vn-keyboard-inset, 0px\)\), 44rem\)/);
+	});
+});

@@ -37,6 +37,7 @@ export function DataTable<T>({
 	rowKey,
 	empty,
 	onRowClick,
+	rowLabel,
 	loading = false,
 }: {
 	/** Nombre de la tabla para el lector de pantalla (y del esqueleto). */
@@ -47,6 +48,8 @@ export function DataTable<T>({
 	/** Lo que se pinta sin filas: una frase, nunca una tabla vacía. */
 	empty: ReactNode;
 	onRowClick?: (row: T) => void;
+	/** El nombre del botón que abre la fila, cuando la primera celda no lo dice (un icono, un punto). */
+	rowLabel?: (row: T) => string;
 	loading?: boolean;
 }): ReactElement {
 	if (loading) return <Skeleton rows={5} label={label} />;
@@ -71,7 +74,7 @@ export function DataTable<T>({
 								{columns.map((c, i) => (
 									<td key={c.key} className={cellClass(c)}>
 										{i === 0 && onRowClick ? (
-											<button type="button" className="vn-table__open" onClick={() => onRowClick(row)}>
+											<button type="button" className="vn-table__open" aria-label={rowLabel?.(row)} onClick={() => onRowClick(row)}>
 												{c.cell(row)}
 											</button>
 										) : (
