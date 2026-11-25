@@ -43,3 +43,12 @@ describe("toComposeShot", () => {
 		expect(toComposeShot(row({ block: "text", blockParams: { lines: ["a", "b", "c", "d"] }, beats: 4, transition: "blur" }))).toMatchObject({ block: "text", params: { lines: ["a", "b", "c"], color: null }, beats: 4, transition: "blur" });
 	});
 });
+
+describe("toComposeShot with a scene (spec 2026-11-24)", () => {
+	it("passes the ready scene through, and none when there is none", () => {
+		const scene = { code: "export default function scene(ctx, kit) {}", texts: { headline: "Hola" }, kitVersion: 1, events: [{ kind: "click" as const, at: 1, n: 0 }] };
+		expect(toComposeShot(row({ scene })).scene).toEqual(scene);
+		expect(toComposeShot(row({})).scene).toBeUndefined();
+		expect(toComposeShot(row({ scene: null })).scene).toBeUndefined();
+	});
+});

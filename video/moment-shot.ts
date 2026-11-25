@@ -27,6 +27,8 @@ export interface MomentRow {
 	imagesEntrance: ImagesEntrance;
 	voice: ComposeShot["voice"];
 	images: { id: string; src: string; width: number; height: number; description?: string | null }[];
+	/** La escena lista de la toma (spec 2026-11-24-onview-escenas-con-codigo); sin ella, el bloque clásico. */
+	scene?: ComposeShot["scene"];
 }
 
 export function toComposeShot(r: MomentRow): ComposeShot {
@@ -49,5 +51,6 @@ export function toComposeShot(r: MomentRow): ComposeShot {
 		transition: r.transition,
 		voice: r.voice,
 		images: r.images.map(({ id, src, width, height }) => ({ id, src, width, height })),
+		...(r.scene ? { scene: r.scene } : {}),
 	};
 }
