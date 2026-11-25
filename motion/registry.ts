@@ -57,6 +57,8 @@ export interface SceneHooks {
 	/** El momento cayó al bloque de respaldo. */
 	fail(): void;
 	events(list: SceneEvent[]): void;
+	/** Hasta qué segundo absoluto anima la escena (para medir el final vacío, `audit.ts`). */
+	end(seconds: number): void;
 }
 
 export type BlockBuilder = (ctx: BlockCtx) => void;

@@ -60,5 +60,7 @@ registerBlock("scene", (ctx) => {
 		if (child.duration() > end + OVERRUN_SLACK) s.report({ code: "overrun", message: `the scene animates until ${child.duration().toFixed(2)} s; its moment ends at ${end.toFixed(2)} s` });
 	};
 	checkOverrun();
+	s.end(child.duration());
+	ctx.onReady(() => s.end(child.duration()));
 	s.events(events());
 });

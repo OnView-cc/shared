@@ -45,6 +45,8 @@ export interface MotionHandle {
 	issues(): SceneIssue[];
 	/** Los momentos de escena que se dibujan con su bloque de respaldo. */
 	failed(): number[];
+	/** Hasta qué segundo absoluto anima cada escena montada, por momento. */
+	sceneEnds(): Record<number, number>;
 	destroy(): void;
 }
 
@@ -122,6 +124,7 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	const issues: SceneIssue[] = [];
 	const failed = new Set<number>();
 	const forced = new Set(opts.forceFallback ?? []);
+	const ends: Record<number, number> = {};
 	doc.moments.forEach((moment, i) => {
 		let own = background;
 		if (palette && moment.block !== "logo") {
@@ -152,6 +155,7 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 							forceFallback: forced.has(i),
 							report: (issue) => issues.push({ moment: i, ...issue }),
 							fail: () => failed.add(i),
+							end: (seconds) => void (ends[i] = Math.round(seconds * 1000) / 1000),
 							events: (list) => {
 								if (list.length) sceneEvents.push({ moment: i, events: list });
 							},
@@ -228,6 +232,7 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 		events: () => sceneEvents.map((e) => ({ moment: e.moment, events: [...e.events] })),
 		issues: () => [...issues],
 		failed: () => [...failed].sort((a, b) => a - b),
+		sceneEnds: () => ({ ...ends }),
 		destroy() {
 			observer?.disconnect();
 			tl.kill();

@@ -79,6 +79,11 @@ describe("scene block", () => {
 		expect(m.issues().at(-1)).toMatchObject({ moment: 1, code: "seek" });
 	});
 
+	it("sceneEnds says until when each mounted scene animates", () => {
+		const m = mount(comp(2, { 1: scene("export default function scene(ctx, kit) { const el = ctx.el.ownerDocument.createElement('div'); ctx.el.appendChild(el); ctx.tl.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.5 }, ctx.at + 0.25); }") }));
+		expect(m.sceneEnds()).toEqual({ 1: 2.75 });
+	});
+
 	it("handoff carries an element into the next scene", () => {
 		const give = "export default function scene(ctx, kit) { const box = ctx.el.ownerDocument.createElement('div'); box.className = 'carried'; ctx.el.appendChild(box); ctx.handoff('box', box); }";
 		const take = "export default function scene(ctx, kit) { const box = ctx.receive('box'); if (box) box.dataset.got = 'yes'; }";
