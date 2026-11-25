@@ -27,7 +27,7 @@
 
 import { beatSeconds } from "../motion/fit";
 import { resolveStyle, type Style } from "../motion/styles";
-import type { AnyBlockParams, BlockKind, Transition } from "../motion/types";
+import type { AnyBlockParams, BlockKind, MomentBlock, SceneParams, Transition } from "../motion/types";
 import type { MomentWord } from "./narration";
 
 export type Format = "9:16" | "1:1" | "16:9";
@@ -133,8 +133,9 @@ export interface ComposeInput {
 export interface Moment {
 	/** null = el cierre que se añade solo. */
 	shotId: string | null;
-	block: BlockKind;
-	params: AnyBlockParams;
+	/** Un bloque clásico o, con escena lista, `scene` (spec 2026-11-24). */
+	block: MomentBlock;
+	params: AnyBlockParams | SceneParams;
 	/** Dónde empieza en el video armado y cuánto dura. */
 	at: number;
 	seconds: number;

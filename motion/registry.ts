@@ -4,7 +4,7 @@
  * que los bloques no importen al motor ni el motor a los bloques.
  */
 import type { Moment } from "../video/compose";
-import type { BlockKind } from "./types";
+import type { MomentBlock } from "./types";
 import type { BackgroundKind, Style } from "./styles";
 import type { MotionDoc } from "./doc";
 
@@ -42,12 +42,12 @@ export interface BlockCtx {
 
 export type BlockBuilder = (ctx: BlockCtx) => void;
 
-const blocks = new Map<BlockKind, BlockBuilder>();
+const blocks = new Map<MomentBlock, BlockBuilder>();
 
-export function registerBlock(kind: BlockKind, build: BlockBuilder): void {
+export function registerBlock(kind: MomentBlock, build: BlockBuilder): void {
 	blocks.set(kind, build);
 }
 
-export function blockFor(kind: BlockKind): BlockBuilder | undefined {
+export function blockFor(kind: MomentBlock): BlockBuilder | undefined {
 	return blocks.get(kind);
 }
