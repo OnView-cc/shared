@@ -26,10 +26,12 @@ import { blockFor } from "./registry";
 import { injectMotionCss } from "./style";
 import { wireTransitions } from "./transitions";
 import { cueTimes } from "./cues";
+import { createHandoffRegistry, type SceneEvent } from "./scene/context";
+import type { SceneIssue } from "./registry";
 import type { MotionDoc } from "./doc";
 
 export type { MotionDoc, MotionMedia } from "./doc";
-export { registerBlock, type BlockCtx, type BlockBuilder } from "./registry";
+export { registerBlock, type BlockCtx, type BlockBuilder, type SceneIssue } from "./registry";
 
 export interface MotionHandle {
 	duration: number;
@@ -37,7 +39,23 @@ export interface MotionHandle {
 	ready: Promise<void>;
 	/** Lleva el video al segundo `t`; en la exportación, resuelve cuando lo visible está decodificado. */
 	seek(t: number): Promise<void>;
+	/** Los eventos de cada escena montada (spec 2026-11-24 §6.2), desde el inicio de su momento. */
+	events(): { moment: number; events: SceneEvent[] }[];
+	/** Lo que pasó con las escenas: no compiló, lanzó al montar o en un `seek`, o se pasa de su momento. */
+	issues(): SceneIssue[];
+	/** Los momentos de escena que se dibujan con su bloque de respaldo. */
+	failed(): number[];
 	destroy(): void;
+}
+
+/** Una escena lanzó mientras el motor movía el video: el Container la vuelve a grabar con su respaldo. */
+export class SceneRuntimeError extends Error {
+	readonly moment: number;
+	constructor(moment: number, message: string) {
+		super(message);
+		this.name = "SceneRuntimeError";
+		this.moment = moment;
+	}
 }
 
 /** Lo que sobra el fondo por cada lado cuando algo lo mueve, en `u` (la sacudida mueve 1 u y el paralaje hasta 4). */
@@ -46,7 +64,7 @@ const BLEED = 6;
 /** Lo más que se espera a una imagen antes de seguir sin ella: una pieza que no llega no cuelga la grabación. */
 const IMAGE_WAIT_MS = 8000;
 
-export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "preview" | "export"; imageWaitMs?: number }): MotionHandle {
+export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "preview" | "export"; imageWaitMs?: number; forceFallback?: number[] }): MotionHandle {
 	const document = root.ownerDocument;
 	injectMotionCss(document);
 	root.replaceChildren();
@@ -98,6 +116,12 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	wireCamera(tl, { camera, hit, background: drawn.layer }, style, { total: doc.total, beatSeconds: beat, offset: doc.tempo.offset, u });
 	// Bloques: cada momento sobre otro color del kit, con la tinta que se lea en él (el cierre, con el suyo).
 	const palette = style.background.cycle ? cyclePalette(doc.brand, style.background.saturate) : null;
+	// Las escenas (spec 2026-11-24): un registro de piezas que pasan de una a otra, y lo que cada una avisa.
+	const handoffs = createHandoffRegistry();
+	const sceneEvents: { moment: number; events: SceneEvent[] }[] = [];
+	const issues: SceneIssue[] = [];
+	const failed = new Set<number>();
+	const forced = new Set(opts.forceFallback ?? []);
 	doc.moments.forEach((moment, i) => {
 		let own = background;
 		if (palette && moment.block !== "logo") {
@@ -121,6 +145,19 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 			background: own,
 			font,
 			onReady: (fn) => fitters.push(fn),
+			...(moment.block === "scene"
+				? {
+						scene: {
+							handoffs,
+							forceFallback: forced.has(i),
+							report: (issue) => issues.push({ moment: i, ...issue }),
+							fail: () => failed.add(i),
+							events: (list) => {
+								if (list.length) sceneEvents.push({ moment: i, events: list });
+							},
+						},
+					}
+				: {}),
 		});
 	});
 	// La línea de tiempo mide exactamente el video, aunque el último bloque acabe antes.
@@ -174,11 +211,23 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 		ready,
 		async seek(t: number) {
 			const at = Math.max(0, Math.min(t, doc.total));
-			tl.seek(at, false);
+			try {
+				tl.seek(at, false);
+			} catch (e) {
+				// Sólo el código de una escena puede lanzar aquí: la escena que se ve en ese segundo.
+				const moment = doc.moments.findIndex((m, i) => m.block === "scene" && !failed.has(i) && at >= m.at && at <= m.at + m.seconds);
+				const message = e instanceof Error ? e.message : String(e);
+				issues.push({ moment, code: "seek", message });
+				if (opts.mode === "export") throw new SceneRuntimeError(moment, message);
+				return;
+			}
 			if (opts.mode !== "export") return;
 			const visible = images().filter((img) => img.closest<HTMLElement>(".motion-layer")?.style.visibility !== "hidden");
 			await Promise.all(visible.map((img) => (typeof img.decode === "function" ? img.decode().catch(() => undefined) : undefined)));
 		},
+		events: () => sceneEvents.map((e) => ({ moment: e.moment, events: [...e.events] })),
+		issues: () => [...issues],
+		failed: () => [...failed].sort((a, b) => a - b),
 		destroy() {
 			observer?.disconnect();
 			tl.kill();

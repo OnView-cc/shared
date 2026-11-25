@@ -7,6 +7,7 @@ import type { Moment } from "../video/compose";
 import type { MomentBlock } from "./types";
 import type { BackgroundKind, Style } from "./styles";
 import type { MotionDoc } from "./doc";
+import type { HandoffRegistry, SceneEvent } from "./scene/context";
 
 export interface BlockCtx {
 	/** La capa del momento: el bloque dibuja dentro. */
@@ -38,6 +39,24 @@ export interface BlockCtx {
 	font(family: string): string;
 	/** Lo que necesita las fuentes ya cargadas (medir y encoger un texto que no cabe): se llama una vez, antes de `ready`. */
 	onReady(fn: () => void): void;
+	/** Sólo para el momento `scene` (spec 2026-11-24): lo que el motor le da para montarse y avisar. */
+	scene?: SceneHooks;
+}
+
+export interface SceneIssue {
+	moment: number;
+	code: "compile" | "mount" | "seek" | "overrun";
+	message: string;
+}
+
+export interface SceneHooks {
+	handoffs: HandoffRegistry;
+	/** El motor pidió este momento en respaldo (falló antes, en la vista previa o en una grabación). */
+	forceFallback: boolean;
+	report(issue: Omit<SceneIssue, "moment">): void;
+	/** El momento cayó al bloque de respaldo. */
+	fail(): void;
+	events(list: SceneEvent[]): void;
 }
 
 export type BlockBuilder = (ctx: BlockCtx) => void;
