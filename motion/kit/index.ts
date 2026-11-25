@@ -11,6 +11,7 @@ import { Device } from "./device";
 import { Glow, GradientMesh } from "./light";
 import { Counter, KineticText } from "./text";
 import { Box3D, Card3D } from "./three";
+import { Carousel, Grid, Stack } from "./collections";
 
 export const kit = {
 	KineticText,
@@ -23,6 +24,9 @@ export const kit = {
 	Cursor,
 	Box3D,
 	Card3D,
+	Grid,
+	Carousel,
+	Stack,
 };
 
 export type Kit = typeof kit;
