@@ -13,6 +13,13 @@
  * `parseBlockParams` es la única puerta de los parámetros: lo que llega de la
  * base, de la API o de Lumen se pasa por aquí, que rellena lo que falte y
  * recorta lo que se pase. Código puro, sin navegador.
+ *
+ * La **escena** (spec 2026-11-24-onview-escenas-con-codigo §6.1): un momento
+ * cuyo contenido es código que escribe Iris con la caja de componentes
+ * (`kit/`). No es un `BlockKind` (los cinco clásicos siguen siendo lo que guarda
+ * `shots.block` y lo que ofrece el selector): un momento de la composición es
+ * un `MomentBlock`, que suma `"scene"`. Sus parámetros (`SceneParams`) llevan el
+ * bloque clásico de **respaldo**; `parseSceneParams` es su puerta.
  */
 import type { ImagesEntrance, ImagesLayout } from "../video/scene-images";
 import type { StyleId } from "./styles";
@@ -22,6 +29,8 @@ export type Transition = "blur" | "push" | "cut" | "wipe" | "slide" | "punch" | 
 export type Language = "en" | "es" | "pt";
 
 export const BLOCKS: readonly BlockKind[] = ["text", "icons", "ui", "product", "logo"];
+/** Lo que dibuja un momento de la composición: un bloque clásico o una escena. */
+export type MomentBlock = BlockKind | "scene";
 export const TRANSITIONS: readonly Transition[] = ["blur", "push", "cut", "wipe", "slide", "punch", "fade"];
 
 export interface TextParams {
@@ -114,6 +123,8 @@ export interface TemplateMoment {
 	onMissing?: "text" | "drop";
 	/** Se puede duplicar como frase para llegar a la duración pedida. */
 	expandable?: boolean;
+	/** Qué pasa en la escena de este momento, para quien la escribe (en inglés: es una instrucción para el modelo). */
+	direction?: string;
 }
 
 /**
@@ -184,4 +195,38 @@ export function parseBlockParams<K extends BlockKind>(block: K, raw: unknown): B
 		},
 	};
 	return out[block]() as BlockParams[K];
+}
+
+/** La versión de la caja de componentes: una escena guarda con cuál se escribió. */
+export const KIT_VERSION = 1;
+/** El tope del código de una escena, en bytes de UTF-8. */
+export const MAX_SCENE_CODE = 40960;
+export const MAX_SCENE_TEXTS = 12;
+export const MAX_SCENE_TEXT = 120;
+const TEXT_KEY = /^[a-z][a-z0-9_]{0,31}$/;
+
+export interface SceneParams {
+	/** El módulo de la escena: `export default function scene(ctx, kit) {…}`. */
+	code: string;
+	/** Los textos que se ven, por clave: el código los lee con `ctx.text(clave)`, la persona los edita. */
+	texts: Record<string, string>;
+	kitVersion: number;
+	/** El bloque clásico que se dibuja si la escena no se puede ejecutar. */
+	fallback: { block: BlockKind; params: AnyBlockParams };
+}
+
+/** La puerta de los parámetros de una escena: null si el código o el respaldo no valen. */
+export function parseSceneParams(raw: unknown): SceneParams | null {
+	const r = obj(raw);
+	if (typeof r.code !== "string" || !r.code || new TextEncoder().encode(r.code).length > MAX_SCENE_CODE) return null;
+	const f = obj(r.fallback);
+	if (!BLOCKS.includes(f.block as BlockKind)) return null;
+	const block = f.block as BlockKind;
+	const texts: Record<string, string> = {};
+	for (const [key, value] of Object.entries(obj(r.texts))) {
+		if (Object.keys(texts).length >= MAX_SCENE_TEXTS) break;
+		if (TEXT_KEY.test(key) && typeof value === "string") texts[key] = value.slice(0, MAX_SCENE_TEXT);
+	}
+	const kitVersion = typeof r.kitVersion === "number" && Number.isInteger(r.kitVersion) && r.kitVersion > 0 ? r.kitVersion : KIT_VERSION;
+	return { code: r.code, texts, kitVersion, fallback: { block, params: parseBlockParams(block, f.params) } };
 }
