@@ -26,6 +26,7 @@ import { blockFor } from "./registry";
 import { injectMotionCss } from "./style";
 import { wireTransitions } from "./transitions";
 import { cueTimes } from "./cues";
+import { unscaledRect } from "./measure";
 import { createHandoffRegistry, type SceneEvent } from "./scene/context";
 import type { SceneIssue } from "./registry";
 import type { MotionDoc } from "./doc";
@@ -105,7 +106,7 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	const ink = inkOn(background, doc.brand);
 
 	const tl = gsap.timeline({ paused: true, defaults: { ease: "expo.out" } });
-	const fitters: (() => void)[] = [];
+	const fitters: { moment: number; fn: () => void }[] = [];
 	const layers = doc.moments.map((moment, i) => {
 		const el = document.createElement("div");
 		el.className = "motion-layer";
@@ -125,6 +126,25 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	const failed = new Set<number>();
 	const forced = new Set(opts.forceFallback ?? []);
 	const ends: Record<number, number> = {};
+	// Medir una pieza en un segundo (el traspaso y `Morph`, §6.5): se lleva el video a ese segundo, se mide en píxeles del
+	// cuadro (la vista previa va escalada) y se devuelve a donde estaba. Una escena que lanza aquí no tumba la medida.
+	const at = <T>(t: number, read: () => T): T => {
+		const was = tl.time();
+		try {
+			tl.seek(t, false);
+		} catch {
+			// La escena que lance lo dirá al moverse; la medida sigue con lo que haya.
+		}
+		const out = read();
+		try {
+			tl.seek(was, false);
+		} catch {
+			// Igual.
+		}
+		return out;
+	};
+	const rectAt = (el: HTMLElement, t: number) => at(t, () => unscaledRect(el, stage, W));
+	const snapshot = (el: HTMLElement, t: number) => at(t, () => ({ clone: el.cloneNode(true) as HTMLElement, rect: unscaledRect(el, stage, W) }));
 	doc.moments.forEach((moment, i) => {
 		let own = background;
 		if (palette && moment.block !== "logo") {
@@ -147,7 +167,7 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 			style,
 			background: own,
 			font,
-			onReady: (fn) => fitters.push(fn),
+			onReady: (fn) => fitters.push({ moment: i, fn }),
 			...(moment.block === "scene"
 				? {
 						scene: {
@@ -156,6 +176,8 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 							report: (issue) => issues.push({ moment: i, ...issue }),
 							fail: () => failed.add(i),
 							end: (seconds) => void (ends[i] = Math.round(seconds * 1000) / 1000),
+							rectAt,
+							snapshot,
 							events: (list) => {
 								if (list.length) sceneEvents.push({ moment: i, events: list });
 							},
@@ -205,11 +227,31 @@ export function createMotion(root: HTMLElement, doc: MotionDoc, opts: { mode: "p
 	const phrase = { ...doc.brand.face, weight: phraseWeight(style.type, doc.brand.face) };
 	const faces = [doc.brand.face, doc.brand.secondary, phrase].map((f) => `${f.weight} 32px ${font(f.family)}`);
 	const fontsIn = fonts ? Promise.all(faces.map((f) => fonts.load(f).catch(() => undefined))).then(() => fonts.ready) : Promise.resolve();
+	// Lo que una escena rompe después de montarse (al medir con las letras, o en el primer cuadro) no tumba el video: se
+	// apunta y, al exportar, `ready` falla con el momento para que el Container lo grabe con su respaldo.
+	let broken: SceneRuntimeError | null = null;
+	const blame = (moment: number, code: SceneIssue["code"], e: unknown) => {
+		const message = e instanceof Error ? e.message : String(e);
+		issues.push({ moment, code, message });
+		broken ??= new SceneRuntimeError(moment, message);
+	};
 	const ready = Promise.all([fontsIn, ...images().map(loaded)]).then(() => {
-		for (const fn of fitters) fn();
+		for (const { moment, fn } of fitters) {
+			try {
+				fn();
+			} catch (e) {
+				if (doc.moments[moment]?.block !== "scene") throw e;
+				blame(moment, "mount", e);
+			}
+		}
+		if (broken && opts.mode === "export") throw broken;
 	});
 
-	tl.seek(0, false);
+	try {
+		tl.seek(0, false);
+	} catch (e) {
+		blame(Math.max(0, doc.moments.findIndex((m) => m.block === "scene" && m.at <= 0)), "seek", e);
+	}
 	return {
 		duration: doc.total,
 		ready,

@@ -8,6 +8,7 @@ import type { MomentBlock } from "./types";
 import type { BackgroundKind, Style } from "./styles";
 import type { MotionDoc } from "./doc";
 import type { HandoffRegistry, SceneEvent } from "./scene/context";
+import type { Rect } from "./measure";
 
 export interface BlockCtx {
 	/** La capa del momento: el bloque dibuja dentro. */
@@ -59,6 +60,10 @@ export interface SceneHooks {
 	events(list: SceneEvent[]): void;
 	/** Hasta qué segundo absoluto anima la escena (para medir el final vacío, `audit.ts`). */
 	end(seconds: number): void;
+	/** La caja de una pieza en el segundo `t`, en píxeles del cuadro (lleva el video a `t` y lo devuelve a donde estaba). */
+	rectAt(el: HTMLElement, t: number): Rect;
+	/** Una copia de la pieza tal como está en el segundo `t` (sus estilos y los de dentro), con su caja: el traspaso (§6.5). */
+	snapshot(el: HTMLElement, t: number): { clone: HTMLElement; rect: Rect };
 }
 
 export type BlockBuilder = (ctx: BlockCtx) => void;

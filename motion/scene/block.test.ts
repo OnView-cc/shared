@@ -84,12 +84,34 @@ describe("scene block", () => {
 		expect(m.sceneEnds()).toEqual({ 1: 2.75 });
 	});
 
-	it("handoff carries an element into the next scene", () => {
+	it("handoff gives the next scene its own copy of the piece", () => {
 		const give = "export default function scene(ctx, kit) { const box = ctx.el.ownerDocument.createElement('div'); box.className = 'carried'; ctx.el.appendChild(box); ctx.handoff('box', box); }";
 		const take = "export default function scene(ctx, kit) { const box = ctx.receive('box'); if (box) box.dataset.got = 'yes'; }";
 		mount(comp(2, { 0: scene(give), 1: scene(take) }));
-		const box = root!.querySelector<HTMLElement>(".carried")!;
-		expect(box.parentElement).toBe(layer(1));
-		expect(box.dataset.got).toBe("yes");
+		expect(layer(1).querySelector<HTMLElement>(".carried")!.dataset.got).toBe("yes");
+		expect(layer(0).querySelector<HTMLElement>(".carried")!.dataset.got).toBeUndefined();
 	});
+});
+
+describe("final review fixes (handoff, errors after mount)", () => {
+	it("handoff: the giving scene keeps its piece; the next one gets a copy as the piece ends", () => {
+		const give = "export default function scene(ctx, kit) { const box = ctx.el.ownerDocument.createElement('div'); box.className = 'carried'; ctx.el.appendChild(box); ctx.tl.fromTo(box, { opacity: 1 }, { opacity: 0.5, duration: 1, immediateRender: false }, ctx.at + 0.5); ctx.handoff('box', box); }";
+		const take = "export default function scene(ctx, kit) { const box = ctx.receive('box'); if (box) box.dataset.got = 'yes'; }";
+		mount(comp(2, { 0: scene(give), 1: scene(take) }));
+		const original = layer(0).querySelector<HTMLElement>(".carried");
+		const copy = layer(1).querySelector<HTMLElement>(".carried");
+		expect(original).not.toBeNull();
+		expect(copy).not.toBeNull();
+		expect(copy).not.toBe(original);
+		expect(copy!.dataset.got).toBe("yes");
+		expect(copy!.style.opacity).toBe("0.5");
+	});
+
+	it("a scene that throws in onReady: in export, ready rejects with its moment and the other moments still fit", async () => {
+		const bad = "export default function scene(ctx, kit) { ctx.onReady(() => { throw new Error('late fit'); }); }";
+		const m = mount(comp(2, { 0: scene(bad) }));
+		await expect(m.ready).rejects.toMatchObject({ name: "SceneRuntimeError", moment: 0 });
+		expect(m.issues()).toContainEqual({ moment: 0, code: "mount", message: "late fit" });
+	});
+
 });

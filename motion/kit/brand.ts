@@ -88,14 +88,15 @@ function morph(ctx: SceneCtx, o: MorphOptions): void {
 	tl.fromTo(o.from, { opacity: 1 }, { opacity: 0, duration, ease: "power2.inOut", ...AFTER }, at);
 	tl.fromTo(o.to, { opacity: 0 }, { opacity: 1, duration, ease: "power2.inOut", ...AFTER }, at);
 	// Con las letras y las imágenes ya puestas: la pieza nueva sale de la caja de la vieja (FLIP).
+	// Medidas donde están las dos piezas en su segundo y en píxeles del cuadro: iguales en la vista previa y en el MP4.
 	ctx.onReady(() => {
-		const a = o.from.getBoundingClientRect();
-		const b = o.to.getBoundingClientRect();
-		if (!(a.width > 0 && b.width > 0 && a.height > 0 && b.height > 0)) return;
-		const dx = a.left + a.width / 2 - (b.left + b.width / 2);
-		const dy = a.top + a.height / 2 - (b.top + b.height / 2);
-		const sx = a.width / b.width;
-		const sy = a.height / b.height;
+		const a = ctx.rectAt(o.from, at);
+		const b = ctx.rectAt(o.to, at);
+		if (!(a.w > 0 && b.w > 0 && a.h > 0 && b.h > 0)) return;
+		const dx = a.x + a.w / 2 - (b.x + b.w / 2);
+		const dy = a.y + a.h / 2 - (b.y + b.h / 2);
+		const sx = a.w / b.w;
+		const sy = a.h / b.h;
 		tl.fromTo(o.to, { x: dx, y: dy, scaleX: sx, scaleY: sy }, { x: 0, y: 0, scaleX: 1, scaleY: 1, duration, ease: "expo.inOut", ...AFTER }, at);
 		tl.fromTo(o.from, { x: 0, y: 0, scaleX: 1, scaleY: 1 }, { x: -dx, y: -dy, scaleX: 1 / sx, scaleY: 1 / sy, duration, ease: "expo.inOut", ...AFTER }, at);
 	});

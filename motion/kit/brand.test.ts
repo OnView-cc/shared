@@ -41,3 +41,23 @@ describe("Morph", () => {
 		expectDeterministic(h.tl, h.stage, [0, 1.3, 2.5], expect);
 	});
 });
+
+describe("Morph measures where the pieces are at its time, in frame pixels", () => {
+	it("asks ctx.rectAt for both pieces at its start", () => {
+		const h = sceneHarness();
+		cleanup = h.cleanup;
+		const a = document.createElement("div");
+		const b = document.createElement("div");
+		h.ctx.el.append(a, b);
+		const asked: [HTMLElement, number][] = [];
+		h.ctx.rectAt = (el, t) => (asked.push([el, t]), { x: 0, y: 0, w: 0, h: 0 });
+		let ready = () => {};
+		h.ctx.onReady = (fn) => void (ready = fn);
+		Morph(h.ctx, { from: a, to: b, at: 1.5 });
+		ready();
+		expect(asked).toEqual([
+			[a, 1.5],
+			[b, 1.5],
+		]);
+	});
+});

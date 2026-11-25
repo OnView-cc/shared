@@ -68,7 +68,7 @@ describe("sceneContext", () => {
 		expect([ctx.at, ctx.seconds, ctx.width, ctx.height]).toEqual([10, 4, 1080, 1920]);
 	});
 
-	it("receive of a name never given is null; a given element is received into the next layer", () => {
+	it("receive of a name never given is null; a given element arrives as a copy in the next layer, once", () => {
 		const reg = createHandoffRegistry();
 		const first = sceneContext(base(0, 2), params, reg).ctx;
 		const second = sceneContext(base(2, 2), params, reg).ctx;
@@ -76,8 +76,10 @@ describe("sceneContext", () => {
 		const box = document.createElement("div");
 		first.el.appendChild(box);
 		first.handoff("box", box);
-		expect(second.receive("box")).toBe(box);
-		expect(box.parentElement).toBe(second.el);
+		const copy = second.receive("box")!;
+		expect(copy).not.toBe(box);
+		expect(copy.parentElement).toBe(second.el);
+		expect(box.parentElement).toBe(first.el);
 		expect(second.receive("box")).toBeNull();
 	});
 });

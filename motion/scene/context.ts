@@ -17,13 +17,15 @@ import type { ComposeImage } from "../../video/compose";
 import type { BlockCtx } from "../registry";
 import type { SceneParams } from "../types";
 import type { SceneEvent, SceneEventKind } from "./events";
+import { unscaledRect, type Rect } from "../measure";
 
 export type { SceneEvent, SceneEventKind } from "./events";
 export { SCENE_EVENT_KINDS } from "./events";
 
 export interface HandoffRegistry {
+	/** La pieza que una escena pasa y el segundo en que acaba su momento. */
 	give(name: string, el: HTMLElement, at: number): void;
-	take(name: string): { el: HTMLElement; rect: { x: number; y: number; w: number; h: number } } | null;
+	take(name: string): { el: HTMLElement; at: number } | null;
 }
 
 export interface SceneCtx extends BlockCtx {
@@ -36,7 +38,10 @@ export interface SceneCtx extends BlockCtx {
 	random(seed: number): () => number;
 	event(kind: SceneEventKind, t: number): void;
 	handoff(name: string, el: HTMLElement): void;
+	/** Una copia de la pieza que pasó la escena anterior, donde y como acaba su momento (la de la escena anterior se queda). */
 	receive(name: string): HTMLElement | null;
+	/** La caja de una pieza en el segundo `t`, en píxeles del cuadro (igual en la vista previa escalada y en el MP4). */
+	rectAt(el: HTMLElement, t: number): Rect;
 }
 
 /** El aleatorio con semilla: mulberry32. */
@@ -52,14 +57,10 @@ export function seeded(seed: number): () => number {
 }
 
 export function createHandoffRegistry(): HandoffRegistry {
-	const held = new Map<string, { el: HTMLElement; rect: { x: number; y: number; w: number; h: number } }>();
+	const held = new Map<string, { el: HTMLElement; at: number }>();
 	return {
-		give(name, el) {
-			// La caja respecto al escenario, en píxeles del cuadro (el escenario no se escala en la exportación).
-			const stage = el.closest<HTMLElement>(".motion-stage");
-			const r = el.getBoundingClientRect();
-			const s = stage?.getBoundingClientRect() ?? { left: 0, top: 0 };
-			held.set(name, { el, rect: { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height } });
+		give(name, el, at) {
+			held.set(name, { el, at });
 		},
 		take(name) {
 			const got = held.get(name) ?? null;
@@ -71,6 +72,8 @@ export function createHandoffRegistry(): HandoffRegistry {
 
 export function sceneContext(base: BlockCtx, params: SceneParams, handoffs: HandoffRegistry): { ctx: SceneCtx; events: () => SceneEvent[] } {
 	const { at, seconds, images } = base.moment;
+	// Sin el motor (pruebas sueltas): la caja de ahora, en píxeles del cuadro.
+	const rectOf = (el: HTMLElement): Rect => unscaledRect(el, el.closest(".motion-stage") ?? base.el, base.doc.width);
 	const raw: { kind: SceneEventKind; at: number }[] = [];
 	const ctx: SceneCtx = {
 		...base,
@@ -92,11 +95,15 @@ export function sceneContext(base: BlockCtx, params: SceneParams, handoffs: Hand
 		receive(name) {
 			const got = handoffs.take(name);
 			if (!got) return null;
-			const { el, rect } = got;
-			// Sigue donde estaba: posición absoluta dentro de la capa de esta escena.
-			Object.assign(el.style, { position: "absolute", left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.w}px`, height: `${rect.h}px`, margin: "0" });
-			base.el.appendChild(el);
-			return el;
+			// Una copia tal como acaba el momento de la escena anterior: la original se queda en su escena hasta la transición.
+			const { clone, rect } = base.scene?.snapshot(got.el, Math.max(0, got.at - 0.001)) ?? { clone: got.el.cloneNode(true) as HTMLElement, rect: rectOf(got.el) };
+			clone.removeAttribute("id");
+			Object.assign(clone.style, { position: "absolute", left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.w}px`, height: `${rect.h}px`, margin: "0", transform: "none", translate: "none", rotate: "none", scale: "none" });
+			base.el.appendChild(clone);
+			return clone;
+		},
+		rectAt(el, t) {
+			return base.scene?.rectAt(el, t) ?? rectOf(el);
 		},
 	};
 	const events = (): SceneEvent[] => {
