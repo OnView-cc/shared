@@ -510,11 +510,46 @@ const BRAND_STORY: Template = {
 	],
 };
 
+/**
+ * La dirección de la escena de cada momento (spec 2026-11-24-onview-escenas-con-codigo §6.6): qué tiene que pasar
+ * en pantalla cuando Iris escribe ese momento en código. Por clave de momento; lo que no esté aquí, por bloque. En
+ * inglés: es una instrucción para el modelo.
+ */
+const DIRECTION_BY_KEY: Record<string, string> = {
+	hook: "Open strong: the words come in word by word on the beat with the key word in the brand accent, over a brand glow; one bold visual idea (a device, a 3D box with the logo, or a big word) that sets the tone.",
+	products: "The brand's logo in the centre releases its product or feature icons, which fly out and settle around it on the beat; no words.",
+	burst: "The brand's logo in the centre with the logos of the connected apps flying in around it on the beat, like an orbit; no words.",
+	marks: "The brand's logo in the centre with its other brands' logos landing around it one by one; no words.",
+	list: "The same icons as a list or carousel that passes one by one through the centre, each with its short name.",
+	demo: "Show the product's main screen inside a phone or browser, move a cursor to its primary action and tap it, then land on the result state.",
+	change_shot: "Show the screenshot of the change inside a device, zoom into the part that changed and tap it with the cursor.",
+	change: "Name this change in big kinetic type, word by word, with its key word in the accent colour; a small device or icon may support it.",
+	benefit: "The benefit in kinetic type with its key word in the accent colour; support it with one visual (a counter, a device or product cards) only if it shows something real.",
+	shot: "The product photo on a tilted 3D card with a light sweep, and its feature in kinetic type beside it.",
+	item: "The product on a 3D card or in a grid of products that cascades in, with its name and price as given.",
+	step: "The step number large and the instruction beside it; the photo of the step on a card that enters as the number lands.",
+	deal: "The deal in huge type that slams in on the beat with a glow behind it; the number exactly as given.",
+	deadline: "The deadline in kinetic type with urgency: words snap in on the beat, the key word in the accent colour.",
+	line: "One phrase of the brand story in large kinetic type over a slow gradient of brand colours.",
+	line2: "The next phrase of the story in large kinetic type, entering differently from the previous phrase (mask or rise).",
+	line3: "The promise in large kinetic type that settles calmly; leave space around it.",
+};
+const DIRECTION_BY_BLOCK: Record<string, string> = {
+	text: "The words in large kinetic type, word by word on the beat, key word in the brand accent, over a brand glow.",
+	icons: "The logos or icons land around the brand's logo on the beat, then settle; no words.",
+	ui: "The screenshot inside a device, with the cursor tapping the part that matters.",
+	product: "The product photo on a tilted 3D card with a light sweep, and its words in kinetic type.",
+};
+const withDirections = (t: Template): Template => ({
+	...t,
+	moments: t.moments.map((m) => (m.block === "logo" || m.direction ? m : { ...m, direction: DIRECTION_BY_KEY[m.key] ?? DIRECTION_BY_BLOCK[m.block] })),
+});
+
 /** Los ids en el orden de la galería. */
 export const TEMPLATE_IDS = ["software-launch", "news", "integrations", "product", "catalog", "how-to", "offer", "brand-story"] as const;
 
 export const TEMPLATES: Record<string, Template> = Object.fromEntries(
-	[SOFTWARE_LAUNCH, NEWS, INTEGRATIONS, PRODUCT, CATALOG, HOW_TO, OFFER, BRAND_STORY].map((t) => [t.id, t]),
+	[SOFTWARE_LAUNCH, NEWS, INTEGRATIONS, PRODUCT, CATALOG, HOW_TO, OFFER, BRAND_STORY].map((t) => [t.id, withDirections(t)]),
 );
 
 export function getTemplate(id: string): Template | null {

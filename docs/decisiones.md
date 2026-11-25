@@ -194,3 +194,16 @@ Además, un arreglo de la v2.8.0: en Windows con `core.autocrlf` las hojas llega
 - **El dock se posiciona solo** (fijo abajo, sobre el área segura) y el armazón reserva su hueco con `padding-block-end` en el `main`: nada queda tapado sin que cada pantalla tenga que acordarse.
 - **Las filas de formulario llevan todo su texto por props.** Las de `sky/console.tsx` tenían las frases en inglés escritas dentro; en Ventana valen en los tres idiomas.
 - **`Row` gana `chevron` y no cambia nada más**: el sitio la usa tal cual y la flecha sólo sale cuando quien la monta la pide.
+
+## Escenas con código (v3.1.0, entrega 1, 2026-11-24)
+
+Spec `OnView.cc/docs/superpowers/specs/2026-11-24-onview-escenas-con-codigo-design.md`. Un momento puede ser una **escena**: código que escribe Iris con la caja de componentes (`motion/kit/`). Lo que se decidió en shared:
+
+- **`MomentBlock = BlockKind | "scene"`.** `BlockKind` y `BLOCKS` siguen siendo los cinco clásicos: son lo que guarda `shots.block` y lo que ofrece el selector. La escena sólo existe en la composición, y lleva su bloque clásico de **respaldo** dentro (`SceneParams.fallback`).
+- **La escena se monta en una línea de tiempo hija** puesta en el segundo 0 (`motion/scene/block.ts`). Si no compila, lanza al montar o el motor la pide en respaldo (`forceFallback`), la capa dibuja el bloque clásico. Un error en un `seek` se apunta y, al exportar, lanza `SceneRuntimeError` con el momento: el Container la vuelve a grabar con su respaldo.
+- **La revisión estática** (`motion/scene/check.ts`, con `acorn`) es una barrera, no la única: el código corre además en el `iframe` aislado del editor y en el Container sin red. La lista de prohibidos es la de la spec más los atajos al objeto global (`window`, `globalThis`, `self`, `document`…). Un acceso calculado (`o[k]`) no se puede comprobar sin ejecutar y no se bloquea.
+- **Los componentes no crean nodos por cuadro** y fijan su estado de partida con `gsap.set`: así el primer `seek` y los siguientes dan el mismo cuadro (las pruebas «mismo `seek`, mismo cuadro» de `motion/kit/`). Se centran con `xPercent`/`yPercent` de GSAP, no con `transform` en CSS, para que moverlos no pierda el centrado. Las duraciones de la caja van en golpes, salvo `Morph` (segundos).
+- **Los efectos de las escenas no son filas** (`video/scene-sfx.ts`): salen de los eventos que guarda cada versión de la escena y se calculan en cada composición. Lo que la persona cambia se guarda como excepción (`origin` `mute`/`swap` con `eventRef` `tipo#n`).
+- **Las claves de la biblioteca de efectos viven aquí** (`video/sfx-keys.ts`); onview las reexporta.
+- **Los tipos de evento están en un archivo sin DOM** (`motion/scene/events.ts`), porque la composición también se compila para el Worker.
+- **Los templates son guiones de dirección**: cada momento que no es el cierre lleva `direction` (por clave de momento y, si no, por bloque), que es lo que recibe quien escribe la escena.

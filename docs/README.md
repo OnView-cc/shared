@@ -18,7 +18,7 @@ CI de los consumidores lo baja con `npm ci`, sin token. Para trabajar shared en
 local contra una app, se enlaza con una junction y se quita con `rmdir` antes de
 commitear.
 El mundo visual de OnView es **«Ventana»** (`ventana/`), en todas las pantallas
-desde la v3.0.0. Ver `decisiones.md` y lo que falta en `pendiente.md`. Las
+desde la v3.0.0 (escenas con código desde la v3.1.0). Ver `decisiones.md` y lo que falta en `pendiente.md`. Las
 dependencias de runtime son `peerDependencies`; cada consumidor las deduplica
 (`dedupe` en su `vite.config.ts`) para que no haya dos React.
 

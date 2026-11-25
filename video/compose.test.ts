@@ -220,3 +220,37 @@ describe("composeVideo with styles (spec 2026-11-19)", () => {
 		expect(c.brand.face.weights).toEqual([400]);
 	});
 });
+
+describe("scenes in the composition (spec 2026-11-24)", () => {
+	const code = "export default function scene(ctx, kit) {}";
+	const four = [0, 1, 2, 3].map((i) => shot({ id: `s${i}`, position: i, beats: 4, params: textParams({ lines: [`L${i}`] }) }));
+
+	it("without scenes, the composition is unchanged", () => {
+		const a = composeVideo({ ...base, shots: four });
+		const b = composeVideo({ ...base, shots: four.map((s) => ({ ...s, scene: null })) });
+		expect(b).toEqual(a);
+		expect(a.moments.every((m) => m.block === "text" && m.events === undefined)).toBe(true);
+	});
+
+	it("a shot with a ready scene becomes a scene moment with its classic block as fallback", () => {
+		const c = composeVideo({ ...base, shots: [shot({ id: "a", beats: 4, params: textParams({ lines: ["Respaldo"] }), scene: { code, texts: { headline: "Hola" }, kitVersion: 1, events: [] } })] });
+		const m = c.moments[0]!;
+		expect(m.block).toBe("scene");
+		expect(m.params).toEqual({ code, texts: { headline: "Hola" }, kitVersion: 1, fallback: { block: "text", params: textParams({ lines: ["Respaldo"] }) } });
+	});
+
+	it("scene events become sfx at moment.at + event.at", () => {
+		const c = composeVideo({
+			...base,
+			shots: [shot({ id: "a", position: 0, beats: 4 }), shot({ id: "b", position: 1, beats: 4, scene: { code, texts: {}, kitVersion: 1, events: [{ kind: "click", at: 0.5, n: 0 }, { kind: "land", at: 1.2, n: 0 }] } })],
+			sfx: [{ id: "m1", shotId: "a", sfxKey: "pop-soft", at: 0.3, volume: 0.6 }],
+		});
+		expect(c.moments[1]!.events).toEqual([{ kind: "click", at: 0.5, n: 0 }, { kind: "land", at: 1.2, n: 0 }]);
+		expect(c.sfx.map((x) => [x.sfxKey, x.at])).toEqual([["pop-soft", 0.3], ["click-ui", 2.5], ["pop-soft", 3.2]]);
+	});
+
+	it("incompleteMoments ignores scene moments", () => {
+		const c = composeVideo({ ...base, shots: [shot({ id: "u", block: "ui", params: parseBlockParams("ui", {}), scene: { code, texts: {}, kitVersion: 1, events: [] } })] });
+		expect(incompleteMoments(c)).toEqual([]);
+	});
+});

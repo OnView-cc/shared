@@ -126,3 +126,15 @@ describe("the template library (entrega 1)", () => {
 		expect(getTemplate("nope")).toBeNull();
 	});
 });
+
+describe("templates as direction scripts (spec 2026-11-24 §6.6)", () => {
+	it("every non-logo moment of every template has a direction", () => {
+		for (const t of Object.values(TEMPLATES)) {
+			for (const m of t.moments) {
+				if (m.block === "logo") continue;
+				expect(m.direction, `${t.id}.${m.key}`).toBeTruthy();
+				expect(m.direction!.length, `${t.id}.${m.key}`).toBeGreaterThan(40);
+			}
+		}
+	});
+});

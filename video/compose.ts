@@ -29,6 +29,8 @@ import { beatSeconds } from "../motion/fit";
 import { resolveStyle, type Style } from "../motion/styles";
 import type { AnyBlockParams, BlockKind, MomentBlock, SceneParams, Transition } from "../motion/types";
 import type { MomentWord } from "./narration";
+import type { SceneEvent } from "../motion/scene/events";
+import { sceneSfx } from "./scene-sfx";
 
 export type Format = "9:16" | "1:1" | "16:9";
 export type TextPosition = "top" | "center" | "bottom";
@@ -95,6 +97,11 @@ export interface ComposeShot {
 	voice: { src: string; from?: number; to?: number; words?: MomentWord[]; spoken?: { from: number; to: number } } | null;
 	/** Las imágenes del momento, en su orden, con su tamaño en píxeles. */
 	images: ComposeImage[];
+	/**
+	 * La escena lista de la toma (spec 2026-11-24-onview-escenas-con-codigo): su código, sus textos y los eventos de su
+	 * última revisión. Sin ella (o null), el momento es el bloque clásico de siempre, que también es su respaldo.
+	 */
+	scene?: { code: string; texts: Record<string, string>; kitVersion: number; events: SceneEvent[] } | null;
 }
 
 export interface ComposeBrand {
@@ -125,7 +132,11 @@ export interface ComposeInput {
 	style?: { id: string | null; overrides: unknown };
 	shots: ComposeShot[];
 	music: { src: string } | null;
-	sfx: { id: string; shotId: string; sfxKey: string; at: number; volume: number }[];
+	/**
+	 * Los efectos de la persona. `origin` (spec 2026-11-24 §9.1): `manual` (por defecto) suena donde se puso; `mute` y
+	 * `swap` son excepciones sobre el efecto del evento `eventRef` (`tipo#n`) de una escena (`scene-sfx.ts`).
+	 */
+	sfx: { id: string; shotId: string; sfxKey: string; at: number; volume: number; origin?: "manual" | "mute" | "swap"; eventRef?: string }[];
 	brand: ComposeBrand | null;
 	limits: { watermark: boolean };
 }
@@ -144,6 +155,8 @@ export interface Moment {
 	/** Lo que dice la narración en este momento, desde su inicio (spec 2026-11-20): la imagen entra con la palabra. */
 	words?: MomentWord[];
 	spoken?: { from: number; to: number };
+	/** Los eventos de la escena (sólo en momentos `scene`), desde el inicio del momento: de ellos salen sus efectos. */
+	events?: SceneEvent[];
 }
 
 export interface MotionBrand {
@@ -220,10 +233,13 @@ export function composeVideo(input: ComposeInput): Composition {
 		// Un tramo de la narración manda: el momento dura lo que suena (spec 2026-11-20).
 		const slice = voiced && shot.voice?.from != null && shot.voice.to != null ? { from: shot.voice.from, to: shot.voice.to } : null;
 		const length = Math.max(0, slice ? slice.to - slice.from : shot.beats != null ? shot.beats * beat : shot.seconds);
+		// Con escena lista, el momento es la escena y su bloque clásico queda de respaldo (spec 2026-11-24 §6.1).
+		const scene = shot.scene
+			? { block: "scene" as const, params: { code: shot.scene.code, texts: shot.scene.texts, kitVersion: shot.scene.kitVersion, fallback: { block: shot.block, params: shot.params } }, events: shot.scene.events }
+			: { block: shot.block, params: shot.params };
 		moments.push({
 			shotId: shot.id,
-			block: shot.block,
-			params: shot.params,
+			...scene,
 			at,
 			seconds: length,
 			transition: shot.transition ?? "cut",
@@ -264,12 +280,14 @@ export function composeVideo(input: ComposeInput): Composition {
 	const scenesTotal = last?.block === "logo" ? total - last.seconds : total;
 
 	const byShot = new Map(moments.flatMap((m) => (m.shotId ? [[m.shotId, m] as const] : [])));
-	const sfx: SfxCue[] = input.sfx.flatMap((item) => {
+	const manual = input.sfx.filter((item) => (item.origin ?? "manual") === "manual");
+	const sfx: SfxCue[] = manual.flatMap((item) => {
 		const m = byShot.get(item.shotId);
 		if (!m) return [];
 		const offset = item.at >= m.seconds ? Math.max(0, m.seconds - SFX_EDGE) : Math.max(0, item.at);
 		return [{ id: item.id, shotId: item.shotId, sfxKey: item.sfxKey, at: m.at + offset, volume: item.volume }];
 	});
+	sfx.push(...sceneSfx(moments, input.sfx));
 	sfx.sort((a, b) => a.at - b.at);
 
 	return {
@@ -299,7 +317,7 @@ export function composeVideo(input: ComposeInput): Composition {
  */
 export function incompleteMoments(c: Composition): string[] {
 	return c.moments.flatMap((m) => {
-		if (!m.shotId) return [];
+		if (!m.shotId || m.block === "scene") return [];
 		const missing = (m.block === "icons" && m.images.length < 2) || ((m.block === "ui" || m.block === "product") && m.images.length === 0);
 		return missing ? [m.shotId] : [];
 	});

@@ -16,17 +16,10 @@
 import type { ComposeImage } from "../../video/compose";
 import type { BlockCtx } from "../registry";
 import type { SceneParams } from "../types";
+import type { SceneEvent, SceneEventKind } from "./events";
 
-export type SceneEventKind = "click" | "land" | "swipe" | "type" | "reveal" | "success" | "whoosh" | "logo";
-export const SCENE_EVENT_KINDS: readonly SceneEventKind[] = ["click", "land", "swipe", "type", "reveal", "success", "whoosh", "logo"];
-
-export interface SceneEvent {
-	kind: SceneEventKind;
-	/** Segundos desde el inicio del momento. */
-	at: number;
-	/** El orden dentro de su tipo en el momento, desde 0. */
-	n: number;
-}
+export type { SceneEvent, SceneEventKind } from "./events";
+export { SCENE_EVENT_KINDS } from "./events";
 
 export interface HandoffRegistry {
 	give(name: string, el: HTMLElement, at: number): void;
